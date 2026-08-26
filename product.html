@@ -604,6 +604,26 @@ document.getElementById('qty-minus').addEventListener('click', () => {
 document.getElementById('add-cart-btn').addEventListener('click', () => {
   const product = PRODUCTS[productId];
   const toast = document.getElementById('added-toast');
+  if (!product.comingSoon) {
+    const cart = JSON.parse(localStorage.getItem('cuech4-cart') || '[]');
+    const existingItem = cart.find(item => item.id === productId);
+    if (existingItem) {
+      existingItem.quantity += currentQty;
+    } else {
+      const selectedSize = document.querySelector('#size-swatches .selected');
+      const selectedColor = document.querySelector('#color-swatches .selected');
+      const options = [selectedSize?.textContent, selectedColor?.textContent].filter(Boolean);
+      cart.push({
+        id: productId,
+        name: product.name,
+        emoji: product.emoji,
+        price: product.price,
+        meta: options.join(' · '),
+        quantity: currentQty
+      });
+    }
+    localStorage.setItem('cuech4-cart', JSON.stringify(cart));
+  }
   toast.textContent = product.comingSoon ? 'We will let you know when it is available.' : 'Added to cart ✓';
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 2200);

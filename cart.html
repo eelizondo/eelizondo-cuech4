@@ -358,7 +358,7 @@ footer {
         <button id="btn-day" onclick="setTheme('day')">Day</button>
       </div>
       <a href="cart.html" class="cart-btn" aria-label="Cart">
-        🛒<span class="cart-badge" id="header-cart-count">2</span>
+        🛒<span class="cart-badge" id="header-cart-count">0</span>
       </a>
       <button class="mobile-toggle" aria-label="Menu">☰</button>
     </div>
@@ -369,43 +369,12 @@ footer {
   <img id="page-logo" src="assets/global/frog-logo-white.png" alt="Cuech4 frog mark">
   <div class="label" style="margin-bottom:10px;">Cart</div>
   <h1 data-split="true">Ready to check out?</h1>
-  <p id="item-count-line">2 items ready to go</p>
+  <p id="item-count-line">Nothing here yet</p>
 </section>
 
 <div class="cart-layout reveal reveal-2">
   <div class="items-panel reveal reveal-3" id="items-panel">
-    <div class="cart-item" data-price="28" data-name="Frog Tee — Black" data-meta="Size M · Black">
-      <div class="item-image">👕</div>
-      <div class="item-info">
-        <h3>Frog Tee — Black</h3>
-        <div class="item-meta">Size M · Black</div>
-        <div class="item-price">$28.00</div>
-      </div>
-      <div class="qty-control">
-        <button class="qty-minus">−</button>
-        <span class="qty-val">1</span>
-        <button class="qty-plus">+</button>
-      </div>
-      <div class="item-total">$28.00</div>
-      <button class="remove-btn" aria-label="Remove item">✕</button>
-    </div>
-    <div class="cart-item" data-price="9" data-name="Frog Sticker Pack" data-meta="6-piece set">
-      <div class="item-image">✦</div>
-      <div class="item-info">
-        <h3>Frog Sticker Pack</h3>
-        <div class="item-meta">6-piece set</div>
-        <div class="item-price">$9.00</div>
-      </div>
-      <div class="qty-control">
-        <button class="qty-minus">−</button>
-        <span class="qty-val">1</span>
-        <button class="qty-plus">+</button>
-      </div>
-      <div class="item-total">$9.00</div>
-      <button class="remove-btn" aria-label="Remove item">✕</button>
-    </div>
-
-    <div class="empty-cart" id="empty-cart" style="display:none;">
+    <div class="empty-cart" id="empty-cart">
       <div class="icon">🛒</div>
       <h3>Your cart is empty</h3>
       <p>Original pieces are waiting — go find something.</p>
@@ -415,13 +384,13 @@ footer {
 
   <div class="summary-panel reveal reveal-4">
     <h3>Order summary</h3>
-    <div class="summary-row"><span>Subtotal</span><span id="sum-subtotal">$37.00</span></div>
+    <div class="summary-row"><span>Subtotal</span><span id="sum-subtotal">$0.00</span></div>
     <div class="summary-row"><span>Shipping</span><span>Calculated at checkout</span></div>
     <div class="promo-row">
       <input type="text" placeholder="Promo code">
       <button>Apply</button>
     </div>
-    <div class="summary-row total"><span>Total</span><span class="amount" id="sum-total">$37.00</span></div>
+    <div class="summary-row total"><span>Total</span><span class="amount" id="sum-total">$0.00</span></div>
     <button class="btn-primary checkout-btn" id="checkout-btn">Checkout →</button>
     <div class="note">Shipping and taxes calculated at checkout.</div>
   </div>
@@ -470,9 +439,49 @@ splitTargets.forEach((target) => splitTextIntoChars(target));
 const itemsPanel = document.getElementById('items-panel');
 const emptyCart = document.getElementById('empty-cart');
 const checkoutBtn = document.getElementById('checkout-btn');
+const cartStorageKey = 'cuech4-cart';
+
+function getCart() {
+  try {
+    const cart = JSON.parse(localStorage.getItem(cartStorageKey) || '[]');
+    return Array.isArray(cart) ? cart : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveCart(items) {
+  localStorage.setItem(cartStorageKey, JSON.stringify(items));
+}
 
 function formatMoney(n) {
   return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function renderCart() {
+  itemsPanel.querySelectorAll('.cart-item').forEach(item => item.remove());
+  getCart().forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'cart-item';
+    row.dataset.id = item.id;
+    row.dataset.price = item.price;
+    row.innerHTML = `
+      <div class="item-image">${item.emoji}</div>
+      <div class="item-info">
+        <h3>${item.name}</h3>
+        <div class="item-meta">${item.meta || 'Standard item'}</div>
+        <div class="item-price">${formatMoney(item.price)}</div>
+      </div>
+      <div class="qty-control">
+        <button class="qty-minus">−</button>
+        <span class="qty-val">${item.quantity}</span>
+        <button class="qty-plus">+</button>
+      </div>
+      <div class="item-total">${formatMoney(item.price * item.quantity)}</div>
+      <button class="remove-btn" aria-label="Remove item">✕</button>
+    `;
+    itemsPanel.insertBefore(row, emptyCart);
+  });
 }
 
 function recalc() {
@@ -509,16 +518,25 @@ itemsPanel.addEventListener('click', (e) => {
   if (e.target.classList.contains('qty-plus')) {
     const span = item.querySelector('.qty-val');
     span.textContent = parseInt(span.textContent, 10) + 1;
+    const cart = getCart();
+    const storedItem = cart.find(cartItem => cartItem.id === item.dataset.id);
+    if (storedItem) storedItem.quantity = parseInt(span.textContent, 10);
+    saveCart(cart);
     recalc();
   } else if (e.target.classList.contains('qty-minus')) {
     const span = item.querySelector('.qty-val');
     const current = parseInt(span.textContent, 10);
     if (current > 1) {
       span.textContent = current - 1;
+      const cart = getCart();
+      const storedItem = cart.find(cartItem => cartItem.id === item.dataset.id);
+      if (storedItem) storedItem.quantity = current - 1;
+      saveCart(cart);
       recalc();
     }
   } else if (e.target.classList.contains('remove-btn')) {
     item.remove();
+    saveCart(getCart().filter(cartItem => cartItem.id !== item.dataset.id));
     recalc();
   }
 });
@@ -528,6 +546,7 @@ checkoutBtn.addEventListener('click', () => {
   alert('This is a prototype — checkout would continue here.');
 });
 
+renderCart();
 recalc();
 </script>
 
