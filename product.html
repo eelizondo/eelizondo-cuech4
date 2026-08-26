@@ -174,7 +174,7 @@ footer { border-top: 0.5px solid var(--border); padding: 40px 24px 30px; margin-
         <button id="btn-night" class="active" onclick="setTheme('night')">Night</button>
         <button id="btn-day" onclick="setTheme('day')">Day</button>
       </div>
-      <a href="cart.html" class="cart-btn" aria-label="Cart">🛒<span class="cart-badge">2</span></a>
+      <a href="cart.html" class="cart-btn" aria-label="Cart">🛒<span class="cart-badge" id="header-cart-count">0</span></a>
       <button class="mobile-toggle" aria-label="Menu">☰</button>
     </div>
   </div>
@@ -623,6 +623,9 @@ document.getElementById('add-cart-btn').addEventListener('click', () => {
       });
     }
     localStorage.setItem('cuech4-cart', JSON.stringify(cart));
+    const cartBadge = document.getElementById('header-cart-count');
+    cartBadge.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+    cartBadge.style.display = 'flex';
   }
   toast.textContent = product.comingSoon ? 'We will let you know when it is available.' : 'Added to cart ✓';
   toast.classList.add('show');
@@ -631,6 +634,11 @@ document.getElementById('add-cart-btn').addEventListener('click', () => {
 
 const productId = getParam('id') || 'frog-tee-black';
 renderProduct(productId);
+
+const cartBadge = document.getElementById('header-cart-count');
+const cartCount = JSON.parse(localStorage.getItem('cuech4-cart') || '[]').reduce((total, item) => total + item.quantity, 0);
+cartBadge.textContent = cartCount;
+cartBadge.style.display = cartCount === 0 ? 'none' : 'flex';
 </script>
 
 </body>

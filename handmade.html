@@ -359,7 +359,7 @@ footer {
         <button id="btn-day" onclick="setTheme('day')">Day</button>
       </div>
       <a href="cart.html" class="cart-btn" aria-label="Cart">
-        🛒<span class="cart-badge">2</span>
+        🛒<span class="cart-badge" id="header-cart-count">0</span>
       </a>
       <button class="mobile-toggle" aria-label="Menu">☰</button>
     </div>
@@ -525,6 +525,15 @@ setTheme(savedTheme);
 
 const splitTargets = document.querySelectorAll('[data-split="true"]');
 splitTargets.forEach((target) => splitTextIntoChars(target));
+
+function updateCartBadge() {
+  const cart = JSON.parse(localStorage.getItem('cuech4-cart') || '[]');
+  const count = cart.reduce((total, item) => total + item.quantity, 0);
+  const badge = document.getElementById('header-cart-count');
+  badge.textContent = count;
+  badge.style.display = count === 0 ? 'none' : 'flex';
+}
+updateCartBadge();
 </script>
 
 </body>
