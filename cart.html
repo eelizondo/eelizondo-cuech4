@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="night">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cart — Cuech4</title>
+<link rel="icon" type="image/png" href="assets/global/frog-logo-white.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night-bg: #0D1418;
+  --night-panel: #111C1A;
+  --night-panel-2: #0A0F12;
+  --night-border: #24343A;
+  --night-header: #EAF4EC;
+  --night-body: #9FB5B2;
+  --night-label: #5A7A78;
+  --night-icon: #7C9C98;
+
+  --day-bg: #EDF3F1;
+  --day-panel: #F6FAF9;
+  --day-panel-2: #E3EDEA;
+  --day-border: #C7D6D3;
+  --day-header: #101B19;
+  --day-body: #3F5450;
+  --day-label: #7A9490;
+  --day-icon: #7A9490;
+
+  --green: #3DDC5A;
+  --green-deep: #1F8F3A;
+  --green-on: #173404;
+  --pink: #FF4FA3;
+  --pink-on: #4B1528;
+  --yellow: #FFD43D;
+  --yellow-on: #412402;
+  --red: #E24B4A;
+
+  --bg: var(--night-bg);
+  --panel: var(--night-panel);
+  --panel-2: var(--night-panel-2);
+  --border: var(--night-border);
+  --header-c: var(--night-header);
+  --body-c: var(--night-body);
+  --label-c: var(--night-label);
+  --icon-c: var(--night-icon);
+  --accent-text: var(--green);
+}
+
+[data-theme="day"] {
+  --bg: var(--day-bg);
+  --panel: var(--day-panel);
+  --panel-2: var(--day-panel-2);
+  --border: var(--day-border);
+  --header-c: var(--day-header);
+  --body-c: var(--day-body);
+  --label-c: var(--day-label);
+  --icon-c: var(--day-icon);
+  --accent-text: var(--green-deep);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--body-c);
+  font-family: 'Inter', sans-serif;
+  transition: background 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; color: var(--header-c); font-weight: 600; }
+
+.label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--label-c);
+  font-weight: 500;
+}
+
+/* FUTURISTIC REVEAL */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  filter: blur(6px);
+  animation: panelReveal 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.reveal-1 { animation-delay: 0.12s; }
+.reveal-2 { animation-delay: 0.28s; }
+.reveal-3 { animation-delay: 0.44s; }
+.reveal-4 { animation-delay: 0.6s; }
+.reveal-5 { animation-delay: 0.76s; }
+
+.char {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(6px);
+  transform: translateY(18px) scale(0.98);
+  animation: charReveal 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: calc(var(--i) * 0.045s + 0.24s);
+}
+
+@keyframes panelReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes charReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+    filter: blur(6px);
+    text-shadow: 0 0 0 rgba(61, 220, 90, 0);
+  }
+  60% {
+    opacity: 1;
+    text-shadow: 0 0 18px rgba(61, 220, 90, 0.32);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+    text-shadow: 0 0 0 rgba(61, 220, 90, 0);
+  }
+}
+
+/* HEADER (shared) */
+header {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--bg);
+  border-bottom: 0.5px solid var(--border);
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+.header-inner {
+  display: grid; grid-template-columns: 220px minmax(0, 1fr) 220px;
+  align-items: center; padding: 14px 24px; max-width: 1200px; margin: 0 auto;
+  min-height: 62px;
+}
+.logo-group { display: flex; align-items: center; gap: 10px; text-decoration: none; justify-self: start; }
+.logo-group img { width: 30px; height: 30px; object-fit: contain; }
+.logo-text { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 18px; color: var(--header-c); }
+
+nav {
+  display: flex; gap: 28px; align-items: center; justify-content: center;
+  width: 100%;
+}
+nav a {
+  color: var(--body-c); text-decoration: none; font-size: 14px; font-weight: 500;
+  transition: color 0.2s ease;
+}
+nav a:hover { color: var(--green); }
+
+.header-actions { display: flex; align-items: center; gap: 16px; justify-content: flex-end; min-width: 220px; justify-self: end; }
+.theme-toggle {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--panel); border: 0.5px solid var(--border);
+  border-radius: 20px; padding: 5px 6px; cursor: pointer;
+}
+.theme-toggle button {
+  border: none; background: transparent; color: var(--label-c);
+  font-size: 12px; padding: 5px 10px; border-radius: 16px; cursor: pointer;
+  font-family: 'Inter', sans-serif; font-weight: 500;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.theme-toggle button.active { background: var(--green); color: var(--green-on); }
+
+.cart-btn {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 8px;
+  border: 0.5px solid var(--border); background: var(--panel);
+  color: var(--header-c); cursor: pointer; text-decoration: none;
+}
+.cart-badge {
+  position: absolute; top: -5px; right: -5px;
+  background: var(--pink); color: var(--pink-on);
+  font-size: 10px; font-weight: 600; border-radius: 50%;
+  width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
+}
+.mobile-toggle { display: none; background: none; border: none; color: var(--header-c); font-size: 22px; cursor: pointer; }
+
+/* PAGE HEAD */
+.page-head {
+  padding: 70px 24px 10px;
+  text-align: center;
+}
+.page-head img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  margin: 0 auto 20px;
+  display: block;
+}
+.page-head h1 { font-size: clamp(34px, 5.5vw, 50px); margin-bottom: 12px; letter-spacing: -0.01em; }
+.page-head p { font-size: 16px; color: var(--body-c); max-width: 440px; margin: 0 auto; line-height: 1.6; }
+
+/* LAYOUT */
+.cart-layout {
+  display: grid; grid-template-columns: 1fr 320px; gap: 24px;
+  max-width: 1080px; margin: 0 auto; padding: 24px 24px 80px;
+  align-items: start;
+}
+
+/* CART ITEMS */
+.items-panel {
+  background: var(--panel); border: 0.5px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+}
+.cart-item {
+  display: flex; gap: 16px; padding: 18px 20px;
+  border-bottom: 0.5px solid var(--border);
+  align-items: center;
+}
+.cart-item:last-child { border-bottom: none; }
+.item-image {
+  width: 68px; height: 68px; border-radius: 10px; background: var(--panel-2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; color: var(--icon-c); flex-shrink: 0;
+}
+.item-info { flex: 1; min-width: 0; }
+.item-info h3 { font-size: 14px; margin-bottom: 3px; font-family: 'Inter', sans-serif; font-weight: 600; color: var(--header-c); }
+.item-meta { font-size: 12px; color: var(--label-c); margin-bottom: 6px; }
+.item-price { font-size: 13px; color: var(--accent-text); font-weight: 600; }
+
+.qty-control {
+  display: flex; align-items: center; gap: 0;
+  background: var(--panel-2); border: 0.5px solid var(--border); border-radius: 8px;
+  overflow: hidden; flex-shrink: 0;
+}
+.qty-control button {
+  width: 28px; height: 30px; border: none; background: transparent;
+  color: var(--header-c); font-size: 14px; cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.15s ease;
+}
+.qty-control button:hover { background: var(--border); }
+.qty-control span {
+  width: 26px; text-align: center; font-size: 13px; color: var(--header-c); font-weight: 500;
+}
+
+.item-total { width: 60px; text-align: right; font-size: 14px; font-weight: 600; color: var(--header-c); flex-shrink: 0; }
+
+.remove-btn {
+  background: none; border: none; color: var(--label-c); cursor: pointer;
+  font-size: 16px; padding: 4px; flex-shrink: 0; line-height: 1;
+  transition: color 0.15s ease;
+}
+.remove-btn:hover { color: var(--red); }
+
+/* EMPTY STATE */
+.empty-cart {
+  text-align: center; padding: 70px 30px;
+}
+.empty-cart .icon { font-size: 40px; margin-bottom: 16px; color: var(--icon-c); }
+.empty-cart h3 { font-size: 18px; margin-bottom: 8px; }
+.empty-cart p { font-size: 13px; color: var(--label-c); margin-bottom: 22px; }
+
+.btn-primary {
+  background: var(--green); color: var(--green-on); border: none;
+  padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;
+  cursor: pointer; font-family: 'Inter', sans-serif; text-decoration: none; display: inline-block;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+.btn-primary:hover { background: #4FE86A; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary:disabled:hover { background: var(--green); transform: none; }
+
+/* SUMMARY */
+.summary-panel {
+  background: var(--panel); border: 0.5px solid var(--border);
+  border-radius: 16px; padding: 22px; position: sticky; top: 84px;
+}
+.summary-panel h3 { font-size: 15px; margin-bottom: 16px; }
+.summary-row {
+  display: flex; justify-content: space-between; font-size: 13px;
+  color: var(--body-c); padding: 8px 0;
+}
+.summary-row.total {
+  border-top: 0.5px solid var(--border); margin-top: 8px; padding-top: 14px;
+  font-size: 15px; font-weight: 600; color: var(--header-c);
+}
+.summary-row.total .amount { color: var(--accent-text); }
+
+.promo-row { display: flex; gap: 8px; margin: 16px 0; }
+.promo-row input {
+  flex: 1; background: var(--panel-2); border: 0.5px solid var(--border);
+  color: var(--header-c); font-size: 13px; padding: 9px 11px; border-radius: 8px;
+  outline: none; font-family: 'Inter', sans-serif;
+}
+.promo-row input:focus { border-color: var(--green); }
+.promo-row button {
+  background: transparent; border: 0.5px solid var(--border); color: var(--header-c);
+  font-size: 12px; padding: 9px 14px; border-radius: 8px; cursor: pointer;
+  font-family: 'Inter', sans-serif; font-weight: 500;
+}
+.promo-row button:hover { border-color: var(--green); color: var(--green); }
+
+.checkout-btn { width: 100%; text-align: center; margin-top: 6px; }
+
+.note {
+  font-size: 11px; color: var(--label-c); text-align: center; margin-top: 14px; line-height: 1.5;
+}
+
+/* FOOTER (shared) */
+footer {
+  border-top: 0.5px solid var(--border);
+  padding: 40px 24px 30px;
+  margin-top: 40px;
+}
+.footer-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; justify-content: center; align-items: center;
+  flex-wrap: wrap; gap: 20px;
+}
+.footer-copy {
+  font-size: 12px; color: var(--label-c);
+  margin-top: 20px;
+  text-align: center;
+}
+
+@media (max-width: 860px) {
+  nav { display: none; }
+  .mobile-toggle { display: block; }
+  .cart-layout { grid-template-columns: 1fr; }
+  .summary-panel { position: static; }
+  .cart-item { flex-wrap: wrap; }
+  .item-info { flex-basis: 100%; order: 3; }
+  .item-total { order: 2; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a class="logo-group" href="index.html">
+      <img id="header-logo" src="assets/global/frog-logo-white.png" alt="Cuech4 logo">
+      <span class="logo-text">Cuech4</span>
+    </a>
+    <nav>
+      <a href="shop.html">Shop</a>
+      <a href="about.html">About</a>
+      <a href="handmade.html">Handmade</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="header-actions">
+      <div class="theme-toggle">
+        <button id="btn-night" class="active" onclick="setTheme('night')">Night</button>
+        <button id="btn-day" onclick="setTheme('day')">Day</button>
+      </div>
+      <a href="cart.html" class="cart-btn" aria-label="Cart">
+        🛒<span class="cart-badge" id="header-cart-count">2</span>
+      </a>
+      <button class="mobile-toggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</header>
+
+<section class="page-head reveal reveal-1">
+  <img id="page-logo" src="assets/global/frog-logo-white.png" alt="Cuech4 frog mark">
+  <div class="label" style="margin-bottom:10px;">Cart</div>
+  <h1 data-split="true">Ready to check out?</h1>
+  <p id="item-count-line">2 items ready to go</p>
+</section>
+
+<div class="cart-layout reveal reveal-2">
+  <div class="items-panel reveal reveal-3" id="items-panel">
+    <div class="cart-item" data-price="28" data-name="Frog Tee — Black" data-meta="Size M · Black">
+      <div class="item-image">👕</div>
+      <div class="item-info">
+        <h3>Frog Tee — Black</h3>
+        <div class="item-meta">Size M · Black</div>
+        <div class="item-price">$28.00</div>
+      </div>
+      <div class="qty-control">
+        <button class="qty-minus">−</button>
+        <span class="qty-val">1</span>
+        <button class="qty-plus">+</button>
+      </div>
+      <div class="item-total">$28.00</div>
+      <button class="remove-btn" aria-label="Remove item">✕</button>
+    </div>
+    <div class="cart-item" data-price="9" data-name="Frog Sticker Pack" data-meta="6-piece set">
+      <div class="item-image">✦</div>
+      <div class="item-info">
+        <h3>Frog Sticker Pack</h3>
+        <div class="item-meta">6-piece set</div>
+        <div class="item-price">$9.00</div>
+      </div>
+      <div class="qty-control">
+        <button class="qty-minus">−</button>
+        <span class="qty-val">1</span>
+        <button class="qty-plus">+</button>
+      </div>
+      <div class="item-total">$9.00</div>
+      <button class="remove-btn" aria-label="Remove item">✕</button>
+    </div>
+
+    <div class="empty-cart" id="empty-cart" style="display:none;">
+      <div class="icon">🛒</div>
+      <h3>Your cart is empty</h3>
+      <p>Original pieces are waiting — go find something.</p>
+      <a href="shop.html" class="btn-primary">Browse the shop →</a>
+    </div>
+  </div>
+
+  <div class="summary-panel reveal reveal-4">
+    <h3>Order summary</h3>
+    <div class="summary-row"><span>Subtotal</span><span id="sum-subtotal">$37.00</span></div>
+    <div class="summary-row"><span>Shipping</span><span>Calculated at checkout</span></div>
+    <div class="promo-row">
+      <input type="text" placeholder="Promo code">
+      <button>Apply</button>
+    </div>
+    <div class="summary-row total"><span>Total</span><span class="amount" id="sum-total">$37.00</span></div>
+    <button class="btn-primary checkout-btn" id="checkout-btn">Checkout →</button>
+    <div class="note">Shipping and taxes calculated at checkout.</div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <a class="logo-group" href="index.html">
+      <img src="assets/global/frog-logo-white.png" id="footer-logo" alt="Cuech4" style="width:24px;height:24px;">
+      <span class="logo-text" style="font-size:15px;">Cuech4</span>
+    </a>
+  </div>
+  <div class="footer-copy">© 2026 Cuech4 — All rights reserved.</div>
+</footer>
+
+<script>
+function splitTextIntoChars(element) {
+  const text = element.textContent.trim();
+  element.textContent = '';
+  [...text].forEach((char, index) => {
+    const span = document.createElement('span');
+    span.className = 'char';
+    span.style.setProperty('--i', index);
+    span.textContent = char === ' ' ? '\u00A0' : char;
+    element.appendChild(span);
+  });
+}
+
+function setTheme(mode) {
+  document.documentElement.setAttribute('data-theme', mode);
+  document.getElementById('btn-night').classList.toggle('active', mode === 'night');
+  document.getElementById('btn-day').classList.toggle('active', mode === 'day');
+  const logoSrc = mode === 'night' ? 'assets/global/frog-logo-white.png' : 'assets/global/frog-logo-black-transparent.png';
+  ['header-logo','page-logo','footer-logo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.src = logoSrc;
+  });
+}
+
+const savedTheme = localStorage.getItem('cuech4-theme') || 'night';
+setTheme(savedTheme);
+
+const splitTargets = document.querySelectorAll('[data-split="true"]');
+splitTargets.forEach((target) => splitTextIntoChars(target));
+
+const itemsPanel = document.getElementById('items-panel');
+const emptyCart = document.getElementById('empty-cart');
+const checkoutBtn = document.getElementById('checkout-btn');
+
+function formatMoney(n) {
+  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function recalc() {
+  const items = itemsPanel.querySelectorAll('.cart-item');
+  let subtotal = 0;
+  let count = 0;
+
+  items.forEach(item => {
+    const price = parseFloat(item.getAttribute('data-price'));
+    const qty = parseInt(item.querySelector('.qty-val').textContent, 10);
+    const lineTotal = price * qty;
+    item.querySelector('.item-total').textContent = formatMoney(lineTotal);
+    subtotal += lineTotal;
+    count += qty;
+  });
+
+  document.getElementById('sum-subtotal').textContent = formatMoney(subtotal);
+  document.getElementById('sum-total').textContent = formatMoney(subtotal);
+  document.getElementById('header-cart-count').textContent = count;
+  document.getElementById('item-count-line').textContent =
+    count === 0 ? 'Nothing here yet' : count + (count === 1 ? ' item ready to go' : ' items ready to go');
+
+  const hasItems = items.length > 0;
+  itemsPanel.style.display = hasItems ? '' : 'block';
+  emptyCart.style.display = hasItems ? 'none' : 'block';
+  checkoutBtn.disabled = !hasItems || subtotal === 0;
+  document.getElementById('header-cart-count').style.display = count === 0 ? 'none' : 'flex';
+}
+
+itemsPanel.addEventListener('click', (e) => {
+  const item = e.target.closest('.cart-item');
+  if (!item) return;
+
+  if (e.target.classList.contains('qty-plus')) {
+    const span = item.querySelector('.qty-val');
+    span.textContent = parseInt(span.textContent, 10) + 1;
+    recalc();
+  } else if (e.target.classList.contains('qty-minus')) {
+    const span = item.querySelector('.qty-val');
+    const current = parseInt(span.textContent, 10);
+    if (current > 1) {
+      span.textContent = current - 1;
+      recalc();
+    }
+  } else if (e.target.classList.contains('remove-btn')) {
+    item.remove();
+    recalc();
+  }
+});
+
+checkoutBtn.addEventListener('click', () => {
+  if (checkoutBtn.disabled) return;
+  alert('This is a prototype — checkout would continue here.');
+});
+
+recalc();
+</script>
+
+</body>
+</html>

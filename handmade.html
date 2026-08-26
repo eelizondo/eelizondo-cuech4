@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="night">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Handmade — Cuech4</title>
+<link rel="icon" type="image/png" href="assets/global/frog-logo-white.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night-bg: #0D1418;
+  --night-panel: #111C1A;
+  --night-panel-2: #0A0F12;
+  --night-border: #24343A;
+  --night-header: #EAF4EC;
+  --night-body: #9FB5B2;
+  --night-label: #5A7A78;
+  --night-icon: #7C9C98;
+
+  --day-bg: #EDF3F1;
+  --day-panel: #F6FAF9;
+  --day-panel-2: #E3EDEA;
+  --day-border: #C7D6D3;
+  --day-header: #101B19;
+  --day-body: #3F5450;
+  --day-label: #7A9490;
+  --day-icon: #7A9490;
+
+  --green: #3DDC5A;
+  --green-deep: #1F8F3A;
+  --green-on: #173404;
+  --pink: #FF4FA3;
+  --pink-on: #4B1528;
+  --yellow: #FFD43D;
+  --yellow-on: #412402;
+
+  --bg: var(--night-bg);
+  --panel: var(--night-panel);
+  --panel-2: var(--night-panel-2);
+  --border: var(--night-border);
+  --header-c: var(--night-header);
+  --body-c: var(--night-body);
+  --label-c: var(--night-label);
+  --icon-c: var(--night-icon);
+  --accent-text: var(--green);
+}
+
+[data-theme="day"] {
+  --bg: var(--day-bg);
+  --panel: var(--day-panel);
+  --panel-2: var(--day-panel-2);
+  --border: var(--day-border);
+  --header-c: var(--day-header);
+  --body-c: var(--day-body);
+  --label-c: var(--day-label);
+  --icon-c: var(--day-icon);
+  --accent-text: var(--green-deep);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--body-c);
+  font-family: 'Inter', sans-serif;
+  transition: background 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; color: var(--header-c); font-weight: 600; }
+
+.label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--label-c);
+  font-weight: 500;
+}
+
+/* FUTURISTIC REVEAL */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  filter: blur(6px);
+  animation: panelReveal 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.reveal-1 { animation-delay: 0.12s; }
+.reveal-2 { animation-delay: 0.28s; }
+.reveal-3 { animation-delay: 0.44s; }
+.reveal-4 { animation-delay: 0.6s; }
+.reveal-5 { animation-delay: 0.76s; }
+
+.char {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(6px);
+  transform: translateY(18px) scale(0.98);
+  animation: charReveal 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: calc(var(--i) * 0.045s + 0.24s);
+}
+
+@keyframes panelReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes charReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+    filter: blur(6px);
+    text-shadow: 0 0 0 rgba(61, 220, 90, 0);
+  }
+  60% {
+    opacity: 1;
+    text-shadow: 0 0 18px rgba(61, 220, 90, 0.32);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+    text-shadow: 0 0 0 rgba(61, 220, 90, 0);
+  }
+}
+
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* HEADER (shared) */
+header {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--bg);
+  border-bottom: 0.5px solid var(--border);
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+.header-inner {
+  display: grid; grid-template-columns: 220px minmax(0, 1fr) 220px;
+  align-items: center; padding: 14px 24px; max-width: 1200px; margin: 0 auto;
+  min-height: 62px;
+}
+.logo-group { display: flex; align-items: center; gap: 10px; text-decoration: none; justify-self: start; }
+.logo-group img { width: 30px; height: 30px; object-fit: contain; }
+.logo-text { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 18px; color: var(--header-c); }
+
+nav {
+  display: flex; gap: 28px; align-items: center; justify-content: center;
+  width: 100%;
+}
+nav a {
+  color: var(--body-c); text-decoration: none; font-size: 14px; font-weight: 500;
+  transition: color 0.2s ease;
+}
+nav a:hover { color: var(--green); }
+nav a.current { color: var(--green); }
+
+.header-actions { display: flex; align-items: center; gap: 16px; justify-content: flex-end; min-width: 220px; justify-self: end; }
+.theme-toggle {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--panel); border: 0.5px solid var(--border);
+  border-radius: 20px; padding: 5px 6px; cursor: pointer;
+}
+.theme-toggle button {
+  border: none; background: transparent; color: var(--label-c);
+  font-size: 12px; padding: 5px 10px; border-radius: 16px; cursor: pointer;
+  font-family: 'Inter', sans-serif; font-weight: 500;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.theme-toggle button.active { background: var(--green); color: var(--green-on); }
+
+.cart-btn {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 8px;
+  border: 0.5px solid var(--border); background: var(--panel);
+  color: var(--header-c); cursor: pointer; text-decoration: none;
+}
+.cart-badge {
+  position: absolute; top: -5px; right: -5px;
+  background: var(--pink); color: var(--pink-on);
+  font-size: 10px; font-weight: 600; border-radius: 50%;
+  width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
+}
+.mobile-toggle { display: none; background: none; border: none; color: var(--header-c); font-size: 22px; cursor: pointer; }
+
+/* PAGE HEAD */
+.page-head {
+  padding: 70px 24px 50px;
+  text-align: center;
+}
+.page-head img { width: 56px; height: 56px; object-fit: contain; margin: 0 auto 20px; display: block; }
+.page-head h1 { font-size: clamp(36px, 6vw, 56px); margin-bottom: 14px; letter-spacing: -0.01em; }
+.page-head p { font-size: 17px; color: var(--body-c); max-width: 480px; margin: 0 auto; line-height: 1.6; }
+
+.section { padding: 50px 24px; }
+.section-head { max-width: 1200px; margin: 0 auto 28px; }
+
+/* PROCESS TIMELINE */
+.process-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  max-width: 1200px; margin: 0 auto;
+  position: relative;
+}
+.process-card {
+  background: var(--panel); border: 0.5px solid var(--border);
+  border-radius: 12px; padding: 22px 18px; position: relative;
+}
+.process-num {
+  font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 600;
+  color: var(--green); margin-bottom: 12px; letter-spacing: 0.04em;
+}
+.process-card h3 { font-size: 15px; margin-bottom: 8px; }
+.process-card p { font-size: 13px; color: var(--label-c); line-height: 1.5; }
+
+/* PRODUCTS */
+.prod-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  max-width: 1200px; margin: 0 auto;
+}
+.prod-card {
+  background: var(--panel); border: 0.5px solid var(--border);
+  border-radius: 12px; overflow: hidden; cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.15s ease;
+}
+.prod-card:hover { border-color: var(--border); transform: translateY(-3px); }
+.prod-image {
+  height: 200px; background: var(--panel-2); position: relative;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px; color: var(--icon-c);
+}
+.prod-badge {
+  position: absolute; top: 12px; right: 12px;
+  font-size: 10px; font-weight: 600; padding: 4px 9px; border-radius: 5px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  background: var(--yellow); color: var(--yellow-on);
+}
+.prod-info { padding: 16px; }
+.prod-info h3 { font-size: 15px; margin-bottom: 4px; font-family: 'Inter', sans-serif; font-weight: 600; color: var(--header-c); }
+.prod-meta { font-size: 12px; color: var(--label-c); margin-bottom: 6px; }
+.prod-price { color: var(--accent-text); font-weight: 600; font-size: 14px; }
+
+/* BATCH NOTICE */
+.batch-strip {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center; gap: 16px;
+  background: var(--panel-2); border: 0.5px solid var(--border);
+  border-radius: 12px; padding: 18px 22px;
+}
+.batch-strip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); flex-shrink: 0; }
+.batch-strip p { font-size: 13px; color: var(--body-c); line-height: 1.6; }
+.batch-strip strong { color: var(--header-c); }
+
+/* MATERIALS */
+.materials-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+  max-width: 1200px; margin: 0 auto;
+}
+.mat-card {
+  background: var(--panel); border: 0.5px solid var(--border);
+  border-radius: 12px; padding: 24px;
+}
+.mat-card h3 { font-size: 15px; margin-bottom: 14px; }
+.mat-card ul { list-style: none; }
+.mat-card li {
+  font-size: 13px; color: var(--body-c); line-height: 1.7;
+  padding-left: 14px; position: relative; margin-bottom: 6px;
+}
+.mat-card li::before {
+  content: '—'; position: absolute; left: 0; color: var(--label-c);
+}
+
+/* CUSTOM ORDER CTA */
+.cta-strip {
+  max-width: 1200px; margin: 0 auto;
+  background: var(--panel); border: 0.5px solid var(--border);
+  border-radius: 16px; padding: 50px 30px; text-align: center;
+}
+.cta-strip .label { margin-bottom: 10px; }
+.cta-strip h2 { font-size: 26px; margin-bottom: 12px; }
+.cta-strip p { font-size: 14px; color: var(--body-c); max-width: 420px; margin: 0 auto 24px; line-height: 1.6; }
+.btn-primary {
+  background: var(--green); color: var(--green-on); border: none;
+  padding: 13px 26px; border-radius: 8px; font-weight: 600; font-size: 14px;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+.btn-primary:hover { background: #4FE86A; transform: translateY(-1px); }
+.btn-secondary {
+  background: transparent; color: var(--header-c); border: 0.5px solid var(--border);
+  padding: 13px 26px; border-radius: 8px; font-weight: 600; font-size: 14px;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.btn-secondary:hover { border-color: var(--green); background: var(--panel-2); }
+
+/* FOOTER (shared) */
+footer {
+  border-top: 0.5px solid var(--border);
+  padding: 40px 24px 30px;
+  margin-top: 40px;
+}
+.footer-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; justify-content: center; align-items: center;
+  flex-wrap: wrap; gap: 20px;
+}
+.footer-copy {
+  font-size: 12px; color: var(--label-c);
+  margin-top: 20px;
+  text-align: center;
+}
+
+@media (max-width: 860px) {
+  nav { display: none; }
+  .mobile-toggle { display: block; }
+  .process-grid { grid-template-columns: repeat(2, 1fr); }
+  .prod-grid { grid-template-columns: repeat(2, 1fr); }
+  .materials-grid { grid-template-columns: 1fr; }
+  .page-head { padding: 50px 20px 40px; }
+  .batch-strip { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 480px) {
+  .process-grid { grid-template-columns: 1fr; }
+  .prod-grid { grid-template-columns: 1fr; }
+}
+</style>
+<script>
+  (function() {
+    const savedTheme = localStorage.getItem('cuech4-theme');
+    const initialTheme = savedTheme || 'night';
+    document.documentElement.setAttribute('data-theme', initialTheme);
+  })();
+</script>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a class="logo-group" href="index.html">
+      <img id="header-logo" src="assets/global/frog-logo-white.png" alt="Cuech4 logo">
+      <span class="logo-text">Cuech4</span>
+    </a>
+    <nav>
+      <a href="shop.html">Shop</a>
+      <a href="about.html">About</a>
+      <a href="handmade.html" class="current">Handmade</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="header-actions">
+      <div class="theme-toggle">
+        <button id="btn-night" class="active" onclick="setTheme('night')">Night</button>
+        <button id="btn-day" onclick="setTheme('day')">Day</button>
+      </div>
+      <a href="cart.html" class="cart-btn" aria-label="Cart">
+        🛒<span class="cart-badge">2</span>
+      </a>
+      <button class="mobile-toggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</header>
+
+<section class="page-head reveal reveal-1">
+  <img id="page-logo" src="assets/global/frog-logo-white.png" alt="Cuech4 frog mark">
+  <div class="label" style="margin-bottom:10px;">The handmade line</div>
+  <h1 data-split="true">Cut, stitched, finished by hand.</h1>
+  <p>No factory line, no two pieces identical. Every sewn item in this collection passes through actual hands before it reaches yours.</p>
+</section>
+
+<section class="section reveal reveal-2">
+  <div class="section-head">
+    <div class="label" style="margin-bottom:8px;">How it's made</div>
+    <h2 style="font-size:24px;">From sketch to stitched</h2>
+  </div>
+  <div class="process-grid">
+    <div class="process-card reveal reveal-1">
+      <div class="process-num">01</div>
+      <h3>Sketch</h3>
+      <p>Every piece starts as a drawing before it becomes a pattern.</p>
+    </div>
+    <div class="process-card reveal reveal-2">
+      <div class="process-num">02</div>
+      <h3>Cut</h3>
+      <p>Fabric is cut in small batches — usually a dozen pieces or fewer.</p>
+    </div>
+    <div class="process-card reveal reveal-3">
+      <div class="process-num">03</div>
+      <h3>Stitch</h3>
+      <p>Sewn by hand, seam by seam, with care that a machine line skips.</p>
+    </div>
+    <div class="process-card reveal reveal-4">
+      <div class="process-num">04</div>
+      <h3>Finish</h3>
+      <p>Checked, trimmed, and packed by the same person who made it.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section reveal reveal-3">
+  <div class="section-head" style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <div>
+      <div class="label" style="margin-bottom:8px;">Currently sewing</div>
+      <h2 style="font-size:24px;">This month's handmade pieces</h2>
+    </div>
+  </div>
+  <div class="prod-grid">
+    <div class="prod-card reveal reveal-1">
+      <div class="prod-image">✂<span class="prod-badge">Handmade</span></div>
+      <div class="prod-info">
+        <h3>Handstitched Frog Patch</h3>
+        <div class="prod-meta">12 made this month</div>
+        <div class="prod-price">$16</div>
+      </div>
+    </div>
+    <div class="prod-card reveal reveal-2">
+      <div class="prod-image">🧵<span class="prod-badge">Handmade</span></div>
+      <div class="prod-info">
+        <h3>Frog Tote, canvas</h3>
+        <div class="prod-meta">8 made this month</div>
+        <div class="prod-price">$34</div>
+      </div>
+    </div>
+    <div class="prod-card reveal reveal-3">
+      <div class="prod-image">🪡<span class="prod-badge">Handmade</span></div>
+      <div class="prod-info">
+        <h3>Sewn Frog Pouch</h3>
+        <div class="prod-meta">Made to order</div>
+        <div class="prod-price">$24</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section reveal reveal-4">
+  <div class="batch-strip">
+    <div class="dot"></div>
+    <p><strong>Production time:</strong> handmade items typically ship 3–7 days after ordering, since each one is made after — not before — it's purchased. The exact window is noted on every product page.</p>
+  </div>
+</section>
+
+<section class="section reveal reveal-5">
+  <div class="section-head">
+    <div class="label" style="margin-bottom:8px;">Materials</div>
+    <h2 style="font-size:24px;">What goes into the sewing line</h2>
+  </div>
+  <div class="materials-grid">
+    <div class="mat-card reveal reveal-1">
+      <h3>Fabric & fibers</h3>
+      <ul>
+        <li>Natural fibers used where possible — cotton, canvas, linen blends</li>
+        <li>Sourced in small yardage, not bulk-ordered</li>
+        <li>Cut by hand from paper patterns</li>
+      </ul>
+    </div>
+    <div class="mat-card reveal reveal-2">
+      <h3>Construction</h3>
+      <ul>
+        <li>Hand-finished seams on most pieces</li>
+        <li>Reinforced stress points for everyday use</li>
+        <li>Small natural variations are part of the piece, not a flaw</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section reveal reveal-4">
+  <div class="cta-strip">
+    <div class="label">Custom orders</div>
+    <h2>Want something made just for you?</h2>
+    <p>Custom colors, sizing, or a design of your own — reach out and we'll talk through what's possible.</p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+      <a href="contact.html" class="btn-primary" style="display:inline-block;text-decoration:none;">Request a custom order →</a>
+      <a href="shop.html?filter=handmade" class="btn-secondary" style="display:inline-block;text-decoration:none;">Shop handmade now</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="logo-group">
+      <img src="assets/global/frog-logo-white.png" id="footer-logo" alt="Cuech4" style="width:24px;height:24px;">
+      <span class="logo-text" style="font-size:15px;">Cuech4</span>
+    </div>
+  </div>
+  <div class="wrap footer-copy">© 2026 Cuech4 — All rights reserved.</div>
+</footer>
+
+<script>
+function splitTextIntoChars(element) {
+  const text = element.textContent.trim();
+  element.textContent = '';
+  [...text].forEach((char, index) => {
+    const span = document.createElement('span');
+    span.className = 'char';
+    span.style.setProperty('--i', index);
+    span.textContent = char === ' ' ? '\u00A0' : char;
+    element.appendChild(span);
+  });
+}
+
+function setTheme(mode) {
+  document.documentElement.setAttribute('data-theme', mode);
+  localStorage.setItem('cuech4-theme', mode);
+
+  const nightBtn = document.getElementById('btn-night');
+  const dayBtn = document.getElementById('btn-day');
+  if (nightBtn) nightBtn.classList.toggle('active', mode === 'night');
+  if (dayBtn) dayBtn.classList.toggle('active', mode === 'day');
+
+  const logoSrc = mode === 'night' ? 'assets/global/frog-logo-white.png' : 'assets/global/frog-logo-black-transparent.png';
+  ['header-logo','footer-logo','page-logo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.src = logoSrc;
+  });
+}
+
+const savedTheme = localStorage.getItem('cuech4-theme') || 'night';
+setTheme(savedTheme);
+
+const splitTargets = document.querySelectorAll('[data-split="true"]');
+splitTargets.forEach((target) => splitTextIntoChars(target));
+</script>
+
+</body>
+</html>

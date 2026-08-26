@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="night">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="page-title">Product — Cuech4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night-bg: #0D1418; --night-panel: #111C1A; --night-panel-2: #0A0F12;
+  --night-border: #24343A; --night-header: #EAF4EC; --night-body: #9FB5B2;
+  --night-label: #5A7A78; --night-icon: #7C9C98;
+
+  --day-bg: #EDF3F1; --day-panel: #F6FAF9; --day-panel-2: #E3EDEA;
+  --day-border: #C7D6D3; --day-header: #101B19; --day-body: #3F5450;
+  --day-label: #7A9490; --day-icon: #7A9490;
+
+  --green: #3DDC5A; --green-deep: #1F8F3A; --green-on: #173404;
+  --pink: #FF4FA3; --pink-on: #4B1528;
+  --yellow: #FFD43D; --yellow-on: #412402;
+
+  --bg: var(--night-bg); --panel: var(--night-panel); --panel-2: var(--night-panel-2);
+  --border: var(--night-border); --header-c: var(--night-header); --body-c: var(--night-body);
+  --label-c: var(--night-label); --icon-c: var(--night-icon); --accent-text: var(--green);
+}
+[data-theme="day"] {
+  --bg: var(--day-bg); --panel: var(--day-panel); --panel-2: var(--day-panel-2);
+  --border: var(--day-border); --header-c: var(--day-header); --body-c: var(--day-body);
+  --label-c: var(--day-label); --icon-c: var(--day-icon); --accent-text: var(--green-deep);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--body-c); font-family: 'Inter', sans-serif;
+  transition: background 0.3s ease, color 0.3s ease; -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; color: var(--header-c); font-weight: 600; }
+.label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--label-c); font-weight: 500; }
+a { color: inherit; }
+
+/* HEADER */
+header { position: sticky; top: 0; z-index: 50; background: var(--bg); border-bottom: 0.5px solid var(--border); transition: background 0.3s ease, border-color 0.3s ease; }
+.header-inner { display: grid; grid-template-columns: 220px minmax(0, 1fr) 220px; align-items: center; padding: 14px 24px; max-width: 1200px; margin: 0 auto; min-height: 62px; }
+.logo-group { display: flex; align-items: center; gap: 10px; text-decoration: none; justify-self: start; }
+.logo-group img { width: 30px; height: 30px; object-fit: contain; }
+.logo-text { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 18px; color: var(--header-c); }
+nav { display: flex; gap: 28px; align-items: center; justify-content: center; width: 100%; }
+nav a { color: var(--body-c); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s ease; }
+nav a:hover { color: var(--green); }
+nav a.current { color: var(--green); }
+.header-actions { display: flex; align-items: center; gap: 16px; justify-content: flex-end; min-width: 220px; justify-self: end; }
+.theme-toggle { display: flex; align-items: center; gap: 6px; background: var(--panel); border: 0.5px solid var(--border); border-radius: 20px; padding: 5px 6px; }
+.theme-toggle button { border: none; background: transparent; color: var(--label-c); font-size: 12px; padding: 5px 10px; border-radius: 16px; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 500; transition: background 0.2s ease, color 0.2s ease; }
+.theme-toggle button.active { background: var(--green); color: var(--green-on); }
+.cart-btn { position: relative; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 8px; border: 0.5px solid var(--border); background: var(--panel); color: var(--header-c); cursor: pointer; text-decoration: none; }
+.cart-badge { position: absolute; top: -5px; right: -5px; background: var(--pink); color: var(--pink-on); font-size: 10px; font-weight: 600; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
+.mobile-toggle { display: none; background: none; border: none; color: var(--header-c); font-size: 22px; cursor: pointer; }
+
+/* BREADCRUMB */
+.breadcrumb { max-width: 1200px; margin: 0 auto; padding: 18px 24px 0; font-size: 12px; color: var(--label-c); }
+.breadcrumb a { text-decoration: none; color: var(--label-c); }
+.breadcrumb a:hover { color: var(--green); }
+
+/* MAIN LAYOUT */
+.product-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; max-width: 1200px; margin: 0 auto; padding: 24px 24px 30px; align-items: start; }
+
+/* GALLERY */
+.gallery-main { background: var(--panel); border: 0.5px solid var(--border); border-radius: 16px; height: 440px; display: flex; align-items: center; justify-content: center; font-size: 90px; color: var(--icon-c); position: relative; margin-bottom: 12px; }
+.gallery-badge { position: absolute; top: 16px; right: 16px; font-size: 11px; font-weight: 600; padding: 5px 11px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+.badge-new { background: var(--pink); color: var(--pink-on); }
+.badge-hand { background: var(--yellow); color: var(--yellow-on); }
+.badge-best { background: var(--green); color: var(--green-on); }
+.gallery-thumbs { display: flex; gap: 10px; }
+.thumb { width: 72px; height: 72px; border-radius: 10px; background: var(--panel); border: 0.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--icon-c); cursor: pointer; transition: border-color 0.15s ease; }
+.thumb.active, .thumb:hover { border-color: var(--green); color: var(--green); }
+
+/* INFO PANEL */
+.info-panel .label { margin-bottom: 10px; }
+.product-title { font-size: clamp(26px, 3.4vw, 34px); margin-bottom: 10px; line-height: 1.1; }
+.product-price { font-size: 22px; font-weight: 600; color: var(--accent-text); margin-bottom: 18px; font-family: 'Space Grotesk', sans-serif; }
+.product-summary { font-size: 14px; color: var(--body-c); line-height: 1.7; margin-bottom: 24px; }
+
+.option-group { margin-bottom: 20px; }
+.option-group .opt-label { font-size: 12px; font-weight: 600; color: var(--header-c); margin-bottom: 10px; }
+.swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+.swatch { padding: 9px 16px; border-radius: 8px; border: 0.5px solid var(--border); background: var(--panel); color: var(--body-c); font-size: 13px; cursor: pointer; font-family: 'Inter', sans-serif; transition: border-color 0.15s ease, color 0.15s ease; }
+.swatch.selected { border-color: var(--green); color: var(--green); background: var(--panel-2); }
+.swatch:hover { border-color: var(--green); }
+
+.qty-row { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.qty-control { display: flex; align-items: center; background: var(--panel); border: 0.5px solid var(--border); border-radius: 8px; overflow: hidden; }
+.qty-control button { width: 36px; height: 38px; border: none; background: transparent; color: var(--header-c); font-size: 16px; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.15s ease; }
+.qty-control button:hover { background: var(--border); }
+.qty-control span { width: 36px; text-align: center; font-size: 14px; color: var(--header-c); font-weight: 500; }
+.stock-note { font-size: 12px; color: var(--label-c); }
+
+.cta-row { display: flex; gap: 12px; margin-bottom: 22px; }
+.btn-primary { flex: 1; background: var(--green); color: var(--green-on); border: none; padding: 15px 22px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; font-family: 'Inter', sans-serif; transition: transform 0.15s ease, background 0.2s ease; }
+.btn-primary:hover { background: #4FE86A; transform: translateY(-1px); }
+.btn-icon { width: 50px; border-radius: 8px; border: 0.5px solid var(--border); background: var(--panel); color: var(--header-c); font-size: 16px; cursor: pointer; transition: border-color 0.15s ease, color 0.15s ease; }
+.btn-icon:hover { border-color: var(--pink); color: var(--pink); }
+
+.added-toast { display: none; background: var(--panel-2); border: 0.5px solid var(--green); color: var(--green); font-size: 13px; padding: 10px 14px; border-radius: 8px; margin-bottom: 20px; }
+.added-toast.show { display: block; }
+
+.info-note { display: flex; gap: 10px; align-items: flex-start; background: var(--panel); border: 0.5px solid var(--border); border-radius: 10px; padding: 12px 14px; font-size: 12px; color: var(--body-c); line-height: 1.5; margin-bottom: 10px; }
+.info-note .dot { color: var(--icon-c); flex-shrink: 0; }
+
+/* ACCORDIONS */
+.accordion { border-top: 0.5px solid var(--border); }
+.accordion:last-child { border-bottom: 0.5px solid var(--border); }
+.accordion-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 2px; cursor: pointer; }
+.accordion-head h3 { font-size: 14px; }
+.accordion-head .chev { color: var(--label-c); font-size: 14px; transition: transform 0.2s ease; }
+.accordion.open .chev { transform: rotate(180deg); }
+.accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; }
+.accordion.open .accordion-body { max-height: 300px; }
+.accordion-body-inner { padding: 0 2px 16px; font-size: 13px; color: var(--body-c); line-height: 1.7; }
+.accordion-body-inner ul { padding-left: 16px; }
+.accordion-body-inner li { margin-bottom: 4px; }
+
+/* REVIEWS */
+.section { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+.review-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.review-card { background: var(--panel); border: 0.5px solid var(--border); border-radius: 12px; padding: 20px; }
+.review-card .stars { color: var(--yellow); font-size: 13px; margin-bottom: 10px; }
+.review-card p { font-size: 13px; line-height: 1.6; color: var(--body-c); margin-bottom: 12px; }
+
+/* RELATED */
+.related-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.prod-card { background: var(--panel); border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; cursor: pointer; transition: border-color 0.2s ease, transform 0.15s ease; text-decoration: none; display: block; }
+.prod-card:hover { border-color: var(--border); transform: translateY(-3px); }
+.prod-image { height: 140px; background: var(--panel-2); display: flex; align-items: center; justify-content: center; font-size: 30px; color: var(--icon-c); }
+.prod-info { padding: 12px; }
+.prod-info h3 { font-size: 13px; margin-bottom: 4px; font-family: 'Inter', sans-serif; font-weight: 600; color: var(--header-c); }
+.prod-price { color: var(--accent-text); font-weight: 600; font-size: 13px; }
+
+/* GLOBAL FOOTER */
+footer { border-top: 0.5px solid var(--border); padding: 40px 24px 30px; margin-top: 40px; }
+.footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 20px; }
+.footer-copy { font-size: 12px; color: var(--label-c); margin-top: 20px; text-align: center; }
+
+@media (max-width: 860px) {
+  nav { display: none; }
+  .mobile-toggle { display: block; }
+  .product-layout { grid-template-columns: 1fr; gap: 24px; }
+  .review-grid { grid-template-columns: 1fr; }
+  .related-grid { grid-template-columns: repeat(2, 1fr); }
+  .gallery-main { height: 320px; font-size: 64px; }
+}
+@media (max-width: 480px) {
+  .related-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a class="logo-group" href="index.html">
+      <img id="header-logo" src="assets/global/frog-logo-white.png" alt="Cuech4 logo">
+      <span class="logo-text">Cuech4</span>
+    </a>
+    <nav>
+      <a href="shop.html" class="current">Shop</a>
+      <a href="about.html">About</a>
+      <a href="handmade.html">Handmade</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="header-actions">
+      <div class="theme-toggle">
+        <button id="btn-night" class="active" onclick="setTheme('night')">Night</button>
+        <button id="btn-day" onclick="setTheme('day')">Day</button>
+      </div>
+      <a href="cart.html" class="cart-btn" aria-label="Cart">🛒<span class="cart-badge">2</span></a>
+      <button class="mobile-toggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</header>
+
+<div class="breadcrumb">
+  <a href="shop.html">Shop</a> / <span id="crumb-category">Category</span> / <span id="crumb-name" style="color:var(--body-c);">Product</span>
+</div>
+
+<div class="product-layout">
+  <div class="gallery">
+    <div class="gallery-main" id="gallery-main">
+      <span id="gallery-emoji">👕</span>
+      <span class="gallery-badge" id="gallery-badge" style="display:none;"></span>
+    </div>
+    <div class="gallery-thumbs" id="gallery-thumbs"></div>
+  </div>
+
+  <div class="info-panel">
+    <div class="label" id="info-category">CATEGORY</div>
+    <h1 class="product-title" id="product-title">Product name</h1>
+    <div class="product-price" id="product-price">$0</div>
+    <p class="product-summary" id="product-summary">Summary goes here.</p>
+
+    <div class="option-group" id="size-group" style="display:none;">
+      <div class="opt-label">Size</div>
+      <div class="swatches" id="size-swatches"></div>
+    </div>
+
+    <div class="option-group" id="color-group" style="display:none;">
+      <div class="opt-label">Color</div>
+      <div class="swatches" id="color-swatches"></div>
+    </div>
+
+    <div class="qty-row">
+      <div class="qty-control">
+        <button id="qty-minus">−</button>
+        <span id="qty-val">1</span>
+        <button id="qty-plus">+</button>
+      </div>
+      <div class="stock-note" id="stock-note">In stock</div>
+    </div>
+
+    <div class="added-toast" id="added-toast">Added to cart ✓</div>
+
+    <div class="cta-row">
+      <button class="btn-primary" id="add-cart-btn">Add to cart →</button>
+      <button class="btn-icon" aria-label="Save">♡</button>
+    </div>
+
+    <div class="info-note" id="shipping-note">
+      <span class="dot">◷</span>
+      <span>Ships in 1–3 days</span>
+    </div>
+
+    <div id="accordions"></div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="label" style="margin-bottom:14px;">Reviews</div>
+  <div class="review-grid" id="review-grid"></div>
+</section>
+
+<section class="section">
+  <div class="label" style="margin-bottom:14px;">You might also like</div>
+  <div class="related-grid" id="related-grid"></div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="logo-group">
+      <img src="assets/global/frog-logo-white.png" id="footer-logo" alt="Cuech4" style="width:24px;height:24px;">
+      <span class="logo-text" style="font-size:15px;">Cuech4</span>
+    </div>
+  </div>
+  <div class="footer-copy">© 2026 Cuech4 — All rights reserved.</div>
+</footer>
+
+<script>
+/* ============================================================
+   PRODUCT "DATABASE" — in a real build this would be an API
+   call to your commerce platform (Shopify/WooCommerce/etc).
+   Each object below is exactly the shape that platform would
+   already give you: id, name, price, category, images, options,
+   description, materials, shipping, reviews.
+   ============================================================ */
+const PRODUCTS = {
+  "frog-tee-black": {
+    name: "Frog Tee — Black", category: "Shirts", emoji: "👕", price: 28,
+    badge: { text: "New", cls: "badge-new" },
+    summary: "The original. Bold frog silhouette screen printed on soft, durable cotton. Unisex fit, true to size.",
+    sizes: ["S","M","L","XL"], colors: ["Black","White"],
+    stock: "In stock", shipping: "Ships in 1–3 days",
+    details: {
+      "Materials & fit": "100% combed cotton, pre-shrunk. Unisex fit — size up for an oversized look.",
+      "Care": "Wash inside-out in cold water. Hang dry to protect the print.",
+      "Shipping": "Ships within 1–3 business days. Worldwide shipping available."
+    },
+    reviews: [
+      {stars:5, text:"Softest shirt I own, print hasn't cracked after a dozen washes.", who:"Verified buyer"},
+      {stars:5, text:"Fits true to size, great quality cotton.", who:"Verified buyer"},
+      {stars:4, text:"Love the design, wish it came in more colors.", who:"Verified buyer"}
+    ]
+  },
+  "frog-tee-white": {
+    name: "Frog Tee — White", category: "Shirts", emoji: "👕", price: 28,
+    summary: "Same original frog design, lighter canvas. Soft cotton, unisex fit.",
+    sizes: ["S","M","L","XL"], colors: ["White","Black"],
+    stock: "In stock", shipping: "Ships in 1–3 days",
+    details: {
+      "Materials & fit": "100% combed cotton, pre-shrunk. Unisex fit.",
+      "Care": "Wash inside-out in cold water. Hang dry to protect the print.",
+      "Shipping": "Ships within 1–3 business days. Worldwide shipping available."
+    },
+    reviews: [
+      {stars:5, text:"Clean look, great print quality.", who:"Verified buyer"},
+      {stars:5, text:"Exactly as pictured, comfortable fit.", who:"Verified buyer"}
+    ]
+  },
+  "frog-sticker-pack": {
+    name: "Frog Sticker Pack", category: "Stickers", emoji: "✦", price: 9,
+    badge: { text: "Bestseller", cls: "badge-best" },
+    summary: "Six-sticker set, vinyl and waterproof. Built for laptops, bottles, and gear that gets used.",
+    sizes: [], colors: [],
+    stock: "In stock", shipping: "Ships in 1–2 days",
+    details: {
+      "Materials": "Weatherproof vinyl, UV-resistant inks — won't fade in sunlight or rain.",
+      "What's included": "6 unique frog-themed stickers, 2–3in each.",
+      "Shipping": "Ships within 1–2 business days."
+    },
+    reviews: [
+      {stars:5, text:"Held up through a full winter outside on my water bottle.", who:"Verified buyer"},
+      {stars:5, text:"Great quality, colors are vibrant.", who:"Verified buyer"}
+    ]
+  },
+  "frog-patch-handmade": {
+    name: "Handstitched Frog Patch", category: "Sewing", emoji: "✂", price: 16,
+    badge: { text: "Handmade", cls: "badge-hand" },
+    summary: "Cut, stitched, and finished by hand. Small batch — this month's run is limited. No two are perfectly identical.",
+    sizes: [], colors: [],
+    stock: "12 made this month", shipping: "Ships in 3–7 days",
+    details: {
+      "Materials": "Natural cotton blend, hand-finished edges. Iron-on or sew-on backing.",
+      "Production": "Made in small batches by hand — expect small natural variations, that's part of the charm.",
+      "Shipping": "Handmade items ship 3–7 days after ordering, since each is made after purchase."
+    },
+    reviews: [
+      {stars:5, text:"You can tell it was made by a person. Love the small imperfections.", who:"Verified buyer"},
+      {stars:5, text:"Beautifully sewn, arrived well packed.", who:"Verified buyer"}
+    ]
+  },
+  "frog-art-print": {
+    name: "Cuech4 Art Print, 12x18", category: "Prints", emoji: "▤", price: 22,
+    summary: "Archival print of the original frog artwork. Signed on request — just leave a note at checkout.",
+    sizes: ["12x18","18x24"], colors: [],
+    stock: "In stock", shipping: "Ships in 1–3 days",
+    details: {
+      "Materials": "Archival matte paper, UV-resistant inks.",
+      "Sizing": "Available in 12x18in and 18x24in.",
+      "Shipping": "Ships rolled in a protective tube, 1–3 business days."
+    },
+    reviews: [
+      {stars:5, text:"Print quality is excellent, colors are rich.", who:"Verified buyer"}
+    ]
+  },
+  "frog-tote": {
+    name: "Frog Tote, canvas", category: "Sewing", emoji: "🧵", price: 34,
+    badge: { text: "Handmade", cls: "badge-hand" },
+    summary: "Sewn by hand from heavy canvas. Sturdy enough for everyday use, unique enough to stand out.",
+    sizes: [], colors: [],
+    stock: "8 made this month", shipping: "Ships in 3–7 days",
+    details: {
+      "Materials": "Heavyweight cotton canvas, reinforced handles and stress points.",
+      "Production": "Small-batch, hand-sewn — 8 made this month.",
+      "Shipping": "Ships 3–7 days after ordering."
+    },
+    reviews: [
+      {stars:5, text:"Sturdy and well made, holds a lot more than it looks like it would.", who:"Verified buyer"}
+    ]
+  }
+};
+
+const RELATED_ORDER = ["frog-tee-black","frog-tee-white","frog-sticker-pack","frog-patch-handmade","frog-art-print","frog-tote"];
+
+function getParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+function setTheme(mode) {
+  document.documentElement.setAttribute('data-theme', mode);
+  document.getElementById('btn-night').classList.toggle('active', mode === 'night');
+  document.getElementById('btn-day').classList.toggle('active', mode === 'day');
+  const logoSrc = mode === 'night' ? 'assets/global/frog-logo-white.png' : 'assets/global/frog-logo-black-transparent.png';
+  ['header-logo','footer-logo'].forEach(id => { document.getElementById(id).src = logoSrc; });
+}
+
+let currentQty = 1;
+
+function renderProduct(id) {
+  const p = PRODUCTS[id] || PRODUCTS["frog-tee-black"];
+
+  document.getElementById('page-title').textContent = p.name + " — Cuech4";
+  document.getElementById('crumb-category').textContent = p.category;
+  document.getElementById('crumb-name').textContent = p.name;
+  document.getElementById('info-category').textContent = p.category;
+  document.getElementById('product-title').textContent = p.name;
+  document.getElementById('product-price').textContent = '$' + p.price.toFixed(2);
+  document.getElementById('product-summary').textContent = p.summary;
+  document.getElementById('gallery-emoji').textContent = p.emoji;
+  document.getElementById('stock-note').textContent = p.stock;
+  document.getElementById('shipping-note').querySelector('span:last-child').textContent = p.shipping;
+
+  const badgeEl = document.getElementById('gallery-badge');
+  if (p.badge) {
+    badgeEl.textContent = p.badge.text;
+    badgeEl.className = 'gallery-badge ' + p.badge.cls;
+    badgeEl.style.display = 'block';
+  } else {
+    badgeEl.style.display = 'none';
+  }
+
+  // Thumbs (reuse emoji as placeholder for multiple angles)
+  const thumbs = document.getElementById('gallery-thumbs');
+  thumbs.innerHTML = '';
+  for (let i = 0; i < 4; i++) {
+    const t = document.createElement('div');
+    t.className = 'thumb' + (i === 0 ? ' active' : '');
+    t.textContent = p.emoji;
+    t.addEventListener('click', () => {
+      thumbs.querySelectorAll('.thumb').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+    });
+    thumbs.appendChild(t);
+  }
+
+  // Size options
+  const sizeGroup = document.getElementById('size-group');
+  const sizeSwatches = document.getElementById('size-swatches');
+  sizeSwatches.innerHTML = '';
+  if (p.sizes && p.sizes.length) {
+    sizeGroup.style.display = 'block';
+    p.sizes.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'swatch' + (i === 1 ? ' selected' : '');
+      btn.textContent = s;
+      btn.addEventListener('click', () => {
+        sizeSwatches.querySelectorAll('.swatch').forEach(x => x.classList.remove('selected'));
+        btn.classList.add('selected');
+      });
+      sizeSwatches.appendChild(btn);
+    });
+  } else {
+    sizeGroup.style.display = 'none';
+  }
+
+  // Color options
+  const colorGroup = document.getElementById('color-group');
+  const colorSwatches = document.getElementById('color-swatches');
+  colorSwatches.innerHTML = '';
+  if (p.colors && p.colors.length) {
+    colorGroup.style.display = 'block';
+    p.colors.forEach((c, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'swatch' + (i === 0 ? ' selected' : '');
+      btn.textContent = c;
+      btn.addEventListener('click', () => {
+        colorSwatches.querySelectorAll('.swatch').forEach(x => x.classList.remove('selected'));
+        btn.classList.add('selected');
+      });
+      colorSwatches.appendChild(btn);
+    });
+  } else {
+    colorGroup.style.display = 'none';
+  }
+
+  // Accordions
+  const accWrap = document.getElementById('accordions');
+  accWrap.innerHTML = '';
+  Object.entries(p.details).forEach(([title, body], i) => {
+    const acc = document.createElement('div');
+    acc.className = 'accordion' + (i === 0 ? ' open' : '');
+    acc.innerHTML = `
+      <div class="accordion-head">
+        <h3>${title}</h3>
+        <span class="chev">⌄</span>
+      </div>
+      <div class="accordion-body"><div class="accordion-body-inner">${body}</div></div>
+    `;
+    acc.querySelector('.accordion-head').addEventListener('click', () => {
+      acc.classList.toggle('open');
+    });
+    accWrap.appendChild(acc);
+  });
+
+  // Reviews
+  const reviewGrid = document.getElementById('review-grid');
+  reviewGrid.innerHTML = '';
+  p.reviews.forEach(r => {
+    const card = document.createElement('div');
+    card.className = 'review-card';
+    card.innerHTML = `
+      <div class="stars">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
+      <p>"${r.text}"</p>
+      <div class="label">${r.who}</div>
+    `;
+    reviewGrid.appendChild(card);
+  });
+
+  // Related
+  const relatedGrid = document.getElementById('related-grid');
+  relatedGrid.innerHTML = '';
+  RELATED_ORDER.filter(rid => rid !== id).slice(0, 4).forEach(rid => {
+    const rp = PRODUCTS[rid];
+    const a = document.createElement('a');
+    a.className = 'prod-card';
+    a.href = 'product.html?id=' + rid;
+    a.innerHTML = `
+      <div class="prod-image">${rp.emoji}</div>
+      <div class="prod-info"><h3>${rp.name}</h3><div class="prod-price">$${rp.price.toFixed(2)}</div></div>
+    `;
+    relatedGrid.appendChild(a);
+  });
+
+  currentQty = 1;
+  document.getElementById('qty-val').textContent = currentQty;
+}
+
+document.getElementById('qty-plus').addEventListener('click', () => {
+  currentQty++;
+  document.getElementById('qty-val').textContent = currentQty;
+});
+document.getElementById('qty-minus').addEventListener('click', () => {
+  if (currentQty > 1) currentQty--;
+  document.getElementById('qty-val').textContent = currentQty;
+});
+document.getElementById('add-cart-btn').addEventListener('click', () => {
+  const toast = document.getElementById('added-toast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2200);
+});
+
+const productId = getParam('id') || 'frog-tee-black';
+renderProduct(productId);
+</script>
+
+</body>
+</html>
