@@ -71,6 +71,7 @@ nav a.current { color: var(--green); }
 .badge-new { background: var(--pink); color: var(--pink-on); }
 .badge-hand { background: var(--yellow); color: var(--yellow-on); }
 .badge-best { background: var(--green); color: var(--green-on); }
+.badge-soon { background: var(--yellow); color: var(--yellow-on); }
 .gallery-thumbs { display: flex; gap: 10px; }
 .thumb { width: 72px; height: 72px; border-radius: 10px; background: var(--panel); border: 0.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--icon-c); cursor: pointer; transition: border-color 0.15s ease; }
 .thumb.active, .thumb:hover { border-color: var(--green); color: var(--green); }
@@ -294,6 +295,65 @@ const PRODUCTS = {
       {stars:5, text:"Exactly as pictured, comfortable fit.", who:"Verified buyer"}
     ]
   },
+  "frog-tee-sage": {
+    name: "Frog Tee — Sage", category: "Shirts", emoji: "👕", price: 28,
+    summary: "The original frog design in a softer sage green. Small-batch cotton tee with a relaxed unisex fit.",
+    sizes: ["S","M","L","XL"], colors: ["Sage","Black","White"],
+    stock: "In stock", shipping: "Ships in 1–3 days",
+    details: {
+      "Materials & fit": "100% combed cotton, pre-shrunk. Unisex fit with room to layer.",
+      "Care": "Wash inside-out in cold water. Hang dry to protect the print.",
+      "Shipping": "Ships within 1–3 business days. Worldwide shipping available."
+    },
+    reviews: [
+      {stars:5, text:"The sage color is subtle and the tee feels great.", who:"Verified buyer"},
+      {stars:4, text:"Comfortable fit and a really fun design.", who:"Verified buyer"}
+    ]
+  },
+  "mini-frogs-tee": {
+    name: "Mini Frogs Tee", category: "Shirts", emoji: "👕", price: 26,
+    badge: { text: "New", cls: "badge-new" },
+    summary: "A whole little gathering of frogs, printed on a soft everyday tee. Original, playful, and made in small batches.",
+    sizes: ["S","M","L","XL"], colors: ["Black","White"],
+    stock: "In stock", shipping: "Ships in 1–3 days",
+    details: {
+      "Materials & fit": "100% combed cotton, pre-shrunk. Unisex fit.",
+      "Care": "Wash inside-out in cold water. Hang dry to protect the print.",
+      "Shipping": "Ships within 1–3 business days."
+    },
+    reviews: [
+      {stars:5, text:"The tiny frogs make this one impossible not to smile at.", who:"Verified buyer"}
+    ]
+  },
+  "sticker-sheet-mini-frogs": {
+    name: "Sticker Sheet — Mini Frogs", category: "Stickers", emoji: "✦", price: 6,
+    summary: "A cheerful sheet of mini frogs for decorating notebooks, laptops, and anything that needs a little personality.",
+    sizes: [], colors: [],
+    stock: "In stock", shipping: "Ships in 1–2 days",
+    details: {
+      "Materials": "Weatherproof vinyl with durable, colorful inks.",
+      "What's included": "One sheet of assorted mini frog stickers.",
+      "Shipping": "Ships within 1–2 business days."
+    },
+    reviews: [
+      {stars:5, text:"So many tiny frogs, and every one is adorable.", who:"Verified buyer"}
+    ]
+  },
+  "holographic-frog": {
+    name: "Holographic Frog", category: "Stickers", emoji: "✦", price: 5,
+    badge: { text: "New", cls: "badge-new" },
+    summary: "A shiny holographic frog sticker that catches the light wherever you put it.",
+    sizes: [], colors: [],
+    stock: "In stock", shipping: "Ships in 1–2 days",
+    details: {
+      "Materials": "Holographic weatherproof vinyl with UV-resistant inks.",
+      "Size": "Approximately 3 inches wide.",
+      "Shipping": "Ships within 1–2 business days."
+    },
+    reviews: [
+      {stars:5, text:"The holographic finish is even better in person.", who:"Verified buyer"}
+    ]
+  },
   "frog-sticker-pack": {
     name: "Frog Sticker Pack", category: "Stickers", emoji: "✦", price: 9,
     badge: { text: "Bestseller", cls: "badge-best" },
@@ -310,22 +370,6 @@ const PRODUCTS = {
       {stars:5, text:"Great quality, colors are vibrant.", who:"Verified buyer"}
     ]
   },
-  "frog-patch-handmade": {
-    name: "Handstitched Frog Patch", category: "Sewing", emoji: "✂", price: 16,
-    badge: { text: "Handmade", cls: "badge-hand" },
-    summary: "Cut, stitched, and finished by hand. Small batch — this month's run is limited. No two are perfectly identical.",
-    sizes: [], colors: [],
-    stock: "12 made this month", shipping: "Ships in 3–7 days",
-    details: {
-      "Materials": "Natural cotton blend, hand-finished edges. Iron-on or sew-on backing.",
-      "Production": "Made in small batches by hand — expect small natural variations, that's part of the charm.",
-      "Shipping": "Handmade items ship 3–7 days after ordering, since each is made after purchase."
-    },
-    reviews: [
-      {stars:5, text:"You can tell it was made by a person. Love the small imperfections.", who:"Verified buyer"},
-      {stars:5, text:"Beautifully sewn, arrived well packed.", who:"Verified buyer"}
-    ]
-  },
   "frog-art-print": {
     name: "Cuech4 Art Print, 12x18", category: "Prints", emoji: "▤", price: 22,
     summary: "Archival print of the original frog artwork. Signed on request — just leave a note at checkout.",
@@ -340,20 +384,58 @@ const PRODUCTS = {
       {stars:5, text:"Print quality is excellent, colors are rich.", who:"Verified buyer"}
     ]
   },
-  "frog-tote": {
-    name: "Frog Tote, canvas", category: "Sewing", emoji: "🧵", price: 34,
-    badge: { text: "Handmade", cls: "badge-hand" },
-    summary: "Sewn by hand from heavy canvas. Sturdy enough for everyday use, unique enough to stand out.",
-    sizes: [], colors: [],
-    stock: "8 made this month", shipping: "Ships in 3–7 days",
+  "frog-poster-a2": {
+    name: "Frog Poster, A2", category: "Prints", emoji: "▤", price: 18,
+    summary: "A larger-format frog poster for bringing the Cuech4 mood to your wall.",
+    sizes: ["A2"], colors: [],
+    stock: "In stock", shipping: "Ships in 1–3 days",
     details: {
-      "Materials": "Heavyweight cotton canvas, reinforced handles and stress points.",
-      "Production": "Small-batch, hand-sewn — 8 made this month.",
-      "Shipping": "Ships 3–7 days after ordering."
+      "Materials": "High-quality matte poster paper with rich, durable inks.",
+      "Sizing": "A2 size, 16.5x23.4in.",
+      "Shipping": "Ships flat or carefully rolled, within 1–3 business days."
     },
     reviews: [
-      {stars:5, text:"Sturdy and well made, holds a lot more than it looks like it would.", who:"Verified buyer"}
+      {stars:5, text:"Looks great above my desk and arrived in perfect shape.", who:"Verified buyer"}
     ]
+  },
+  "sewn-frog-pouch": {
+    name: "Sewn Frog Pouch", category: "Sewing", emoji: "🪡", price: 24,
+    comingSoon: true, badge: { text: "Coming soon", cls: "badge-soon" },
+    summary: "A small hand-sewn pouch for the little things you carry every day. A new handmade batch is on the way.",
+    sizes: [], colors: [],
+    stock: "Not yet available", shipping: "Ships in 3–7 days",
+    details: {
+      "Materials": "Small-batch fabric pouch with a sturdy closure.",
+      "Production": "Sewn by hand, so each pouch will have its own character.",
+      "Shipping": "Handmade items ship 3–7 days after they become available."
+    },
+    reviews: []
+  },
+  "frog-patch-handmade": {
+    name: "Handstitched Frog Patch", category: "Sewing", emoji: "✂", price: 16,
+    comingSoon: true, badge: { text: "Coming soon", cls: "badge-soon" },
+    summary: "Cut, stitched, and finished by hand. The next small batch is currently being made.",
+    sizes: [], colors: [],
+    stock: "Not yet available", shipping: "Ships in 3–7 days",
+    details: {
+      "Materials": "Natural cotton blend, hand-finished edges. Iron-on or sew-on backing.",
+      "Production": "Made in small batches by hand, with natural variations in every patch.",
+      "Shipping": "Handmade items ship 3–7 days after they become available."
+    },
+    reviews: []
+  },
+  "frog-tote": {
+    name: "Frog Tote, canvas", category: "Sewing", emoji: "🧵", price: 34,
+    comingSoon: true, badge: { text: "Coming soon", cls: "badge-soon" },
+    summary: "A sturdy canvas tote with a little frog energy. The next hand-sewn batch is in progress.",
+    sizes: [], colors: [],
+    stock: "Not yet available", shipping: "Ships in 3–7 days",
+    details: {
+      "Materials": "Heavyweight cotton canvas with reinforced handles.",
+      "Production": "Small-batch and hand-sewn, with each tote finished individually.",
+      "Shipping": "Handmade items ship 3–7 days after they become available."
+    },
+    reviews: []
   }
 };
 
@@ -395,6 +477,15 @@ function renderProduct(id) {
   } else {
     badgeEl.style.display = 'none';
   }
+
+  const priceEl = document.getElementById('product-price');
+  priceEl.textContent = p.comingSoon ? '' : '$' + p.price.toFixed(2);
+  priceEl.style.display = p.comingSoon ? 'none' : 'block';
+  document.getElementById('qty-minus').disabled = Boolean(p.comingSoon);
+  document.getElementById('qty-plus').disabled = Boolean(p.comingSoon);
+  const addCartBtn = document.getElementById('add-cart-btn');
+  addCartBtn.textContent = p.comingSoon ? 'Notify me when available' : 'Add to cart →';
+  addCartBtn.disabled = false;
 
   // Thumbs (reuse emoji as placeholder for multiple angles)
   const thumbs = document.getElementById('gallery-thumbs');
@@ -511,7 +602,9 @@ document.getElementById('qty-minus').addEventListener('click', () => {
   document.getElementById('qty-val').textContent = currentQty;
 });
 document.getElementById('add-cart-btn').addEventListener('click', () => {
+  const product = PRODUCTS[productId];
   const toast = document.getElementById('added-toast');
+  toast.textContent = product.comingSoon ? 'We will let you know when it is available.' : 'Added to cart ✓';
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 2200);
 });
