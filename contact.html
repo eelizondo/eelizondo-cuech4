@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 :root {
   --night-bg: #0D1418;
@@ -238,6 +239,12 @@ nav a.current { color: var(--green); }
   display: none; text-align: center; padding: 20px 10px;
 }
 .success-box.show { display: block; }
+.error-box {
+  display: none; background: rgba(226, 75, 74, 0.12); border: 0.5px solid var(--red);
+  color: var(--red); padding: 12px 14px; border-radius: 8px; margin-bottom: 18px;
+  font-size: 13px; line-height: 1.5;
+}
+.error-box.show { display: block; }
 .success-box .check {
   width: 44px; height: 44px; border-radius: 50%; background: var(--panel-2);
   color: var(--green); font-size: 20px; display: flex; align-items: center; justify-content: center;
@@ -350,23 +357,25 @@ footer {
         <p>Thanks for reaching out — expect a reply within a day or two.</p>
       </div>
 
+      <div class="error-box" id="error-box" role="alert">Something went wrong while sending your message. Please try again.</div>
+
       <div id="form-fields">
         <div class="form-row" id="row-name">
           <label for="name">Your name</label>
-          <input type="text" id="name" placeholder="Jamie Rivera">
+          <input type="text" id="name" name="user_name" placeholder="Jamie Rivera" autocomplete="name">
           <div class="error-text" id="err-name">Enter your name</div>
         </div>
         <div class="form-row" id="row-email">
           <label for="email">Your email</label>
-          <input type="email" id="email" placeholder="jamie@email.com">
+          <input type="email" id="email" name="user_email" placeholder="jamie@email.com" autocomplete="email">
           <div class="error-text" id="err-email">Enter a valid email</div>
         </div>
         <div class="form-row" id="row-message">
           <label for="message">How can we help?</label>
-          <textarea id="message" placeholder="Tell us what you need..."></textarea>
+          <textarea id="message" name="message" placeholder="Tell us what you need..."></textarea>
           <div class="error-text" id="err-message">Enter a message</div>
         </div>
-        <button type="submit" class="submit-btn">Send message</button>
+        <button type="submit" class="submit-btn" id="submit-btn">Send message</button>
       </div>
     </form>
   </div>
@@ -445,6 +454,8 @@ setTheme(savedTheme);
 const splitTargets = document.querySelectorAll('[data-split="true"]');
 splitTargets.forEach((target) => splitTextIntoChars(target));
 
+emailjs.init({ publicKey: 'swiApwikzPVPPoVE4' });
+
 function clearError(rowId, errId) {
   document.getElementById(rowId).classList.remove('has-error');
   document.getElementById(errId).classList.remove('show');
@@ -456,8 +467,11 @@ function clearError(rowId, errId) {
   });
 });
 
-document.getElementById('contact-form').addEventListener('submit', function(e) {
+document.getElementById('contact-form').addEventListener('submit', async function(e) {
   e.preventDefault();
+  const form = this;
+  const submitButton = document.getElementById('submit-btn');
+  const errorBox = document.getElementById('error-box');
   const name = document.getElementById('name').value.trim();
   const email = document.getElementById('email').value.trim();
   const message = document.getElementById('message').value.trim();
@@ -491,8 +505,22 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
 
   if (!valid) return;
 
-  document.getElementById('form-fields').style.display = 'none';
-  document.getElementById('success-box').classList.add('show');
+  submitButton.disabled = true;
+  submitButton.textContent = 'Sending...';
+  errorBox.classList.remove('show');
+
+  try {
+    await emailjs.sendForm('service_xoocdak', 'template_e0xuj13', form);
+    form.reset();
+    document.getElementById('form-fields').style.display = 'none';
+    document.getElementById('success-box').classList.add('show');
+  } catch (error) {
+    console.error('EmailJS contact form error:', error);
+    errorBox.classList.add('show');
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = 'Send message';
+  }
 });
 </script>
 
