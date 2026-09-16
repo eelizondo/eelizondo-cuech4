@@ -66,14 +66,16 @@ nav a.current { color: var(--green); }
 .product-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; max-width: 1200px; margin: 0 auto; padding: 24px 24px 30px; align-items: start; }
 
 /* GALLERY */
-.gallery-main { background: var(--panel); border: 0.5px solid var(--border); border-radius: 16px; height: 440px; display: flex; align-items: center; justify-content: center; font-size: 90px; color: var(--icon-c); position: relative; margin-bottom: 12px; }
+.gallery-main { background: var(--panel); border: 0.5px solid var(--border); border-radius: 16px; height: 440px; display: flex; align-items: center; justify-content: center; font-size: 90px; color: var(--icon-c); position: relative; margin-bottom: 12px; overflow: hidden; }
+.gallery-main img { width: 100%; height: 100%; object-fit: contain; padding: 20px; }
 .gallery-badge { position: absolute; top: 16px; right: 16px; font-size: 11px; font-weight: 600; padding: 5px 11px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
 .badge-new { background: var(--pink); color: var(--pink-on); }
 .badge-hand { background: var(--yellow); color: var(--yellow-on); }
 .badge-best { background: var(--green); color: var(--green-on); }
 .badge-soon { background: var(--yellow); color: var(--yellow-on); }
 .gallery-thumbs { display: flex; gap: 10px; }
-.thumb { width: 72px; height: 72px; border-radius: 10px; background: var(--panel); border: 0.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--icon-c); cursor: pointer; transition: border-color 0.15s ease; }
+.thumb { width: 72px; height: 72px; border-radius: 10px; background: var(--panel); border: 0.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--icon-c); cursor: pointer; transition: border-color 0.15s ease; overflow: hidden; }
+.thumb img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
 .thumb.active, .thumb:hover { border-color: var(--green); color: var(--green); }
 
 /* INFO PANEL */
@@ -264,7 +266,13 @@ footer { border-top: 0.5px solid var(--border); padding: 40px 24px 30px; margin-
    ============================================================ */
 const PRODUCTS = {
   "frog-tee-black": {
-    name: "Frog Tee — Black", category: "Shirts", emoji: "👕", price: 28,
+    name: "The Pod Times Tee", category: "Shirts", emoji: "👕", price: 28,
+    images: [
+      "assets/products/tee_the_pod_times/stpt-001.png",
+      "assets/products/tee_the_pod_times/stpt-002.png",
+      "assets/products/tee_the_pod_times/stpt-003.png",
+      "assets/products/tee_the_pod_times/stpt-004.png"
+    ],
     badge: { text: "New", cls: "badge-new" },
     summary: "The original. Bold frog silhouette screen printed on soft, durable cotton. Unisex fit, true to size.",
     sizes: ["S","M","L","XL"], colors: ["Black","White"],
@@ -465,7 +473,8 @@ function renderProduct(id) {
   document.getElementById('product-title').textContent = p.name;
   document.getElementById('product-price').textContent = '$' + p.price.toFixed(2);
   document.getElementById('product-summary').textContent = p.summary;
-  document.getElementById('gallery-emoji').textContent = p.emoji;
+  const galleryMain = document.getElementById('gallery-main');
+  const galleryEmoji = document.getElementById('gallery-emoji');
   document.getElementById('stock-note').textContent = p.stock;
   document.getElementById('shipping-note').querySelector('span:last-child').textContent = p.shipping;
 
@@ -487,19 +496,47 @@ function renderProduct(id) {
   addCartBtn.textContent = p.comingSoon ? 'Notify me when available' : 'Add to cart →';
   addCartBtn.disabled = false;
 
-  // Thumbs (reuse emoji as placeholder for multiple angles)
+  // Main image + thumbs — use real product photos when available, otherwise the emoji placeholder
+  function setMainImage(src) {
+    if (src) {
+      galleryEmoji.style.display = 'none';
+      let img = galleryMain.querySelector('img');
+      if (!img) {
+        img = document.createElement('img');
+        galleryMain.insertBefore(img, galleryMain.firstChild);
+      }
+      img.src = src;
+      img.alt = p.name;
+    } else {
+      const img = galleryMain.querySelector('img');
+      if (img) img.remove();
+      galleryEmoji.style.display = 'block';
+      galleryEmoji.textContent = p.emoji;
+    }
+  }
+
   const thumbs = document.getElementById('gallery-thumbs');
   thumbs.innerHTML = '';
-  for (let i = 0; i < 4; i++) {
+  const images = p.images || [null, null, null, null];
+  setMainImage(images[0]);
+  images.forEach((src, i) => {
     const t = document.createElement('div');
     t.className = 'thumb' + (i === 0 ? ' active' : '');
-    t.textContent = p.emoji;
+    if (src) {
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = p.name;
+      t.appendChild(img);
+    } else {
+      t.textContent = p.emoji;
+    }
     t.addEventListener('click', () => {
       thumbs.querySelectorAll('.thumb').forEach(x => x.classList.remove('active'));
       t.classList.add('active');
+      setMainImage(src);
     });
     thumbs.appendChild(t);
-  }
+  });
 
   // Size options
   const sizeGroup = document.getElementById('size-group');
