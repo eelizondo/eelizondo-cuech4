@@ -250,16 +250,17 @@ nav a:hover { color: var(--green); }
 }
 .cat-card {
   background: var(--panel); border: 0.5px solid var(--border);
-  border-radius: 12px; padding: 24px 18px; text-align: left;
+  border-radius: 12px; padding: 24px 18px; text-align: left; display: block;
   cursor: pointer; transition: border-color 0.2s ease, transform 0.15s ease;
 }
 .cat-card:hover { border-color: var(--green); transform: translateY(-2px); }
-.cat-icon {
-  width: 40px; height: 40px; border-radius: 8px; background: var(--panel-2);
-  display: flex; align-items: center; justify-content: center; margin-bottom: 14px;
-  font-size: 18px; color: var(--icon-c);
+.cat-tag {
+  font-family: 'Space Mono', 'Courier New', monospace;
+  font-size: 11px; letter-spacing: 0.06em;
+  color: var(--green); margin-bottom: 14px;
+  opacity: 0.85;
 }
-.cat-card:hover .cat-icon { color: var(--green); }
+.cat-card:hover .cat-tag { opacity: 1; }
 .cat-card h3 { font-size: 15px; margin-bottom: 6px; }
 .cat-card p { font-size: 13px; color: var(--label-c); line-height: 1.5; }
 
@@ -398,26 +399,26 @@ footer {
     <h2>Shop the collection</h2>
   </div>
   <div class="cat-grid">
-    <div class="cat-card">
-      <div class="cat-icon">👕</div>
+    <a class="cat-card" href="shop.html?filter=shirts" style="text-decoration:none;">
+      <div class="cat-tag">// 01_TEE</div>
       <h3>T-Shirts</h3>
       <p>Original graphic tees, printed in small batches.</p>
-    </div>
-    <div class="cat-card">
-      <div class="cat-icon">✦</div>
+    </a>
+    <a class="cat-card" href="shop.html?filter=stickers" style="text-decoration:none;">
+      <div class="cat-tag">// 02_STK</div>
       <h3>Stickers</h3>
       <p>Vinyl sticker sheets and singles built to last.</p>
-    </div>
-    <div class="cat-card">
-      <div class="cat-icon">▤</div>
+    </a>
+    <a class="cat-card" href="shop.html?filter=prints" style="text-decoration:none;">
+      <div class="cat-tag">// 03_PRT</div>
       <h3>Print Products</h3>
       <p>Art prints and posters straight from original work.</p>
-    </div>
-    <div class="cat-card">
-      <div class="cat-icon">✂</div>
+    </a>
+    <a class="cat-card" href="shop.html?filter=sewing" style="text-decoration:none;">
+      <div class="cat-tag">// 04_HND</div>
       <h3>Sewing / Handmade</h3>
       <p>Cut, sewn, and finished by hand — no two identical.</p>
-    </div>
+    </a>
   </div>
 </section>
 
