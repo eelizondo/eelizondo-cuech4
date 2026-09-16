@@ -389,6 +389,13 @@ footer {
           <span>New York, NY</span>
         </div>
       </div>
+      <div class="info-row">
+        <div class="info-icon">◎</div>
+        <div class="info-text">
+          <div class="label">Social</div>
+          <a href="https://bsky.app/profile/cuech4.bsky.social" target="_blank" rel="noopener noreferrer">Bluesky</a>
+        </div>
+      </div>
     </div>
 
     <div class="faq-card">
@@ -416,7 +423,7 @@ footer {
       <span class="logo-text" style="font-size:15px;">Cuech4</span>
     </div>
   </div>
-  <div class="wrap footer-copy">© 2026 Cuech4 — All rights reserved.</div>
+  <div class="wrap footer-copy">© <span id="footer-year"></span> Cuech4 — All rights reserved.</div>
 </footer>
 
 <script>
@@ -531,6 +538,7 @@ document.getElementById('contact-form').addEventListener('submit', async functio
     submitButton.textContent = 'Send message';
   }
 });
+document.getElementById('footer-year').textContent = new Date().getFullYear();
 </script>
 
 </body>

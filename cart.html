@@ -403,7 +403,7 @@ footer {
       <span class="logo-text" style="font-size:15px;">Cuech4</span>
     </a>
   </div>
-  <div class="footer-copy">© 2026 Cuech4 — All rights reserved.</div>
+  <div class="footer-copy">© <span id="footer-year"></span> Cuech4 — All rights reserved.</div>
 </footer>
 
 <script>
@@ -548,6 +548,7 @@ checkoutBtn.addEventListener('click', () => {
 
 renderCart();
 recalc();
+document.getElementById('footer-year').textContent = new Date().getFullYear();
 </script>
 
 </body>
