@@ -60,11 +60,6 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-}
 
 body {
   background: var(--bg);
@@ -313,8 +308,19 @@ footer {
 }
 
 @media (max-width: 860px) {
+  .header-inner { position: relative; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 12px; }
   nav { display: none; }
-  .mobile-toggle { display: block; }
+  nav.mobile-open {
+    display: flex; position: absolute; top: 100%; left: 0; right: 0; width: auto;
+    flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 0;
+    padding: 8px 16px 12px; background: var(--bg); border-bottom: 0.5px solid var(--border);
+  }
+  nav.mobile-open a { padding: 10px 0; }
+  .header-actions { min-width: 0; gap: 8px; }
+  .theme-toggle { gap: 2px; padding: 4px; }
+  .theme-toggle button { padding: 5px 6px; }
+  .cart-btn { width: 34px; height: 34px; }
+  .mobile-toggle { display: block; font-size: 20px; }
   .prod-grid { grid-template-columns: repeat(2, 1fr); }
   .about-teaser { grid-template-columns: 1fr; text-align: center; }
   .about-teaser .frog-big { max-width: 160px; margin: 0 auto; }
@@ -340,7 +346,7 @@ footer {
       <img id="header-logo" src="../global/frog-logo-white.png" alt="Cuech4 logo">
       <span class="logo-text">Cuech4</span>
     </a>
-    <nav>
+    <nav id="site-nav">
       <a href="../../shop.html">Shop</a>
       <a href="../../about.html">About</a>
       <a href="../../handmade.html">Handmade</a>
@@ -355,7 +361,7 @@ footer {
       <a href="../../cart.html" class="cart-btn" aria-label="Cart">
         🛒<span class="cart-badge" id="header-cart-count">0</span>
       </a>
-      <button class="mobile-toggle" aria-label="Menu">☰</button>
+      <button type="button" class="mobile-toggle" aria-label="Menu" aria-controls="site-nav" aria-expanded="false" onclick="const nav=document.getElementById('site-nav');const open=nav.classList.toggle('mobile-open');this.setAttribute('aria-expanded',open)">☰</button>
     </div>
   </div>
 </header>
@@ -375,7 +381,7 @@ footer {
     <h2>Latest builds</h2>
   </div>
   <div class="prod-grid">
-    <a class="prod-card" href="workout-generator.html">
+    <a class="prod-card" href="workout-generator/workout-generator.html">
       <div class="prod-image">🏋<span class="prod-badge badge-best">Live</span></div>
       <div class="prod-info">
         <h3>Workout Generator</h3>
@@ -466,6 +472,39 @@ function updateCartBadge() {
 }
 updateCartBadge();
 document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+const projectsLink = document.querySelector('.hero .cta-row a[href="#latest-builds"]');
+if (projectsLink) {
+  projectsLink.addEventListener('click', event => {
+    const target = document.getElementById('latest-builds');
+    if (!target) return;
+
+    event.preventDefault();
+    const targetY = target.getBoundingClientRect().top + window.scrollY - parseFloat(getComputedStyle(target).scrollMarginTop);
+    if (window.location.hash !== projectsLink.hash) history.pushState(null, '', projectsLink.hash);
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      window.scrollTo(0, targetY);
+      return;
+    }
+
+    const startY = window.scrollY;
+    const distance = targetY - startY;
+    const duration = 1200;
+    const startTime = performance.now();
+
+    function scrollFrame(now) {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = progress < 0.5
+        ? 4 * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+      window.scrollTo(0, startY + distance * eased);
+      if (progress < 1) requestAnimationFrame(scrollFrame);
+    }
+
+    requestAnimationFrame(scrollFrame);
+  });
+}
 </script>
 
 </body>

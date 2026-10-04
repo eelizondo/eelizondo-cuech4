@@ -325,8 +325,19 @@ footer {
 }
 
 @media (max-width: 860px) {
+  .header-inner { position: relative; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 12px; }
   nav { display: none; }
-  .mobile-toggle { display: block; }
+  nav.mobile-open {
+    display: flex; position: absolute; top: 100%; left: 0; right: 0; width: auto;
+    flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 0;
+    padding: 8px 16px 12px; background: var(--bg); border-bottom: 0.5px solid var(--border);
+  }
+  nav.mobile-open a { padding: 10px 0; }
+  .header-actions { min-width: 0; gap: 8px; }
+  .theme-toggle { gap: 2px; padding: 4px; }
+  .theme-toggle button { padding: 5px 6px; }
+  .cart-btn { width: 34px; height: 34px; }
+  .mobile-toggle { display: block; font-size: 20px; }
   .story-block { grid-template-columns: 1fr; gap: 30px; }
   .story-image { order: -1; padding: 30px; }
   .story-image img { max-width: 140px; }
@@ -354,7 +365,7 @@ footer {
       <img id="header-logo" src="assets/global/frog-logo-white.png" alt="Cuech4 logo">
       <span class="logo-text">Cuech4</span>
     </a>
-    <nav>
+    <nav id="site-nav">
       <a href="shop.html">Shop</a>
       <a href="about.html" class="current">About</a>
       <a href="handmade.html">Handmade</a>
@@ -369,7 +380,7 @@ footer {
       <a href="cart.html" class="cart-btn" aria-label="Cart">
         🛒<span class="cart-badge" id="header-cart-count">0</span>
       </a>
-      <button class="mobile-toggle" aria-label="Menu">☰</button>
+      <button type="button" class="mobile-toggle" aria-label="Menu" aria-controls="site-nav" aria-expanded="false" onclick="const nav=document.getElementById('site-nav');const open=nav.classList.toggle('mobile-open');this.setAttribute('aria-expanded',open)">☰</button>
     </div>
   </div>
 </header>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <filter id="purple" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0 0 0 0 0.659 0 0 0 0 0.333 0 0 0 0 0.969 0 0 0 1 0"/>
+    </filter>
+  </defs>
+  <text x="32" y="52" text-anchor="middle" font-size="54" font-family="sans-serif" filter="url(#purple)">💪︎</text>
+</svg>

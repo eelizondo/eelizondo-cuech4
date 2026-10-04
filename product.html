@@ -147,14 +147,28 @@ footer { border-top: 0.5px solid var(--border); padding: 40px 24px 30px; margin-
 .footer-copy { font-size: 12px; color: var(--label-c); margin-top: 20px; text-align: center; }
 
 @media (max-width: 860px) {
+  .header-inner { position: relative; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 12px; }
   nav { display: none; }
-  .mobile-toggle { display: block; }
-  .product-layout { grid-template-columns: 1fr; gap: 24px; }
+  nav.mobile-open {
+    display: flex; position: absolute; top: 100%; left: 0; right: 0; width: auto;
+    flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 0;
+    padding: 8px 16px 12px; background: var(--bg); border-bottom: 0.5px solid var(--border);
+  }
+  nav.mobile-open a { padding: 10px 0; }
+  .header-actions { min-width: 0; gap: 8px; }
+  .theme-toggle { gap: 2px; padding: 4px; }
+  .theme-toggle button { padding: 5px 6px; }
+  .cart-btn { width: 34px; height: 34px; }
+  .mobile-toggle { display: block; font-size: 20px; }
+  .product-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .product-layout > * { min-width: 0; }
+  .gallery-thumbs { max-width: 100%; overflow-x: auto; }
   .review-grid { grid-template-columns: 1fr; }
   .related-grid { grid-template-columns: repeat(2, 1fr); }
   .gallery-main { height: 320px; font-size: 64px; }
 }
 @media (max-width: 480px) {
+  .product-layout { padding: 24px 16px 30px; }
   .related-grid { grid-template-columns: 1fr; }
 }
 </style>
@@ -167,7 +181,7 @@ footer { border-top: 0.5px solid var(--border); padding: 40px 24px 30px; margin-
       <img id="header-logo" src="assets/global/frog-logo-white.png" alt="Cuech4 logo">
       <span class="logo-text">Cuech4</span>
     </a>
-    <nav>
+    <nav id="site-nav">
       <a href="shop.html" class="current">Shop</a>
       <a href="about.html">About</a>
       <a href="handmade.html">Handmade</a>
@@ -180,7 +194,7 @@ footer { border-top: 0.5px solid var(--border); padding: 40px 24px 30px; margin-
         <button id="btn-day" onclick="setTheme('day')">Day</button>
       </div>
       <a href="cart.html" class="cart-btn" aria-label="Cart">🛒<span class="cart-badge" id="header-cart-count">0</span></a>
-      <button class="mobile-toggle" aria-label="Menu">☰</button>
+      <button type="button" class="mobile-toggle" aria-label="Menu" aria-controls="site-nav" aria-expanded="false" onclick="const nav=document.getElementById('site-nav');const open=nav.classList.toggle('mobile-open');this.setAttribute('aria-expanded',open)">☰</button>
     </div>
   </div>
 </header>

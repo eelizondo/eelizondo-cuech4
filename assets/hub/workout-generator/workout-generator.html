@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Workout Generator — Cuech4 Hub</title>
+<link rel="icon" type="image/svg+xml" href="global_assets/workout-generator-icon.svg">
 <style>
   :root {
     --bg: #0f0f13;
@@ -166,6 +167,12 @@
 
   /* hide utility */
   .hidden { display: none !important; }
+
+  @media (max-width: 360px) {
+    .provider-grid { grid-template-columns: 1fr; }
+    .key-row { flex-direction: column; align-items: stretch; }
+    .key-save-btn { width: 100%; }
+  }
 </style>
 </head>
 <body>
@@ -173,7 +180,7 @@
 <header>
   <div>
     <h1>💪 Workout Generator</h1>
-    <div class="subtitle"><a href="hub.html">← Cuech4 Hub</a></div>
+    <div class="subtitle"><a href="../hub.html">← Cuech4 Hub</a></div>
   </div>
   <div class="header-right">
     <button class="icon-btn" onclick="showView('setup')" id="new-btn">＋ New</button>
@@ -207,7 +214,7 @@
       </div>
       <div class="key-row">
         <input type="password" id="api-key-input" placeholder="Paste your API key here…" autocomplete="off">
-        <button class="key-save-btn" onclick="saveKey()">Save Key</button>
+        <button class="key-save-btn" id="key-action-btn" onclick="handleKeyAction()">Save Key</button>
       </div>
       <div class="key-hint" id="key-hint">🔒 Stored locally in your browser only — never sent anywhere except the selected AI provider.</div>
       <div class="key-ok" id="key-ok">✅ API key saved for this provider</div>
@@ -368,6 +375,7 @@ function init() {
 function loadKeyDisplay() {
   const key = getKey(selectedProvider);
   const inp = document.getElementById('api-key-input');
+  document.getElementById('key-action-btn').textContent = key ? 'Remove Key' : 'Save Key';
   if (key) {
     inp.value = '••••••••••••••••' + key.slice(-4);
     document.getElementById('key-ok').style.display = 'block';
@@ -395,10 +403,19 @@ function saveKey() {
   const val = inp.value.trim();
   if (!val || val.startsWith('••')) { showToast('Paste a real API key first'); return; }
   localStorage.setItem('wg_key_' + selectedProvider, val);
-  inp.value = '••••••••••••••••' + val.slice(-4);
-  document.getElementById('key-ok').style.display = 'block';
-  document.getElementById('key-hint').style.display = 'none';
+  loadKeyDisplay();
   showToast('API key saved ✓');
+}
+
+function handleKeyAction() {
+  if (getKey(selectedProvider)) {
+    localStorage.removeItem('wg_key_' + selectedProvider);
+    loadKeyDisplay();
+    showToast('API key removed');
+    return;
+  }
+
+  saveKey();
 }
 
 // ─────────────────────────────────────────────
