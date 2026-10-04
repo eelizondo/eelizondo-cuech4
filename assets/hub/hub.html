@@ -60,6 +60,11 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
 
 body {
   background: var(--bg);
@@ -157,7 +162,7 @@ nav a.current { color: var(--green); }
   margin-bottom: 18px;
 }
 .hero-sub {
-  font-size: 18px; color: var(--body-c); max-width: 480px; margin: 0 auto 36px;
+  font-size: 18px; color: var(--body-c); max-width: 520px; margin: 0 auto 36px;
   line-height: 1.6;
 }
 .hero-frog {
@@ -236,6 +241,7 @@ nav a.current { color: var(--green); }
 
 /* SECTION LABEL */
 .section { padding: 60px 24px; }
+#latest-builds { scroll-margin-top: 80px; }
 .section-head {
   display: flex; align-items: baseline; justify-content: space-between;
   max-width: 1200px; margin: 0 auto 28px; flex-wrap: wrap; gap: 10px;
@@ -360,11 +366,11 @@ footer {
   <h1 data-split="true">Hub</h1>
   <p class="hero-sub">A running collection of small apps and tools I'm building on the side — some finished, some still in progress. Browser-based, no accounts, just things I wanted to exist.</p>
   <div class="cta-row">
-    <a href="workout-generator.html" class="btn-primary" style="display:inline-block; text-decoration:none;">Explore projects →</a>
+    <a href="#latest-builds" class="btn-primary" style="display:inline-block; text-decoration:none;">Explore projects →</a>
   </div>
 </section>
 
-<section class="section reveal reveal-2">
+<section class="section reveal reveal-2" id="latest-builds">
   <div class="section-head">
     <h2>Latest builds</h2>
   </div>
