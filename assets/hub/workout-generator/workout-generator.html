@@ -49,6 +49,37 @@
   #result .plan-title { font-size: 22px; margin: 0 0 6px; } #result .summary { color: var(--muted); margin: 0 0 18px; }
   .day { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
   .day h3 { margin: 0 0 4px; font-size: 16px; color: var(--accent-text); } .day .focus { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+  .week-progress { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 18px 0 8px; color: var(--accent-text); font-size: 13px; font-weight: 700; }
+  .week-progress .btn-ghost { padding: 6px 10px; color: var(--muted); font-size: 11px; }
+  .progress-track { height: 5px; overflow: hidden; background: var(--line); border-radius: 99px; }
+  .progress-track span { display: block; height: 100%; background: var(--accent-2); border-radius: inherit; transition: width .2s; }
+  .day-tabs { display: flex; gap: 6px; overflow-x: auto; margin: 16px 0; padding-bottom: 4px; scrollbar-width: thin; }
+  .day-tab { flex: 1 0 auto; min-width: 88px; padding: 8px 10px; color: var(--muted); background: var(--panel-2); border: 1px solid var(--line); border-radius: 9px; text-align: left; cursor: pointer; }
+  .day-tab.active { color: var(--text); border-color: var(--accent-2); background: #1e1633; }
+  .day-tab strong, .day-tab small { display: block; }
+  .day-tab strong { font-size: 12px; }
+  .day-tab small { margin-top: 3px; font-size: 10px; }
+  .tracker-day-title { margin: 0 0 3px; font-size: 18px; }
+  .tracker-day-focus { margin: 0 0 12px; color: var(--muted); font-size: 12px; }
+  .exercise-track { margin-top: 9px; overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+  .exercise-track-head { display: flex; align-items: center; gap: 10px; padding: 11px 12px; }
+  .exercise-toggle { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 0; color: inherit; text-align: left; background: transparent; border: 0; cursor: pointer; }
+  .exercise-count { flex: none; display: grid; width: 30px; height: 30px; place-items: center; color: var(--accent-text); border: 1px solid var(--line); border-radius: 50%; font-size: 10px; font-weight: 700; }
+  .exercise-name { flex: 1; min-width: 0; font-size: 13px; font-weight: 700; }
+  .exercise-name small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; font-weight: 400; }
+  .exercise-chevron { color: var(--muted); font-size: 12px; transition: transform .15s; }
+  .exercise-toggle[aria-expanded="true"] .exercise-chevron { transform: rotate(180deg); }
+  .weight-control { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--muted); font-size: 10px; white-space: nowrap; }
+  .weight-input { width: 84px; padding: 6px 7px; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; font-size: 11px; font-family: inherit; appearance: textfield; -moz-appearance: textfield; }
+  .weight-input::-webkit-inner-spin-button, .weight-input::-webkit-outer-spin-button { margin: 0; -webkit-appearance: none; }
+  .set-list { border-top: 1px solid var(--line); }
+  .set-list.collapsed { display: none; }
+  .set-row { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .set-row:last-child { border-bottom: 0; }
+  .set-row input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent-2); }
+  .set-row span { font-size: 11px; }
+  .set-row small { margin-left: auto; color: var(--muted); font-size: 10px; }
+  .exercise-empty { margin: 0; padding: 12px; color: var(--muted); font-size: 12px; }
   table { width: 100%; border-collapse: collapse; font-size: 14px; } th { text-align: left; color: var(--muted); font-weight: 600; font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--line); }
   td { padding: 8px; border-bottom: 1px solid #1c1d27; vertical-align: top; } td small { color: var(--muted); display: block; }
   .chip { display: inline-block; font-size: 12px; background: #1e1633; color: var(--accent-text); border: 1px solid #3b2a63; padding: 3px 10px; border-radius: 99px; margin: 0 6px 6px 0; }
@@ -204,6 +235,7 @@ const LS = {
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 function setStatus(id, msg, cls) { const el = $(id); el.textContent = msg; el.className = "status " + (cls || ""); }
 let currentPlan = null;
+let activeDay = 0;
 
 /* ---------- Steps 1-2: goals form -> live prompt ---------- */
 const FORM_IDS = ["goal", "level", "days", "mins", "equip", "notes"];
@@ -237,7 +269,24 @@ function parsePlan(text) {
   try { plan = JSON.parse(t.slice(s, e + 1)); }
   catch { throw new Error("That reply isn't valid JSON. Ask your AI: \"Reply again with ONLY the JSON, no extra text.\""); }
   if (!Array.isArray(plan.days) || !plan.days.length) throw new Error("The JSON is missing the \"days\" list. Ask your AI to follow the template exactly.");
-  plan.days.forEach(d => { if (!Array.isArray(d.exercises)) d.exercises = []; });
+  plan.days = plan.days.map(day => {
+    const dayPlan = day && typeof day === "object" ? day : {};
+    const exercises = Array.isArray(dayPlan.exercises) ? dayPlan.exercises : [];
+    dayPlan.exercises = exercises.map(exercise => {
+      const item = exercise && typeof exercise === "object" ? exercise : {};
+      const requestedSets = Number(item.sets);
+      const sets = Number.isFinite(requestedSets) ? Math.max(1, Math.min(20, Math.round(requestedSets))) : 3;
+      const completed = Array.isArray(item.completed) ? item.completed : [];
+      return {
+        ...item,
+        sets,
+        completed: Array.from({ length: sets }, (_, index) => Boolean(completed[index])),
+        weight: String(item.weight ?? ""),
+        expanded: Boolean(item.expanded)
+      };
+    });
+    return dayPlan;
+  });
   return plan;
 }
 
@@ -249,6 +298,7 @@ function showSetupCards(show) {
 
 function restartRoutine() {
   currentPlan = null;
+  activeDay = 0;
   LS.set("wg_current", "");
   $("jsonIn").value = "";
   $("resultCard").hidden = true;
@@ -260,31 +310,107 @@ function restartRoutine() {
 
 function renderPlan(plan, scrollToResult = true) {
   currentPlan = plan;
+  plan.days.forEach(day => {
+    const hasExpansionState = day.exercises.some(exercise => typeof exercise.expanded === "boolean");
+    let hasOpenExercise = false;
+    day.exercises.forEach((exercise, index) => {
+      exercise.expanded = hasExpansionState ? Boolean(exercise.expanded) && !hasOpenExercise : index === 0;
+      if (exercise.expanded) hasOpenExercise = true;
+    });
+  });
+  activeDay = Math.max(0, Math.min(Number(plan.activeDay) || 0, plan.days.length - 1));
+  currentPlan.activeDay = activeDay;
   LS.set("wg_current", JSON.stringify(plan));
   const chips = [plan.goal, plan.experience, plan.days.length + " days/week"].filter(Boolean)
     .map(c => `<span class="chip">${esc(c)}</span>`).join("");
   const equip = (plan.equipment || []).length ? `<div class="note">Equipment: ${plan.equipment.map(esc).join(", ")}</div>` : "";
-  const days = plan.days.map(d => `
-    <div class="day"><h3>${esc(d.day)}</h3><div class="focus">${esc(d.focus)}</div>
-    <table><thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr></thead><tbody>
-    ${d.exercises.map(x => `<tr><td>${esc(x.name)}${x.notes ? `<small>${esc(x.notes)}</small>` : ""}</td><td>${esc(x.sets)}</td><td>${esc(x.reps)}</td><td>${esc(x.rest)}</td></tr>`).join("")}
-    </tbody></table></div>`).join("");
+  const totalSets = plan.days.reduce((total, day) => total + day.exercises.reduce((sum, exercise) => sum + exercise.sets, 0), 0);
+  const completedSets = plan.days.reduce((total, day) => total + day.exercises.reduce((sum, exercise) => sum + exercise.completed.filter(Boolean).length, 0), 0);
+  const activePlanDay = plan.days[activeDay];
+  const dayTabs = plan.days.map((day, dayIndex) => {
+    const dayTotal = day.exercises.reduce((sum, exercise) => sum + exercise.sets, 0);
+    const dayDone = day.exercises.reduce((sum, exercise) => sum + exercise.completed.filter(Boolean).length, 0);
+    return `<button type="button" class="day-tab ${dayIndex === activeDay ? "active" : ""}" onclick="selectPlanDay(${dayIndex})"><strong>${esc(day.day || `Day ${dayIndex + 1}`)}</strong><small>${dayDone}/${dayTotal} sets</small></button>`;
+  }).join("");
+  const exercises = activePlanDay.exercises.length ? activePlanDay.exercises.map((exercise, exerciseIndex) => {
+    const done = exercise.completed.filter(Boolean).length;
+    const sets = Array.from({ length: exercise.sets }, (_, setIndex) => `
+      <label class="set-row">
+        <input type="checkbox" ${exercise.completed[setIndex] ? "checked" : ""} onchange="togglePlanSet(${activeDay}, ${exerciseIndex}, ${setIndex}, this.checked)">
+        <span>Set ${setIndex + 1}</span>
+        <small>${esc(exercise.reps || "reps")}${exercise.rest ? ` · ${esc(exercise.rest)} rest` : ""}</small>
+      </label>`).join("");
+    return `<section class="exercise-track">
+      <div class="exercise-track-head">
+        <button type="button" class="exercise-toggle" aria-expanded="${exercise.expanded}" onclick="toggleExercise(${activeDay}, ${exerciseIndex})">
+          <span class="exercise-count">${done}/${exercise.sets}</span>
+          <span class="exercise-name">${esc(exercise.name || "Exercise")}${exercise.notes ? `<small>${esc(exercise.notes)}</small>` : ""}</span>
+          <span class="exercise-chevron" aria-hidden="true">⌄</span>
+        </button>
+        <label class="weight-control">lbs/kg <input class="weight-input" type="number" min="0" step="0.5" value="${esc(exercise.weight)}" aria-label="Weight for ${esc(exercise.name || "exercise")}" onchange="setPlanWeight(${activeDay}, ${exerciseIndex}, this.value)"></label>
+      </div>
+      <div class="set-list ${exercise.expanded ? "" : "collapsed"}">${sets}</div>
+    </section>`;
+  }).join("") : '<p class="exercise-empty">No exercises listed for this day.</p>';
+  const percent = totalSets ? Math.round(completedSets / totalSets * 100) : 0;
   const tips = (plan.tips || []).length ? `<h3>Tips</h3><ul class="tips">${plan.tips.map(t => `<li>${esc(t)}</li>`).join("")}</ul>` : "";
   $("result").innerHTML = `<h2 class="plan-title">${esc(plan.title || "Your workout plan")}</h2><div>${chips}</div>
-    <p class="summary">${esc(plan.summary)}</p>${equip}<div style="height:14px"></div>${days}${tips}
+    <p class="summary">${esc(plan.summary)}</p>${equip}
+    <div class="week-progress"><span>${completedSets} / ${totalSets} sets this week</span><button class="btn-ghost" id="resetWeek">↺ Reset Week</button></div>
+    <div class="progress-track"><span style="width:${percent}%"></span></div>
+    <div class="day-tabs">${dayTabs}</div>
+    <section class="day"><h3>${esc(activePlanDay.day || `Day ${activeDay + 1}`)}</h3><div class="focus">${esc(activePlanDay.focus || "")}</div>${exercises}</section>${tips}
     <div class="actions"><button class="btn big" id="saveBtn">💾 Save plan</button><button class="btn-ghost" id="printBtn">🖨 Print</button><button class="btn-ghost" id="againBtn">Generate Routine Again</button></div>`;
   $("resultCard").hidden = false;
   showSetupCards(false);
   $("saveBtn").onclick = savePlan; $("printBtn").onclick = () => window.print();
   $("againBtn").onclick = restartRoutine;
+  $("resetWeek").onclick = resetWeekProgress;
   if (scrollToResult) $("resultCard").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function selectPlanDay(dayIndex) {
+  if (!currentPlan || dayIndex < 0 || dayIndex >= currentPlan.days.length) return;
+  currentPlan.activeDay = dayIndex;
+  renderPlan(currentPlan, false);
+}
+
+function toggleExercise(dayIndex, exerciseIndex) {
+  const exercises = currentPlan?.days[dayIndex]?.exercises;
+  const exercise = exercises?.[exerciseIndex];
+  if (!exercise) return;
+  const shouldExpand = !exercise.expanded;
+  exercises.forEach((item, index) => { item.expanded = shouldExpand && index === exerciseIndex; });
+  renderPlan(currentPlan, false);
+}
+
+function togglePlanSet(dayIndex, exerciseIndex, setIndex, checked) {
+  const exercise = currentPlan?.days[dayIndex]?.exercises[exerciseIndex];
+  if (!exercise || setIndex < 0 || setIndex >= exercise.sets) return;
+  exercise.completed[setIndex] = checked;
+  renderPlan(currentPlan, false);
+}
+
+function setPlanWeight(dayIndex, exerciseIndex, weight) {
+  const exercise = currentPlan?.days[dayIndex]?.exercises[exerciseIndex];
+  if (!exercise) return;
+  exercise.weight = weight;
+  LS.set("wg_current", JSON.stringify(currentPlan));
+}
+
+function resetWeekProgress() {
+  if (!currentPlan) return;
+  currentPlan.days.forEach(day => day.exercises.forEach(exercise => exercise.completed.fill(false)));
+  renderPlan(currentPlan, false);
 }
 
 function restoreCurrentPlan() {
   const saved = LS.get("wg_current", "");
   if (!saved) return;
   try {
-    renderPlan(parsePlan(saved), false);
+    const plan = parsePlan(saved);
+    plan.days.forEach(day => day.exercises.forEach(exercise => { exercise.expanded = false; }));
+    renderPlan(plan, false);
     window.scrollTo(0, 0);
   }
   catch { LS.set("wg_current", ""); }
