@@ -1,848 +1,302 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Workout Generator — Cuech4 Hub</title>
-<link rel="icon" type="image/svg+xml" href="global_assets/workout-generator-icon.svg">
 <style>
   :root {
-    --bg: #0f0f13;
-    --card: #1a1a22;
-    --card2: #22222e;
-    --border: #2e2e3e;
-    --accent: #7c3aed;
-    --accent2: #a855f7;
-    --green: #22c55e;
-    --red: #ef4444;
-    --yellow: #eab308;
-    --text: #f0f0f5;
-    --muted: #8888a0;
-    --radius: 14px;
+    --bg: #0b0c10; --panel: #15161d; --panel-2: #0f1015; --line: #272936;
+    --text: #e9eaf2; --muted: #8a8fa3; --accent: #7c3aed; --accent-2: #a855f7; --accent-text: #a78bfa;
+    --ok: #34d399; --err: #f87171;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
-
-  /* ── HEADER ── */
-  header { background: var(--card); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
-  header h1 { font-size: 1.1rem; font-weight: 700; background: linear-gradient(135deg, var(--accent2), #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  header .subtitle { font-size: 0.75rem; color: var(--muted); }
-  header .subtitle a { color: inherit; text-decoration: none; transition: color .15s; }
-  header .subtitle a:hover, header .subtitle a:focus-visible { color: var(--accent); }
-  .header-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
-  .icon-btn { background: var(--card2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 7px 12px; font-size: 0.8rem; cursor: pointer; transition: all .15s; }
-  .icon-btn:hover { border-color: var(--accent); }
-
-  /* ── MAIN LAYOUT ── */
-  .app { max-width: 720px; margin: 0 auto; padding: 20px 16px 80px; }
-
-  /* ── SETUP PANEL ── */
-  .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-bottom: 20px; }
-  .panel h2 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-  .panel h2 .badge { font-size: 0.7rem; background: var(--accent); border-radius: 20px; padding: 2px 8px; font-weight: 600; -webkit-text-fill-color: white; color: white; }
-
-  /* provider grid */
-  .provider-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-  .provider-card { border: 2px solid var(--border); border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 10px; }
-  .provider-card:hover { border-color: var(--accent); }
-  .provider-card.selected { border-color: var(--accent2); background: rgba(168,85,247,.12); }
-  .provider-card .pname { font-size: 0.85rem; font-weight: 600; }
-  .provider-card .pmodel { font-size: 0.7rem; color: var(--muted); }
-  .provider-card .picon { font-size: 1.4rem; }
-
-  /* key input */
-  .key-row { display: flex; gap: 8px; align-items: center; }
-  .key-row input { flex: 1; background: var(--card2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.85rem; padding: 10px 14px; font-family: monospace; outline: none; }
-  .key-row input:focus { border-color: var(--accent); }
-  .key-row input::placeholder { color: var(--muted); font-family: inherit; }
-  .key-save-btn { background: var(--accent); color: white; border: none; border-radius: 8px; padding: 10px 16px; font-size: 0.8rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
-  .key-save-btn:hover { background: var(--accent2); }
-  .key-hint { font-size: 0.72rem; color: var(--muted); margin-top: 6px; }
-  .key-ok { color: var(--green); font-size: 0.78rem; margin-top: 6px; display: none; }
-
-  /* ── PHOTO UPLOAD ── */
-  .drop-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 36px 20px; text-align: center; cursor: pointer; transition: all .15s; position: relative; }
-  .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent2); background: rgba(168,85,247,.06); }
-  .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-  .drop-zone .drop-icon { font-size: 2.4rem; margin-bottom: 10px; }
-  .drop-zone .drop-text { font-size: 0.9rem; color: var(--muted); }
-  .drop-zone .drop-sub { font-size: 0.75rem; color: var(--muted); margin-top: 4px; opacity: .7; }
-
-  .photo-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-  .photo-thumb { position: relative; width: 90px; height: 90px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
-  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
-  .photo-thumb .rm { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,.7); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-  /* context inputs */
-  .form-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
-  .form-group { flex: 1; min-width: 140px; }
-  .form-group label { font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 5px; }
-  .form-group select, .form-group input { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.85rem; padding: 9px 12px; outline: none; }
-  .form-group select:focus, .form-group input:focus { border-color: var(--accent); }
-
-  /* generate button */
-  .generate-btn { width: 100%; margin-top: 18px; padding: 14px; background: linear-gradient(135deg, var(--accent), #a855f7); color: white; border: none; border-radius: var(--radius); font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity .15s; letter-spacing: .02em; }
-  .generate-btn:hover { opacity: .9; }
-  .generate-btn:disabled { opacity: .5; cursor: not-allowed; }
-
-  /* ── GENERATING STATE ── */
-  .gen-status { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 20px; text-align: center; margin-bottom: 20px; }
-  .gen-status .spinner { width: 44px; height: 44px; border: 3px solid var(--border); border-top-color: var(--accent2); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .gen-status .gen-label { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
-  .gen-status .gen-sub { font-size: 0.78rem; color: var(--muted); }
-  .stream-preview { background: var(--card2); border-radius: 8px; padding: 12px 14px; margin-top: 14px; text-align: left; font-size: 0.78rem; color: var(--muted); max-height: 120px; overflow-y: auto; line-height: 1.5; white-space: pre-wrap; }
-
-  /* ── TRACKER (generated) ── */
-  .tracker-header { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px; }
-  .tracker-header h2 { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
-  .tracker-header .tracker-meta { font-size: 0.78rem; color: var(--muted); }
-  .tracker-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-  .tact-btn { flex: 1; min-width: 120px; padding: 10px 14px; border-radius: 10px; font-size: 0.82rem; font-weight: 600; border: 1px solid var(--border); cursor: pointer; background: var(--card2); color: var(--text); transition: all .15s; text-align: center; }
-  .tact-btn:hover { border-color: var(--accent); }
-  .tact-btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
-  .tact-btn.primary:hover { background: var(--accent2); }
-  .tact-btn.danger { color: var(--red); border-color: var(--red); }
-
-  /* day tabs */
-  .day-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; scrollbar-width: none; }
-  .day-tabs::-webkit-scrollbar { display: none; }
-  .day-tab { flex-shrink: 0; padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid var(--border); background: var(--card); cursor: pointer; transition: all .15s; }
-  .day-tab.active { color: white; border-color: transparent; }
-
-  /* exercise card */
-  .ex-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
-  .ex-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; }
-  .ex-header:hover { background: rgba(255,255,255,.03); }
-  .ex-chevron { font-size: 0.75rem; color: var(--muted); transition: transform .2s; margin-left: auto; }
-  .ex-card.open .ex-chevron { transform: rotate(180deg); }
-  .ex-name { font-size: 0.9rem; font-weight: 600; }
-  .ex-reps { font-size: 0.73rem; color: var(--muted); margin-top: 2px; }
-  .ex-progress { font-size: 0.72rem; margin-left: auto; margin-right: 8px; }
-  .ex-body { padding: 0 16px 14px; display: none; }
-  .ex-card.open .ex-body { display: block; }
-
-  /* set row */
-  .set-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .set-row:last-child { border-bottom: none; }
-  .set-num { width: 22px; font-size: 0.75rem; color: var(--muted); text-align: center; flex-shrink: 0; }
-  .set-check { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; transition: all .15s; flex-shrink: 0; }
-  .set-check.done { background: var(--green); border-color: var(--green); }
-  .set-check.done::after { content: '✓'; color: white; font-weight: 700; }
-  .set-label { flex: 1; font-size: 0.8rem; color: var(--muted); }
-  .weight-wrap { display: flex; align-items: center; gap: 4px; }
-  .weight-input { width: 60px; background: var(--card2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 0.82rem; padding: 5px 8px; text-align: center; outline: none; }
-  .weight-input:focus { border-color: var(--accent); }
-  .weight-unit { font-size: 0.72rem; color: var(--muted); }
-  .lastweek { font-size: 0.68rem; color: var(--muted); margin-top: 4px; padding-left: 34px; }
-
-  /* save bar */
-  .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 12px 20px; display: flex; gap: 10px; align-items: center; justify-content: center; z-index: 200; }
-  .save-btn { background: var(--green); color: white; border: none; border-radius: 10px; padding: 10px 28px; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
-  .save-btn:disabled { opacity: .5; cursor: not-allowed; }
-
-  /* ── MODALS ── */
-  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: none; align-items: center; justify-content: center; z-index: 500; padding: 16px; }
-  .modal-bg.open { display: flex; }
-  .modal { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; width: 100%; max-width: 460px; }
-  .modal h3 { font-size: 1rem; font-weight: 700; margin-bottom: 14px; }
-  .modal p { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
-  .modal-actions { display: flex; gap: 10px; }
-  .modal-actions button { flex: 1; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--card2); color: var(--text); }
-  .modal-actions button.confirm { background: var(--accent); border-color: var(--accent); color: white; }
-
-  /* ── TOAST ── */
-  #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 10px 20px; font-size: 0.82rem; font-weight: 600; pointer-events: none; opacity: 0; transition: all .25s; white-space: nowrap; z-index: 999; }
-  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  /* ── SAVED WORKOUTS LIST ── */
-  .saved-list { display: flex; flex-direction: column; gap: 8px; }
-  .saved-item { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all .15s; }
-  .saved-item:hover { border-color: var(--accent); }
-  .saved-item .si-title { font-size: 0.88rem; font-weight: 600; }
-  .saved-item .si-meta { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
-  .saved-item .si-actions { margin-left: auto; display: flex; gap: 6px; }
-  .saved-item .si-btn { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); padding: 4px 8px; font-size: 0.7rem; cursor: pointer; }
-  .saved-item .si-btn:hover { border-color: var(--accent); color: var(--text); }
-
-  /* hide utility */
-  .hidden { display: none !important; }
-
-  @media (max-width: 360px) {
-    .provider-grid { grid-template-columns: 1fr; }
-    .key-row { flex-direction: column; align-items: stretch; }
-    .key-save-btn { width: 100%; }
-  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, -apple-system, sans-serif; line-height: 1.45; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid var(--line); background: #11121a; }
+  .title { font-size: 20px; font-weight: 700; background: linear-gradient(90deg, var(--accent-2), #38bdf8); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0; }
+  .hub-breadcrumb { color: var(--muted); font-size: 13px; text-decoration: none; transition: color .15s; }
+  .hub-breadcrumb:hover { color: var(--accent-text); }
+  .hbtns { display: flex; gap: 8px; }
+  .btn-ghost { background: #1a1b24; border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+  .btn-ghost:hover { border-color: var(--accent); }
+  main { max-width: 720px; margin: 0 auto; padding: 24px 16px 80px; display: grid; gap: 20px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+  .card h2 { margin: 0 0 16px; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+  .step { font-size: 11px; font-weight: 700; background: var(--accent); padding: 3px 9px; border-radius: 99px; }
+  .providers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .prov { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--panel-2); border: 2px solid var(--line); border-radius: 12px; cursor: pointer; text-align: left; color: var(--text); font: inherit; }
+  .prov.active { border-color: var(--accent-2); background: #1e1633; }
+  .dot { width: 24px; height: 24px; border-radius: 50%; flex: none; }
+  .prov b { display: block; font-size: 15px; } .prov small { color: var(--muted); font-size: 12px; }
+  .keyrow { display: flex; gap: 8px; }
+  input[type=password], input[type=text], select { width: 100%; background: var(--panel-2); border: 1px solid var(--line); color: var(--text); padding: 12px; border-radius: 10px; font: inherit; }
+  input#key { font-family: ui-monospace, Menlo, monospace; font-size: 14px; }
+  .btn { background: var(--accent); border: 0; color: #fff; font-weight: 700; padding: 0 18px; border-radius: 10px; cursor: pointer; font: inherit; font-weight: 700; white-space: nowrap; }
+  .btn:hover { background: #6d28d9; } .btn:disabled { opacity: .6; cursor: wait; }
+  .note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+  .status { font-size: 12px; margin-top: 6px; min-height: 16px; } .status.ok { color: var(--ok); } .status.err { color: var(--err); }
+  .drop { border: 2px dashed var(--line); border-radius: 12px; padding: 36px 16px; text-align: center; color: var(--muted); cursor: pointer; }
+  .drop:hover, .drop.over { border-color: var(--accent-2); }
+  .drop .ic { font-size: 40px; margin-bottom: 8px; }
+  .thumbs { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+  .thumb { position: relative; width: 84px; height: 84px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .thumb button { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,.7); border: 0; color: #fff; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .gen { width: 100%; margin-top: 16px; padding: 16px; font-size: 17px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+  #result .plan-title { font-size: 22px; margin: 0 0 6px; } #result .summary { color: var(--muted); margin: 0 0 18px; }
+  .day { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+  .day h3 { margin: 0 0 4px; font-size: 16px; color: var(--accent-text); } .day .focus { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; } th { text-align: left; color: var(--muted); font-weight: 600; font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  td { padding: 8px; border-bottom: 1px solid #1c1d27; vertical-align: top; } td small { color: var(--muted); display: block; }
+  .chip { display: inline-block; font-size: 12px; background: #1e1633; color: var(--accent-text); border: 1px solid #3b2a63; padding: 3px 10px; border-radius: 99px; margin: 0 6px 6px 0; }
+  .tips { margin: 8px 0 0; padding-left: 20px; color: var(--muted); }
+  .actions { display: flex; gap: 8px; margin-top: 16px; }
+  .loading { text-align: center; color: var(--muted); padding: 30px; }
+  .spin { display: inline-block; width: 18px; height: 18px; border: 3px solid var(--line); border-top-color: var(--accent-2); border-radius: 50%; animation: sp .8s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+  .modal.open { display: flex; }
+  .modal .box { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; width: 100%; max-width: 480px; max-height: 80vh; overflow: auto; padding: 20px; }
+  .saved-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .saved-item a { color: var(--accent-text); cursor: pointer; } .saved-item small { color: var(--muted); display: block; }
+  .how { margin: 0 0 14px; padding-left: 20px; color: var(--muted); font-size: 14px; } .how li { margin-bottom: 4px; } .how b { color: var(--text); }
+  textarea { width: 100%; background: var(--panel-2); border: 1px solid var(--line); color: var(--text); padding: 12px; border-radius: 10px; font: 13px/1.5 ui-monospace, Menlo, monospace; resize: vertical; }
+  textarea:focus, input:focus, select:focus { outline: none; border-color: var(--accent); }
+  .row { display: flex; gap: 8px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+  .grid2 { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 14px; } .opt { color: #5f6478; font-size: 12px; }
+  .btn.big { padding: 13px 20px; }
+  details.prompt { margin-top: 10px; } details.prompt summary { cursor: pointer; color: var(--accent-text); font-size: 13px; }
+  @media (max-width: 560px) { .providers, .grid3, .grid2 { grid-template-columns: 1fr; } header { padding: 12px 16px; } }
 </style>
 </head>
 <body>
 
 <header>
   <div>
-    <h1>💪 Workout Generator</h1>
-    <div class="subtitle"><a href="../hub.html">← Cuech4 Hub</a></div>
+    <h1 class="title">💪 Workout Generator</h1>
+    <a href="../hub.html" class="hub-breadcrumb">← Cuech4 Hub</a>
   </div>
-  <div class="header-right">
-    <button class="icon-btn" onclick="showView('setup')" id="new-btn">＋ New</button>
-    <button class="icon-btn" onclick="showSaved()" id="saved-btn">📂 Saved</button>
+  <div class="hbtns">
+    <button class="btn-ghost" id="newBtn">＋ New</button>
+    <button class="btn-ghost" id="savedBtn">📂 Saved</button>
   </div>
 </header>
 
-<div class="app" id="app">
-  <!-- VIEW: setup -->
-  <div id="view-setup">
-    <!-- AI Provider -->
-    <div class="panel">
-      <h2>🤖 AI Provider <span class="badge">Step 1</span></h2>
-      <div class="provider-grid" id="provider-grid">
-        <div class="provider-card selected" data-provider="claude" onclick="selectProvider(this)">
-          <span class="picon">🟣</span>
-          <div><div class="pname">Claude</div><div class="pmodel">claude-3-5-sonnet</div></div>
-        </div>
-        <div class="provider-card" data-provider="openai" onclick="selectProvider(this)">
-          <span class="picon">🟢</span>
-          <div><div class="pname">ChatGPT</div><div class="pmodel">gpt-4o</div></div>
-        </div>
-        <div class="provider-card" data-provider="gemini" onclick="selectProvider(this)">
-          <span class="picon">🔵</span>
-          <div><div class="pname">Gemini</div><div class="pmodel">gemini-1.5-flash</div></div>
-        </div>
-        <div class="provider-card" data-provider="deepseek" onclick="selectProvider(this)">
-          <span class="picon">🟠</span>
-          <div><div class="pname">DeepSeek</div><div class="pmodel">deepseek-chat (text only)</div></div>
-        </div>
-      </div>
-      <div class="key-row">
-        <input type="password" id="api-key-input" placeholder="Paste your API key here…" autocomplete="off">
-        <button class="key-save-btn" id="key-action-btn" onclick="handleKeyAction()">Save Key</button>
-      </div>
-      <div class="key-hint" id="key-hint">🔒 Stored locally in your browser only — never sent anywhere except the selected AI provider.</div>
-      <div class="key-ok" id="key-ok">✅ API key saved for this provider</div>
-    </div>
+<main>
+  <section class="card">
+    <h2>📋 How it works</h2>
+    <ol class="how">
+      <li><b>Step 1:</b> Fill in your workout goals below.</li>
+      <li><b>Step 2:</b> Copy the prompt, paste it into your favorite AI (Claude, ChatGPT, Gemini…) and <b>attach photos of your equipment</b>.</li>
+      <li><b>Step 3:</b> Paste the AI's reply here and your routine is built for you.</li>
+    </ol>
+    <div class="note">Nothing is sent from this page — no accounts, no API keys. Your routines are saved only in this browser.</div>
+  </section>
 
-    <!-- Photos -->
-    <div class="panel">
-      <h2>📸 Equipment Photos <span class="badge">Step 2</span></h2>
-      <div class="drop-zone" id="drop-zone">
-        <input type="file" id="photo-input" accept="image/*" multiple onchange="handleFiles(this.files)">
-        <div class="drop-icon">🖼️</div>
-        <div class="drop-text">Tap to add photos or drag & drop</div>
-        <div class="drop-sub">Show your equipment: dumbbells, bands, machines, pull-up bar, etc.</div>
-      </div>
-      <div class="photo-grid" id="photo-grid"></div>
+  <section class="card">
+    <h2>🎯 Workout Goals <span class="step">Step 1</span></h2>
+    <div class="grid3">
+      <div><label for="goal">Goal</label>
+        <select id="goal"><option>Build Muscle</option><option>Lose Fat</option><option>Get Stronger</option><option>Improve Endurance</option><option>General Fitness</option></select></div>
+      <div><label for="level">Experience</label>
+        <select id="level"><option>Beginner</option><option selected>Intermediate</option><option>Advanced</option></select></div>
+      <div><label for="days">Days per week</label>
+        <select id="days"><option value="2">2 days</option><option value="3">3 days</option><option value="4" selected>4 days</option><option value="5">5 days</option><option value="6">6 days</option></select></div>
     </div>
+    <div class="grid2">
+      <div><label for="mins">Time per session</label>
+        <select id="mins"><option value="30">30 minutes</option><option value="45" selected>45 minutes</option><option value="60">60 minutes</option><option value="90">90 minutes</option></select></div>
+      <div><label for="equip">Equipment details <span class="opt">(optional)</span></label>
+        <input type="text" id="equip" placeholder="e.g. dumbbells 10–50 lb, bench, bands"></div>
+    </div>
+    <label for="notes">Any notes (injuries, preferences…)</label>
+    <input type="text" id="notes" placeholder="e.g. bad knees, no barbell, prefer compound…">
+    <div class="note">Photos can't show dumbbell weights or band strength — add them above if you can.</div>
+  </section>
 
-    <!-- Context -->
-    <div class="panel">
-      <h2>🎯 Workout Goals <span class="badge">Step 3</span></h2>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Goal</label>
-          <select id="goal-select">
-            <option value="muscle">Build Muscle</option>
-            <option value="strength">Build Strength</option>
-            <option value="fat_loss">Fat Loss</option>
-            <option value="endurance">Endurance</option>
-            <option value="general">General Fitness</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Experience</label>
-          <select id="exp-select">
-            <option value="beginner">Beginner</option>
-            <option value="intermediate" selected>Intermediate</option>
-            <option value="advanced">Advanced</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Days per week</label>
-          <select id="days-select">
-            <option value="3">3 days</option>
-            <option value="4" selected>4 days</option>
-            <option value="5">5 days</option>
-            <option value="6">6 days</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Any notes (injuries, preferences…)</label>
-          <input type="text" id="notes-input" placeholder="e.g. bad knees, no barbell, prefer compound…">
-        </div>
-      </div>
-      <button class="generate-btn" id="generate-btn" onclick="generate()">✨ Generate My Workout Plan</button>
+  <section class="card">
+    <h2>🤖 Copy the prompt <span class="step">Step 2</span></h2>
+    <textarea id="promptBox" rows="13" readonly></textarea>
+    <div class="row">
+      <button class="btn big" id="copyPrompt">📋 Copy prompt</button>
+      <span class="status" id="copyStatus"></span>
     </div>
+    <div class="note">Open your AI, paste the prompt <b>and attach your equipment photos</b> (dumbbells, bands, machines, pull-up bar, etc.) in the same message. The prompt updates as you change your goals.</div>
+  </section>
+
+  <section class="card">
+    <h2>📥 Paste your routine <span class="step">Step 3</span></h2>
+    <textarea id="jsonIn" rows="8" placeholder='Paste the AI&#39;s reply here (the JSON starting with { "title": … )'></textarea>
+    <div class="row">
+      <button class="btn big" id="build">✨ Build My Workout Plan</button>
+      <button class="btn-ghost" id="pasteBtn">📎 Paste from clipboard</button>
+    </div>
+    <div class="status" id="genStatus"></div>
+  </section>
+
+  <section class="card" id="resultCard" hidden>
+    <div id="result"></div>
+  </section>
+</main>
+
+<div class="modal" id="modal"><div class="box">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <h2 style="margin:0">📂 Saved plans</h2><button class="btn-ghost" id="closeModal">Close</button>
   </div>
-
-  <!-- VIEW: generating -->
-  <div id="view-generating" class="hidden">
-    <div class="gen-status">
-      <div class="spinner"></div>
-      <div class="gen-label" id="gen-label">Analyzing your equipment…</div>
-      <div class="gen-sub">This may take 20–40 seconds</div>
-      <div class="stream-preview hidden" id="stream-preview"></div>
-    </div>
-  </div>
-
-  <!-- VIEW: tracker -->
-  <div id="view-tracker" class="hidden">
-    <div class="tracker-header">
-      <h2 id="tracker-title">My Workout Plan</h2>
-      <div class="tracker-meta" id="tracker-meta"></div>
-      <div class="tracker-actions">
-        <button class="tact-btn primary" onclick="downloadTracker()">⬇️ Download (.json)</button>
-        <button class="tact-btn" onclick="showUpload()">⬆️ Load saved</button>
-        <button class="tact-btn danger" onclick="confirmNew()">🔄 New Plan</button>
-      </div>
-    </div>
-    <div class="day-tabs" id="day-tabs"></div>
-    <div id="exercises-list"></div>
-  </div>
-
-  <!-- VIEW: saved -->
-  <div id="view-saved" class="hidden">
-    <div class="panel">
-      <h2>📂 Saved Workouts</h2>
-      <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;">Load a previously downloaded .json file to continue tracking.</p>
-      <div class="drop-zone" style="margin-bottom:16px;">
-        <input type="file" accept=".json" onchange="loadJSON(this)">
-        <div class="drop-icon">📂</div>
-        <div class="drop-text">Tap to load a saved workout file</div>
-        <div class="drop-sub">.json file downloaded from a previous session</div>
-      </div>
-      <button class="icon-btn" style="width:100%;justify-content:center;display:flex;" onclick="showView('setup')">← Back to Generator</button>
-    </div>
-  </div>
-
-</div>
-
-<!-- Save bar (only shown in tracker view) -->
-<div class="save-bar hidden" id="save-bar">
-  <span style="font-size:.78rem;color:var(--muted);">Remember to save your progress!</span>
-  <button class="save-btn" id="save-btn" onclick="saveSession()">💾 Save Session</button>
-</div>
-
-<!-- Upload modal -->
-<div class="modal-bg" id="upload-modal">
-  <div class="modal">
-    <h3>Load Workout File</h3>
-    <p>Select a .json file you downloaded from a previous session to continue tracking your progress.</p>
-    <div class="modal-actions">
-      <button onclick="closeModal('upload-modal')">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- Confirm new plan modal -->
-<div class="modal-bg" id="confirm-new-modal">
-  <div class="modal">
-    <h3>Start a New Plan?</h3>
-    <p>This will leave your current tracker. Make sure to download your progress first if you want to keep it.</p>
-    <div class="modal-actions">
-      <button onclick="closeModal('confirm-new-modal')">Cancel</button>
-      <button class="confirm" onclick="showView('setup');closeModal('confirm-new-modal')">Yes, start over</button>
-    </div>
-  </div>
-</div>
-
-<div id="toast"></div>
+  <div id="savedList"></div>
+</div></div>
 
 <script>
-// ─────────────────────────────────────────────
-//  STATE
-// ─────────────────────────────────────────────
-const PROVIDERS = {
-  claude:   { name: "Claude",   model: "claude-3-5-sonnet-20241022", vision: true },
-  openai:   { name: "ChatGPT",  model: "gpt-4o",                     vision: true },
-  gemini:   { name: "Gemini",   model: "gemini-1.5-flash",           vision: true },
-  deepseek: { name: "DeepSeek", model: "deepseek-chat",              vision: false },
-};
-
-let selectedProvider = "claude";
-let photoFiles = []; // File objects
-let photoDataURLs = []; // base64 strings for sending
-let TRACKER = null; // current tracker data
-let activeDay = 0;
-
-// ─────────────────────────────────────────────
-//  INIT
-// ─────────────────────────────────────────────
-function init() {
-  loadKeyDisplay();
-  setupDragDrop();
-}
-
-function loadKeyDisplay() {
-  const key = getKey(selectedProvider);
-  const inp = document.getElementById('api-key-input');
-  document.getElementById('key-action-btn').textContent = key ? 'Remove Key' : 'Save Key';
-  if (key) {
-    inp.value = '••••••••••••••••' + key.slice(-4);
-    document.getElementById('key-ok').style.display = 'block';
-    document.getElementById('key-hint').style.display = 'none';
-  } else {
-    inp.value = '';
-    document.getElementById('key-ok').style.display = 'none';
-    document.getElementById('key-hint').style.display = 'block';
-  }
-}
-
-function getKey(provider) {
-  return localStorage.getItem('wg_key_' + provider) || '';
-}
-
-function selectProvider(el) {
-  document.querySelectorAll('.provider-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedProvider = el.dataset.provider;
-  loadKeyDisplay();
-}
-
-function saveKey() {
-  const inp = document.getElementById('api-key-input');
-  const val = inp.value.trim();
-  if (!val || val.startsWith('••')) { showToast('Paste a real API key first'); return; }
-  localStorage.setItem('wg_key_' + selectedProvider, val);
-  loadKeyDisplay();
-  showToast('API key saved ✓');
-}
-
-function handleKeyAction() {
-  if (getKey(selectedProvider)) {
-    localStorage.removeItem('wg_key_' + selectedProvider);
-    loadKeyDisplay();
-    showToast('API key removed');
-    return;
-  }
-
-  saveKey();
-}
-
-// ─────────────────────────────────────────────
-//  PHOTOS
-// ─────────────────────────────────────────────
-function setupDragDrop() {
-  const dz = document.getElementById('drop-zone');
-  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
-  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
-}
-
-function handleFiles(files) {
-  for (const f of files) {
-    if (!f.type.startsWith('image/')) continue;
-    const reader = new FileReader();
-    reader.onload = e => {
-      photoDataURLs.push(e.target.result);
-      photoFiles.push(f);
-      renderPhotoGrid();
-    };
-    reader.readAsDataURL(f);
-  }
-}
-
-function renderPhotoGrid() {
-  const grid = document.getElementById('photo-grid');
-  grid.innerHTML = photoDataURLs.map((url, i) => `
-    <div class="photo-thumb">
-      <img src="${url}">
-      <button class="rm" onclick="removePhoto(${i})">✕</button>
-    </div>
-  `).join('');
-}
-
-function removePhoto(i) {
-  photoDataURLs.splice(i, 1);
-  photoFiles.splice(i, 1);
-  renderPhotoGrid();
-}
-
-// ─────────────────────────────────────────────
-//  VIEW ROUTING
-// ─────────────────────────────────────────────
-function showView(name) {
-  ['setup','generating','tracker','saved'].forEach(v => {
-    document.getElementById('view-' + v).classList.toggle('hidden', v !== name);
-  });
-  document.getElementById('save-bar').classList.toggle('hidden', name !== 'tracker');
-}
-
-function showSaved() { showView('saved'); }
-function showUpload() { document.querySelector('#view-saved input[type=file]').click(); }
-function confirmNew() { document.getElementById('confirm-new-modal').classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-// ─────────────────────────────────────────────
-//  GENERATE
-// ─────────────────────────────────────────────
-async function generate() {
-  const key = getKey(selectedProvider);
-  if (!key) { showToast('Save your API key first'); return; }
-
-  const goal = document.getElementById('goal-select').value;
-  const exp  = document.getElementById('exp-select').value;
-  const days = document.getElementById('days-select').value;
-  const notes = document.getElementById('notes-input').value.trim();
-
-  showView('generating');
-  setGenLabel('Analyzing your equipment…');
-
-  const prompt = buildPrompt(goal, exp, days, notes);
-
-  try {
-    let raw = '';
-    if (selectedProvider === 'claude')   raw = await callClaude(key, prompt);
-    else if (selectedProvider === 'openai')  raw = await callOpenAI(key, prompt);
-    else if (selectedProvider === 'gemini')  raw = await callGemini(key, prompt);
-    else if (selectedProvider === 'deepseek') raw = await callDeepSeek(key, prompt);
-
-    const tracker = parseResponse(raw, goal, exp, days);
-    TRACKER = tracker;
-    renderTracker();
-    showView('tracker');
-  } catch(e) {
-    showView('setup');
-    showToast('Error: ' + (e.message || 'Generation failed'));
-    console.error(e);
-  }
-}
-
-function setGenLabel(txt) {
-  document.getElementById('gen-label').textContent = txt;
-}
-
-function buildPrompt(goal, exp, days, notes) {
-  const goalMap = { muscle:'build muscle (hypertrophy)', strength:'build strength (low reps, heavy)', fat_loss:'fat loss (higher reps, circuits)', endurance:'endurance (high rep, low rest)', general:'general fitness' };
-  const expMap  = { beginner:'beginner', intermediate:'intermediate', advanced:'advanced' };
-
-  let equipNote = photoDataURLs.length > 0
-    ? `I'm sending ${photoDataURLs.length} photo(s) of my available equipment. Identify every piece of equipment visible.`
-    : `No photos provided — assume bodyweight only (pull-up bar optional).`;
-
-  return `You are an expert personal trainer. ${equipNote}
-
-Generate a complete ${days}-day workout plan for someone with ${expMap[exp]} experience whose goal is to ${goalMap[goal]}.${notes ? '\nExtra notes: ' + notes : ''}
-
-IMPORTANT: Respond with ONLY valid JSON in exactly this format — no markdown, no explanation:
-
-{
-  "title": "My [X]-Day [Goal] Plan",
-  "equipment": ["list", "of", "identified", "equipment"],
+/* The prompt is built from the Workout Goals form, so the user's AI never has to ask
+   questions. The user pastes it into their AI together with equipment photos; the AI
+   replies with JSON this page can render. */
+const JSON_TEMPLATE = `{
+  "title": "4-Day Muscle Builder",
+  "summary": "One or two sentences describing the plan, split and equipment used.",
+  "goal": "Build Muscle",
+  "experience": "Intermediate",
+  "equipment": ["Dumbbells (10-50 lb)", "Pull-up bar"],
   "days": [
     {
-      "id": "A",
-      "label": "Push",
-      "day": "Monday",
-      "emoji": "💪",
-      "color": "#7c3aed",
+      "day": "Day 1",
+      "focus": "Upper body push",
       "exercises": [
-        { "name": "Exercise Name", "sets": 3, "reps": "8–12 reps", "tip": "Brief form tip" }
+        { "name": "Dumbbell bench press", "sets": 4, "reps": "8-10", "rest": "90s", "notes": "Control the way down" }
       ]
     }
-  ]
+  ],
+  "tips": ["Progress weight when you hit the top of the rep range."]
+}`;
+
+function buildPrompt() {
+  const v = (id) => $(id).value.trim();
+  return `You are an expert personal trainer. I've attached photos of the equipment I have available. Look at them, identify the equipment, and build me a workout routine.
+
+MY WORKOUT GOALS
+- Goal: ${v("goal")}
+- Experience: ${v("level")}
+- Days per week: ${v("days")}
+- Time per session: ${v("mins")} minutes
+- Equipment details (weights, bench type, etc.): ${v("equip") || "none given - estimate from the photos"}
+- Notes (injuries, preferences, equipment to avoid): ${v("notes") || "none"}
+
+RULES
+- Use ONLY the equipment you can identify in the photos or that I listed above. Bodyweight exercises are always allowed.
+- Do NOT ask me any questions. If something is unclear, make a sensible assumption and list it in the "equipment" array (for example "Dumbbells (assumed 10-40 lb)"). If there are no photos and no equipment details, assume bodyweight only and say so in "summary".
+- Make exactly ${v("days")} training days, each fitting in about ${v("mins")} minutes.
+- Respect my notes (injuries, preferences) in every exercise choice.
+- "sets" must be a number. "reps" and "rest" are short strings.
+
+REPLY FORMAT
+Reply with ONLY valid JSON - no markdown fences, no text before or after - in exactly this shape:
+${JSON_TEMPLATE}`;
 }
 
-Rules:
-- Use only equipment visible in photos (or bodyweight if no photos). Do NOT include equipment not shown.
-- ${days} day objects with unique ids (A, B, C…), distinct labels (Push/Pull/Legs or Upper/Lower/etc.), and appropriate days of the week with rest days noted.
-- 4–7 exercises per day appropriate to equipment.
-- Colors: use hex codes — purple #7c3aed, pink #ec4899, blue #3b82f6, green #22c55e, orange #f97316, teal #14b8a6.
-- Vary colors across days.
-- Keep reps realistic for the goal and experience level.`;
-}
+const $ = (id) => document.getElementById(id);
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} }
+};
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function setStatus(id, msg, cls) { const el = $(id); el.textContent = msg; el.className = "status " + (cls || ""); }
+let currentPlan = null;
 
-// ─────────────────────────────────────────────
-//  API CALLS
-// ─────────────────────────────────────────────
-async function callClaude(key, prompt) {
-  setGenLabel('Sending to Claude…');
-  const content = [];
-  for (const url of photoDataURLs) {
-    const [meta, data] = url.split(',');
-    const mt = meta.match(/:(.*?);/)[1];
-    content.push({ type: 'image', source: { type: 'base64', media_type: mt, data } });
-  }
-  content.push({ type: 'text', text: prompt });
-
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-      'anthropic-dangerous-direct-browser-calls': 'true'
-    },
-    body: JSON.stringify({
-      model: PROVIDERS.claude.model,
-      max_tokens: 4096,
-      messages: [{ role: 'user', content }]
-    })
-  });
-  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || res.statusText); }
-  const j = await res.json();
-  return j.content[0].text;
-}
-
-async function callOpenAI(key, prompt) {
-  setGenLabel('Sending to ChatGPT…');
-  const content = [{ type: 'text', text: prompt }];
-  for (const url of photoDataURLs) {
-    content.push({ type: 'image_url', image_url: { url } });
-  }
-
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: PROVIDERS.openai.model,
-      max_tokens: 4096,
-      messages: [{ role: 'user', content }]
-    })
-  });
-  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || res.statusText); }
-  const j = await res.json();
-  return j.choices[0].message.content;
-}
-
-async function callGemini(key, prompt) {
-  setGenLabel('Sending to Gemini…');
-  const parts = [{ text: prompt }];
-  for (const url of photoDataURLs) {
-    const [meta, data] = url.split(',');
-    const mt = meta.match(/:(.*?);/)[1];
-    parts.push({ inlineData: { mimeType: mt, data } });
-  }
-
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${PROVIDERS.gemini.model}:generateContent?key=${key}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts }] })
-  });
-  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || res.statusText); }
-  const j = await res.json();
-  return j.candidates[0].content.parts[0].text;
-}
-
-async function callDeepSeek(key, prompt) {
-  setGenLabel('Sending to DeepSeek…');
-  if (photoDataURLs.length > 0) {
-    showToast('Note: DeepSeek does not support photos — using text description only');
-  }
-
-  const res = await fetch('https://api.deepseek.com/chat/completions', {
-    method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: PROVIDERS.deepseek.model,
-      max_tokens: 4096,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
-  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || res.statusText); }
-  const j = await res.json();
-  return j.choices[0].message.content;
-}
-
-// ─────────────────────────────────────────────
-//  PARSE RESPONSE
-// ─────────────────────────────────────────────
-function parseResponse(raw, goal, exp, days) {
-  let txt = raw.trim();
-  // strip markdown code fences if present
-  txt = txt.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+/* ---------- Steps 1-2: goals form -> live prompt ---------- */
+const FORM_IDS = ["goal", "level", "days", "mins", "equip", "notes"];
+function restoreForm() {
   try {
-    const data = JSON.parse(txt);
-    // Build tracker state
-    const tracker = {
-      title: data.title || `${days}-Day Workout Plan`,
-      equipment: data.equipment || [],
-      goal, exp, days: parseInt(days),
-      generated: new Date().toISOString(),
-      days_data: data.days.map(d => ({
-        ...d,
-        exercises: d.exercises.map(ex => ({ ...ex }))
-      })),
-      // tracking state
-      open: {},
-      sets: {},
-      weights: {},
-      lastWeek: {},
-      activeDay: 0
-    };
-    // init state for each day
-    tracker.days_data.forEach((d, di) => {
-      tracker.open[di] = {};
-      tracker.sets[di] = {};
-      tracker.weights[di] = {};
-      tracker.lastWeek[di] = {};
-      d.exercises.forEach((ex, ei) => {
-        tracker.open[di][ei] = ei === 0;
-        tracker.sets[di][ei] = {};
-        for (let s = 0; s < ex.sets; s++) tracker.sets[di][ei][s] = false;
-        tracker.weights[di][ei] = '';
-        tracker.lastWeek[di][ei] = '';
-      });
-    });
-    return tracker;
-  } catch(e) {
-    throw new Error('AI returned invalid JSON. Try again.');
-  }
+    const saved = JSON.parse(LS.get("wg_form", "{}"));
+    FORM_IDS.forEach(id => { if (saved[id] !== undefined) $(id).value = saved[id]; });
+  } catch {}
+}
+function refreshPrompt() {
+  LS.set("wg_form", JSON.stringify(Object.fromEntries(FORM_IDS.map(id => [id, $(id).value]))));
+  $("promptBox").value = buildPrompt();
+  setStatus("copyStatus", "", "");
+}
+FORM_IDS.forEach(id => { $(id).addEventListener("input", refreshPrompt); $(id).addEventListener("change", refreshPrompt); });
+restoreForm(); $("promptBox").value = buildPrompt();
+
+$("copyPrompt").onclick = async () => {
+  const text = buildPrompt();
+  try { await navigator.clipboard.writeText(text); }
+  catch { $("promptBox").select(); document.execCommand("copy"); }
+  setStatus("copyStatus", "✓ Copied — now paste it into your AI with your photos", "ok");
+};
+
+/* ---------- Parse + validate ---------- */
+function parsePlan(text) {
+  let t = text.trim().replace(/^```(?:json)?/i, "").replace(/```\s*$/, "").trim();
+  const s = t.indexOf("{"), e = t.lastIndexOf("}");
+  if (s < 0 || e < 0) throw new Error("I couldn't find any JSON in that text. Make sure you copied the AI's full reply.");
+  let plan;
+  try { plan = JSON.parse(t.slice(s, e + 1)); }
+  catch { throw new Error("That reply isn't valid JSON. Ask your AI: \"Reply again with ONLY the JSON, no extra text.\""); }
+  if (!Array.isArray(plan.days) || !plan.days.length) throw new Error("The JSON is missing the \"days\" list. Ask your AI to follow the template exactly.");
+  plan.days.forEach(d => { if (!Array.isArray(d.exercises)) d.exercises = []; });
+  return plan;
 }
 
-// ─────────────────────────────────────────────
-//  RENDER TRACKER
-// ─────────────────────────────────────────────
-function renderTracker() {
-  if (!TRACKER) return;
-  document.getElementById('tracker-title').textContent = TRACKER.title;
-  const equip = TRACKER.equipment.length ? TRACKER.equipment.join(', ') : 'Bodyweight';
-  document.getElementById('tracker-meta').textContent =
-    `📦 ${equip} · 🎯 ${TRACKER.goal.replace('_',' ')} · 📅 Generated ${new Date(TRACKER.generated).toLocaleDateString()}`;
-
-  // day tabs
-  const tabs = document.getElementById('day-tabs');
-  tabs.innerHTML = TRACKER.days_data.map((d, i) => `
-    <div class="day-tab ${i === activeDay ? 'active' : ''}"
-         style="${i === activeDay ? 'background:' + d.color : ''}"
-         onclick="switchDay(${i})">
-      ${d.emoji} ${d.label}
-    </div>
-  `).join('');
-
-  renderExercises();
+/* ---------- Render ---------- */
+function renderPlan(plan) {
+  currentPlan = plan;
+  const chips = [plan.goal, plan.experience, plan.days.length + " days/week"].filter(Boolean)
+    .map(c => `<span class="chip">${esc(c)}</span>`).join("");
+  const equip = (plan.equipment || []).length ? `<div class="note">Equipment: ${plan.equipment.map(esc).join(", ")}</div>` : "";
+  const days = plan.days.map(d => `
+    <div class="day"><h3>${esc(d.day)}</h3><div class="focus">${esc(d.focus)}</div>
+    <table><thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr></thead><tbody>
+    ${d.exercises.map(x => `<tr><td>${esc(x.name)}${x.notes ? `<small>${esc(x.notes)}</small>` : ""}</td><td>${esc(x.sets)}</td><td>${esc(x.reps)}</td><td>${esc(x.rest)}</td></tr>`).join("")}
+    </tbody></table></div>`).join("");
+  const tips = (plan.tips || []).length ? `<h3>Tips</h3><ul class="tips">${plan.tips.map(t => `<li>${esc(t)}</li>`).join("")}</ul>` : "";
+  $("result").innerHTML = `<h2 class="plan-title">${esc(plan.title || "Your workout plan")}</h2><div>${chips}</div>
+    <p class="summary">${esc(plan.summary)}</p>${equip}<div style="height:14px"></div>${days}${tips}
+    <div class="actions"><button class="btn big" id="saveBtn">💾 Save plan</button><button class="btn-ghost" id="printBtn">🖨 Print</button></div>`;
+  $("resultCard").hidden = false;
+  $("saveBtn").onclick = savePlan; $("printBtn").onclick = () => window.print();
+  $("resultCard").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function switchDay(i) {
-  activeDay = i;
-  renderTracker();
+/* ---------- Step 3: build ---------- */
+$("build").onclick = () => {
+  setStatus("genStatus", "", "");
+  const raw = $("jsonIn").value;
+  if (!raw.trim()) return setStatus("genStatus", "Paste your AI's reply first.", "err");
+  try { renderPlan(parsePlan(raw)); setStatus("genStatus", "✓ Routine built", "ok"); }
+  catch (err) { $("resultCard").hidden = true; setStatus("genStatus", "⚠ " + err.message, "err"); }
+};
+$("pasteBtn").onclick = async () => {
+  try { $("jsonIn").value = await navigator.clipboard.readText(); $("build").click(); }
+  catch { setStatus("genStatus", "Your browser blocked clipboard access — paste into the box manually (Ctrl/Cmd+V).", "err"); }
+};
+
+/* ---------- Saved plans ---------- */
+const loadSaved = () => { try { return JSON.parse(LS.get("wg_saved", "[]")); } catch { return []; } };
+function savePlan() {
+  if (!currentPlan) return;
+  const list = loadSaved();
+  list.unshift({ id: Date.now(), at: new Date().toLocaleString(), plan: currentPlan });
+  LS.set("wg_saved", JSON.stringify(list.slice(0, 30)));
+  $("saveBtn").textContent = "✓ Saved";
 }
-
-function renderExercises() {
-  const day = TRACKER.days_data[activeDay];
-  const list = document.getElementById('exercises-list');
-  list.innerHTML = day.exercises.map((ex, ei) => {
-    const isOpen = TRACKER.open[activeDay][ei];
-    const doneSets = Object.values(TRACKER.sets[activeDay][ei]).filter(Boolean).length;
-    const totalSets = ex.sets;
-    const allDone = doneSets === totalSets;
-    const w = TRACKER.weights[activeDay][ei];
-    const lw = TRACKER.lastWeek[activeDay][ei];
-
-    let setsHTML = '';
-    for (let s = 0; s < ex.sets; s++) {
-      const done = TRACKER.sets[activeDay][ei][s];
-      setsHTML += `
-        <div class="set-row">
-          <span class="set-num">${s+1}</span>
-          <div class="set-check ${done ? 'done' : ''}" onclick="toggleSet(${activeDay},${ei},${s})"></div>
-          <span class="set-label">${ex.reps}</span>
-          <div class="weight-wrap">
-            <input class="weight-input" type="number" value="${w}" placeholder="–"
-              onchange="setWeight(${activeDay},${ei},this.value)" min="0" step="2.5">
-            <span class="weight-unit">lbs</span>
-          </div>
-        </div>
-      `;
-    }
-    if (lw) setsHTML += `<div class="lastweek">Last week: ${lw} lbs</div>`;
-    if (ex.tip) setsHTML += `<div class="lastweek" style="color:var(--accent2);">💡 ${ex.tip}</div>`;
-
-    return `
-      <div class="ex-card ${isOpen ? 'open' : ''}" id="ex-${activeDay}-${ei}">
-        <div class="ex-header" onclick="toggleOpen(${activeDay},${ei})">
-          <div>
-            <div class="ex-name">${ex.name}</div>
-            <div class="ex-reps">${ex.sets}×${ex.reps}</div>
-          </div>
-          <span class="ex-progress" style="color:${allDone ? 'var(--green)' : 'var(--muted)'}">
-            ${doneSets}/${totalSets}${allDone ? ' ✓' : ''}
-          </span>
-          <span class="ex-chevron">▼</span>
-        </div>
-        <div class="ex-body">${setsHTML}</div>
-      </div>
-    `;
-  }).join('');
+function openSaved() {
+  const list = loadSaved();
+  $("savedList").innerHTML = list.length ? "" : '<p class="note">No saved plans yet.</p>';
+  list.forEach(item => {
+    const row = document.createElement("div"); row.className = "saved-item";
+    row.innerHTML = `<div><a>${esc(item.plan.title || "Workout plan")}</a><small>${esc(item.at)}</small></div><button class="btn-ghost">Delete</button>`;
+    row.querySelector("a").onclick = () => { renderPlan(item.plan); $("modal").classList.remove("open"); };
+    row.querySelector("button").onclick = () => { LS.set("wg_saved", JSON.stringify(loadSaved().filter(x => x.id !== item.id))); openSaved(); };
+    $("savedList").appendChild(row);
+  });
+  $("modal").classList.add("open");
 }
-
-function toggleOpen(di, ei) {
-  TRACKER.open[di][ei] = !TRACKER.open[di][ei];
-  document.getElementById(`ex-${di}-${ei}`).classList.toggle('open', TRACKER.open[di][ei]);
-}
-
-function toggleSet(di, ei, si) {
-  TRACKER.sets[di][ei][si] = !TRACKER.sets[di][ei][si];
-  // re-render just exercises
-  renderExercises();
-}
-
-function setWeight(di, ei, val) {
-  TRACKER.weights[di][ei] = val;
-  TRACKER.lastWeek[di][ei] = val; // mirror for next week reference
-}
-
-// ─────────────────────────────────────────────
-//  SAVE / LOAD
-// ─────────────────────────────────────────────
-function saveSession() {
-  if (!TRACKER) return;
-  const btn = document.getElementById('save-btn');
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
-  downloadTracker();
-  setTimeout(() => {
-    btn.textContent = '✓ Saved!';
-    setTimeout(() => { btn.disabled = false; btn.textContent = '💾 Save Session'; }, 1800);
-  }, 400);
-}
-
-function downloadTracker() {
-  if (!TRACKER) return;
-  const json = JSON.stringify(TRACKER, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = (TRACKER.title || 'workout').replace(/\s+/g,'_') + '_' + new Date().toISOString().slice(0,10) + '.json';
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('Tracker downloaded ✓');
-}
-
-function loadJSON(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      TRACKER = JSON.parse(e.target.result);
-      activeDay = TRACKER.activeDay || 0;
-      renderTracker();
-      showView('tracker');
-      showToast('Workout loaded ✓');
-    } catch {
-      showToast('Invalid file');
-    }
-  };
-  reader.readAsText(file);
-}
-
-// ─────────────────────────────────────────────
-//  TOAST
-// ─────────────────────────────────────────────
-let toastTimer;
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-// ─────────────────────────────────────────────
-//  BOOT
-// ─────────────────────────────────────────────
-init();
+$("savedBtn").onclick = openSaved;
+$("closeModal").onclick = () => $("modal").classList.remove("open");
+$("modal").onclick = (e) => { if (e.target === $("modal")) $("modal").classList.remove("open"); };
+$("newBtn").onclick = () => { $("jsonIn").value = ""; $("resultCard").hidden = true; currentPlan = null; setStatus("genStatus", "", ""); setStatus("copyStatus", "", ""); window.scrollTo({ top: 0, behavior: "smooth" }); };
 </script>
 </body>
 </html>
