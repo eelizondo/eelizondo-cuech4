@@ -264,6 +264,7 @@ nav a.current { color: var(--green); }
   display: flex; align-items: center; justify-content: center;
   font-size: 40px; color: var(--icon-c);
 }
+.prod-image .project-icon { width: 56px; height: 56px; object-fit: contain; }
 .prod-badge {
   position: absolute; top: 12px; right: 12px;
   font-size: 10px; font-weight: 600; padding: 4px 9px; border-radius: 5px;
@@ -382,7 +383,7 @@ footer {
   </div>
   <div class="prod-grid">
     <a class="prod-card" href="workout-generator/workout-generator.html">
-      <div class="prod-image">🏋<span class="prod-badge badge-best">Live</span></div>
+      <div class="prod-image"><img class="project-icon" src="workout-generator/global_assets/workout-generator-icon.svg" alt="Workout Generator icon"><span class="prod-badge badge-best">Live</span></div>
       <div class="prod-info">
         <h3>Workout Generator</h3>
         <p>Generates a custom workout plan based on your goals and equipment.</p>

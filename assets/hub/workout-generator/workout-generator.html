@@ -67,6 +67,7 @@
   .row { display: flex; gap: 8px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
   .grid2 { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 14px; } .opt { color: #5f6478; font-size: 12px; }
   .btn.big { padding: 13px 20px; }
+  .hidden { display: none !important; }
   details.prompt { margin-top: 10px; } details.prompt summary { cursor: pointer; color: var(--accent-text); font-size: 13px; }
   @media (max-width: 560px) { .providers, .grid3, .grid2 { grid-template-columns: 1fr; } header { padding: 12px 16px; } }
 </style>
@@ -85,7 +86,7 @@
 </header>
 
 <main>
-  <section class="card">
+  <section class="card" id="howCard">
     <h2>📋 How it works</h2>
     <ol class="how">
       <li><b>Step 1:</b> Fill in your workout goals below.</li>
@@ -95,7 +96,7 @@
     <div class="note">Nothing is sent from this page — no accounts, no API keys. Your routines are saved only in this browser.</div>
   </section>
 
-  <section class="card">
+  <section class="card" id="goalsCard">
     <h2>🎯 Workout Goals <span class="step">Step 1</span></h2>
     <div class="grid3">
       <div><label for="goal">Goal</label>
@@ -116,7 +117,7 @@
     <div class="note">Photos can't show dumbbell weights or band strength — add them above if you can.</div>
   </section>
 
-  <section class="card">
+  <section class="card" id="promptCard">
     <h2>🤖 Copy the prompt <span class="step">Step 2</span></h2>
     <textarea id="promptBox" rows="13" readonly></textarea>
     <div class="row">
@@ -126,7 +127,7 @@
     <div class="note">Open your AI, paste the prompt <b>and attach your equipment photos</b> (dumbbells, bands, machines, pull-up bar, etc.) in the same message. The prompt updates as you change your goals.</div>
   </section>
 
-  <section class="card">
+  <section class="card" id="pasteCard">
     <h2>📥 Paste your routine <span class="step">Step 3</span></h2>
     <textarea id="jsonIn" rows="8" placeholder='Paste the AI&#39;s reply here (the JSON starting with { "title": … )'></textarea>
     <div class="row">
@@ -240,6 +241,21 @@ function parsePlan(text) {
 }
 
 /* ---------- Render ---------- */
+const setupCardIds = ["howCard", "goalsCard", "promptCard", "pasteCard"];
+function showSetupCards(show) {
+  setupCardIds.forEach(id => { $(id).hidden = !show; });
+}
+
+function restartRoutine() {
+  currentPlan = null;
+  $("jsonIn").value = "";
+  $("resultCard").hidden = true;
+  showSetupCards(true);
+  setStatus("genStatus", "", "");
+  setStatus("copyStatus", "", "");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 function renderPlan(plan) {
   currentPlan = plan;
   const chips = [plan.goal, plan.experience, plan.days.length + " days/week"].filter(Boolean)
@@ -253,9 +269,11 @@ function renderPlan(plan) {
   const tips = (plan.tips || []).length ? `<h3>Tips</h3><ul class="tips">${plan.tips.map(t => `<li>${esc(t)}</li>`).join("")}</ul>` : "";
   $("result").innerHTML = `<h2 class="plan-title">${esc(plan.title || "Your workout plan")}</h2><div>${chips}</div>
     <p class="summary">${esc(plan.summary)}</p>${equip}<div style="height:14px"></div>${days}${tips}
-    <div class="actions"><button class="btn big" id="saveBtn">💾 Save plan</button><button class="btn-ghost" id="printBtn">🖨 Print</button></div>`;
+    <div class="actions"><button class="btn big" id="saveBtn">💾 Save plan</button><button class="btn-ghost" id="printBtn">🖨 Print</button><button class="btn-ghost" id="againBtn">Generate Routine Again</button></div>`;
   $("resultCard").hidden = false;
+  showSetupCards(false);
   $("saveBtn").onclick = savePlan; $("printBtn").onclick = () => window.print();
+  $("againBtn").onclick = restartRoutine;
   $("resultCard").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -296,7 +314,7 @@ function openSaved() {
 $("savedBtn").onclick = openSaved;
 $("closeModal").onclick = () => $("modal").classList.remove("open");
 $("modal").onclick = (e) => { if (e.target === $("modal")) $("modal").classList.remove("open"); };
-$("newBtn").onclick = () => { $("jsonIn").value = ""; $("resultCard").hidden = true; currentPlan = null; setStatus("genStatus", "", ""); setStatus("copyStatus", "", ""); window.scrollTo({ top: 0, behavior: "smooth" }); };
+$("newBtn").onclick = restartRoutine;
 </script>
 </body>
 </html>
