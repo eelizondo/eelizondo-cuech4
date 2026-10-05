@@ -252,8 +252,13 @@ nav a.current { color: var(--green); }
 .build-search input { width: 100%; min-width: 0; padding: 0; color: var(--header-c); background: transparent; border: 0; outline: 0; font: 13px 'Inter', sans-serif; }
 .build-search input::placeholder { color: var(--label-c); }
 .build-search kbd { flex: none; padding: 2px 6px; color: var(--label-c); background: var(--panel-2); border: 1px solid var(--border); border-radius: 4px; font: 11px 'Space Mono', monospace; }
-.filter-empty { max-width: 1200px; margin: 18px auto 0; color: var(--label-c); font-size: 13px; }
-.filter-empty.hidden { display: none; }
+.build-controls { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 1; min-width: 0; }
+.category-filter { position: relative; flex: 0 1 240px; min-width: 180px; }
+.category-filter select { width: 100%; min-height: 36px; padding: 8px 34px 8px 12px; appearance: none; color: var(--header-c); background: var(--panel); border: 1px solid var(--border); border-radius: 8px; font: 13px 'Inter', sans-serif; cursor: pointer; }
+.category-filter select:hover { border-color: var(--green); }
+.category-filter select:focus-visible, .filter-empty button:focus-visible, .prod-card:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 3px; }
+.category-filter svg { position: absolute; top: 50%; right: 11px; width: 14px; height: 14px; color: var(--icon-c); pointer-events: none; transform: translateY(-50%); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 /* PRODUCT GRID */
 .prod-grid {
@@ -281,14 +286,22 @@ nav a.current { color: var(--green); }
   font-size: 10px; font-weight: 600; padding: 4px 9px; border-radius: 5px;
   text-transform: uppercase; letter-spacing: 0.04em;
 }
+.prod-badge.badge-new { left: 12px; right: auto; }
 .badge-new { background: var(--pink); color: var(--pink-on); }
 .badge-hand { background: var(--yellow); color: var(--yellow-on); }
 .badge-best { background: var(--green); color: var(--green-on); }
 .badge-soon { background: var(--yellow); color: var(--yellow-on); }
 .prod-info { padding: 16px; }
+.prod-category { margin-bottom: 7px; color: var(--label-c); font-size: 11px; line-height: 1.2; letter-spacing: 0.04em; text-transform: uppercase; }
 .prod-info h3 { font-size: 15px; margin-bottom: 4px; font-family: 'Inter', sans-serif; font-weight: 600; color: var(--header-c); }
 .prod-info p { font-size: 13px; color: var(--label-c); line-height: 1.5; }
 .prod-price { color: var(--accent-text); font-weight: 600; font-size: 14px; }
+.filter-empty { grid-column: 1 / -1; padding: 28px 16px; color: var(--label-c); background: var(--panel); border: 1px solid var(--border); border-radius: 12px; text-align: center; }
+.filter-empty p { margin-bottom: 12px; font-size: 14px; }
+.filter-empty button { padding: 8px 12px; color: var(--header-c); background: var(--panel-2); border: 1px solid var(--border); border-radius: 7px; font: 13px 'Inter', sans-serif; cursor: pointer; }
+.filter-empty button:hover { border-color: var(--green); }
+.more-tools { max-width: 1200px; margin: 12px auto 0; padding: 14px 16px; color: var(--label-c); border-top: 1px solid var(--border); font-size: 13px; text-align: center; }
+.more-tools[hidden] { display: none; }
 
 /* ABOUT TEASER */
 .about-teaser {
@@ -338,8 +351,23 @@ footer {
   .about-teaser .frog-big { max-width: 160px; margin: 0 auto; }
   .hero { padding: 60px 20px 50px; }
 }
+@media (max-width: 700px) {
+  .section-head { align-items: stretch; flex-direction: column; }
+  .build-controls { width: 100%; flex-direction: column; align-items: stretch; }
+  .build-search, .category-filter { width: 100%; min-width: 0; flex: 0 0 auto; }
+}
 @media (max-width: 480px) {
   .prod-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal, .char { opacity: 1; transform: none; filter: none; animation: none; }
+  .prod-card:hover { transform: none; }
 }
 </style>
 <script>
@@ -367,13 +395,13 @@ footer {
     </nav>
     <div class="header-actions">
       <div class="theme-toggle">
-        <button id="btn-night" class="active" onclick="setTheme('night')">Night</button>
-        <button id="btn-day" onclick="setTheme('day')">Day</button>
+        <button id="btn-night" class="active" type="button">Night</button>
+        <button id="btn-day" type="button">Day</button>
       </div>
       <a href="../../cart.html" class="cart-btn" aria-label="Cart">
         🛒<span class="cart-badge" id="header-cart-count">0</span>
       </a>
-      <button type="button" class="mobile-toggle" aria-label="Menu" aria-controls="site-nav" aria-expanded="false" onclick="const nav=document.getElementById('site-nav');const open=nav.classList.toggle('mobile-open');this.setAttribute('aria-expanded',open)">☰</button>
+      <button type="button" class="mobile-toggle" aria-label="Menu" aria-controls="site-nav" aria-expanded="false">☰</button>
     </div>
   </div>
 </header>
@@ -391,99 +419,26 @@ footer {
 <section class="section reveal reveal-2" id="latest-builds">
   <div class="section-head">
     <h2>Latest builds</h2>
-    <label class="build-search" for="build-search-input">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
-      <input id="build-search-input" type="search" placeholder="Filter builds" autocomplete="off">
-      <kbd aria-hidden="true">/</kbd>
-    </label>
+    <div class="build-controls">
+      <label class="build-search" for="build-search-input">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+        <input id="build-search-input" type="search" placeholder="Filter builds" autocomplete="off">
+        <kbd aria-hidden="true">/</kbd>
+      </label>
+      <label class="category-filter">
+        <span class="sr-only">Filter by category</span>
+        <select id="category-select" aria-label="Filter by category"></select>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6"></path></svg>
+      </label>
+    </div>
   </div>
-  <div class="prod-grid">
-    <a class="prod-card" href="apps/workout-generator/index.html">
-      <div class="prod-image"><img class="project-icon" src="apps/workout-generator/assets/workout-generator-icon.svg" alt="Workout Generator icon"><span class="prod-badge badge-best">Live</span></div>
-      <div class="prod-info">
-        <h3>Workout Generator</h3>
-        <p>Generates a custom workout plan based on your goals and equipment.</p>
-      </div>
-    </a>
-    <a class="prod-card" href="apps/character-counter/index.html">
-      <div class="prod-image"><img class="project-icon" src="apps/character-counter/assets/character-counter-icon.svg" alt="Character Counter icon"><span class="prod-badge badge-best">Live</span></div>
-      <div class="prod-info">
-        <h3>Character Counter</h3>
-        <p>Counts characters, words, lines, and text size in real time.</p>
-      </div>
-    </a>
-    <a class="prod-card" href="apps/qr-generator/index.html">
-      <div class="prod-image"><img class="project-icon" src="apps/qr-generator/assets/qr-generator-icon.svg" alt="QR Code Generator icon"><span class="prod-badge badge-best">Live</span></div>
-      <div class="prod-info">
-        <h3>QR Code Generator</h3>
-        <p>Create and download customizable QR codes for text or links.</p>
-      </div>
-    </a>
-    <a class="prod-card" href="apps/color-converter/index.html">
-      <div class="prod-image"><img class="project-icon" src="apps/color-converter/assets/color-converter-icon.svg" alt="Color Converter icon"><span class="prod-badge badge-best">Live</span></div>
-      <div class="prod-info">
-        <h3>Color Converter</h3>
-        <p>Convert colors across HEX, RGB, HSL, OKLCH, HSV, and CMYK formats.</p>
-      </div>
-    </a>
-    <a class="prod-card" href="apps/ip-checker/index.html">
-      <div class="prod-image"><img class="project-icon" src="apps/ip-checker/assets/ip-checker-icon.svg" alt="IP Address Checker icon"><span class="prod-badge badge-best">Live</span></div>
-      <div class="prod-info">
-        <h3>IP Address Checker</h3>
-        <p>Check your public IPv4/IPv6 address and device information.</p>
-      </div>
-    </a>
-    <a class="prod-card" href="apps/password-generator/index.html">
-      <div class="prod-image"><img class="project-icon" src="apps/password-generator/assets/password-generator-icon.svg" alt="Password Generator icon"><span class="prod-badge badge-best">Live</span></div>
-      <div class="prod-info">
-        <h3>Password Generator</h3>
-        <p>Generate secure passwords with adjustable length and character types.</p>
-      </div>
-    </a>
-    <a class="prod-card" href="apps/text-diff/index.html">
-      <div class="prod-image"><img class="project-icon" src="apps/text-diff/assets/text-diff-icon.svg" alt="Text Diff Checker icon"><span class="prod-badge badge-best">Live</span></div>
-      <div class="prod-info">
-        <h3>Text Diff Checker</h3>
-        <p>Compare two versions of text and inspect their differences.</p>
-      </div>
-    </a>
-    <a class="prod-card" href="apps/age-calculator/index.html">
-      <div class="prod-image"><img class="project-icon" src="apps/age-calculator/assets/age-calculator-icon.svg" alt="Age Calculator icon"><span class="prod-badge badge-best">Live</span></div>
-      <div class="prod-info">
-        <h3>Age Calculator</h3>
-        <p>Calculate exact age, total days lived, and days until the next birthday.</p>
-      </div>
-    </a>
-    <a class="prod-card" href="apps/image-to-pdf/index.html">
-      <div class="prod-image"><img class="project-icon" src="apps/image-to-pdf/assets/image-to-pdf-icon.svg" alt="Image to PDF icon"><span class="prod-badge badge-best">Live</span></div>
-      <div class="prod-info">
-        <h3>Image to PDF</h3>
-        <p>Combine, reorder, and convert images into a PDF right in your browser.</p>
-      </div>
-    </a>
-    <a class="prod-card" href="apps/pdf-to-image/index.html">
-      <div class="prod-image"><img class="project-icon" src="apps/pdf-to-image/assets/pdf-to-image-icon.svg" alt="PDF to Image icon"><span class="prod-badge badge-best">Live</span></div>
-      <div class="prod-info">
-        <h3>PDF to Image</h3>
-        <p>Turn PDF pages into downloadable PNG or JPG images in your browser.</p>
-      </div>
-    </a>
-    <article class="prod-card soon" aria-disabled="true">
-      <div class="prod-image">✦<span class="prod-badge badge-soon">In progress</span></div>
-      <div class="prod-info">
-        <h3>Coming soon</h3>
-        <p>A new tool is in progress.</p>
-      </div>
-    </article>
-    <article class="prod-card soon" aria-disabled="true">
-      <div class="prod-image">✦<span class="prod-badge badge-soon">In progress</span></div>
-      <div class="prod-info">
-        <h3>Coming soon</h3>
-        <p>A new tool is in progress.</p>
-      </div>
-    </article>
+  <div class="prod-grid" id="prod-grid">
+    <div class="filter-empty" id="filter-empty" role="status" hidden>
+      <p id="filter-empty-message"></p>
+      <button type="button" id="clear-filters">Clear filters</button>
+    </div>
   </div>
-  <p class="filter-empty hidden" id="filter-empty" role="status">No builds match that search.</p>
+  <p class="more-tools" id="more-tools">More tools on the way.</p>
 </section>
 
 <section class="section reveal reveal-3">
@@ -500,7 +455,7 @@ footer {
 <footer>
   <div class="footer-inner">
     <div class="logo-group">
-      <img src="assets/global/frog-logo-white.png" id="footer-logo" alt="Cuech4" style="width:24px;height:24px;">
+      <img src="../global/frog-logo-white.png" id="footer-logo" alt="Cuech4" style="width:24px;height:24px;">
       <span class="logo-text" style="font-size:15px;">Cuech4</span>
     </div>
   </div>
@@ -538,6 +493,15 @@ function setTheme(mode) {
 
 const savedTheme = localStorage.getItem('cuech4-theme') || 'night';
 setTheme(savedTheme);
+document.getElementById('btn-night').addEventListener('click', () => setTheme('night'));
+document.getElementById('btn-day').addEventListener('click', () => setTheme('day'));
+
+const mobileToggle = document.querySelector('.mobile-toggle');
+mobileToggle.addEventListener('click', () => {
+  const nav = document.getElementById('site-nav');
+  const open = nav.classList.toggle('mobile-open');
+  mobileToggle.setAttribute('aria-expanded', String(open));
+});
 
 const splitTarget = document.querySelector('[data-split="true"]');
 if (splitTarget) {
@@ -587,28 +551,150 @@ if (projectsLink) {
   });
 }
 
-const buildSearch = document.getElementById('build-search-input');
-const buildCards = [...document.querySelectorAll('#latest-builds .prod-grid > .prod-card')];
-const filterEmpty = document.getElementById('filter-empty');
+const CATEGORY_LABELS = {
+  text: 'Text & Writing',
+  design: 'Color & Design',
+  files: 'Files & Documents',
+  security: 'Security & Network',
+  health: 'Health & Time'
+};
+const CATEGORY_ORDER = ['text', 'design', 'files', 'security', 'health'];
+const TOOLS = [
+  { id: 'pixel-art-converter', title: 'Pixel Art Converter', description: 'Turn images into retro pixel art with adjustable block sizes and color quantization.', href: 'apps/pixel-art-converter/index.html', category: 'design', status: 'live', isNew: true, icon: 'apps/pixel-art-converter/assets/pixel-art-converter-icon.svg' },
+  { id: 'image-to-pdf', title: 'Image to PDF', description: 'Combine, reorder, and convert images into a PDF right in your browser.', href: 'apps/image-to-pdf/index.html', category: 'files', status: 'live', isNew: true, icon: 'apps/image-to-pdf/assets/image-to-pdf-icon.svg' },
+  { id: 'pdf-to-image', title: 'PDF to Image', description: 'Turn PDF pages into downloadable PNG or JPG images in your browser.', href: 'apps/pdf-to-image/index.html', category: 'files', status: 'live', isNew: false, icon: 'apps/pdf-to-image/assets/pdf-to-image-icon.svg' },
+  { id: 'age-calculator', title: 'Age Calculator', description: 'Calculate exact age, total days lived, and days until the next birthday.', href: 'apps/age-calculator/index.html', category: 'health', status: 'live', isNew: false, icon: 'apps/age-calculator/assets/age-calculator-icon.svg' },
+  { id: 'text-diff', title: 'Text Diff Checker', description: 'Compare two versions of text and inspect their differences.', href: 'apps/text-diff/index.html', category: 'text', status: 'live', isNew: false, icon: 'apps/text-diff/assets/text-diff-icon.svg' },
+  { id: 'password-generator', title: 'Password Generator', description: 'Generate secure passwords with adjustable length and character types.', href: 'apps/password-generator/index.html', category: 'security', status: 'live', isNew: false, icon: 'apps/password-generator/assets/password-generator-icon.svg' },
+  { id: 'ip-checker', title: 'IP Address Checker', description: 'Check your public IPv4/IPv6 address and device information.', href: 'apps/ip-checker/index.html', category: 'security', status: 'live', isNew: false, icon: 'apps/ip-checker/assets/ip-checker-icon.svg' },
+  { id: 'color-converter', title: 'Color Converter', description: 'Convert colors across HEX, RGB, HSL, OKLCH, HSV, and CMYK formats.', href: 'apps/color-converter/index.html', category: 'design', status: 'live', isNew: false, icon: 'apps/color-converter/assets/color-converter-icon.svg' },
+  { id: 'qr-generator', title: 'QR Code Generator', description: 'Create and download customizable QR codes for text or links.', href: 'apps/qr-generator/index.html', category: 'files', status: 'live', isNew: false, icon: 'apps/qr-generator/assets/qr-generator-icon.svg' },
+  { id: 'character-counter', title: 'Character Counter', description: 'Counts characters, words, lines, and text size in real time.', href: 'apps/character-counter/index.html', category: 'text', status: 'live', isNew: false, icon: 'apps/character-counter/assets/character-counter-icon.svg' },
+  { id: 'workout-generator', title: 'Workout Generator', description: 'Generates a custom workout plan based on your goals and equipment.', href: 'apps/workout-generator/index.html', category: 'health', status: 'live', isNew: false, icon: 'apps/workout-generator/assets/workout-generator-icon.svg' }
+];
 
-function filterBuilds() {
-  const query = buildSearch.value.trim().toLocaleLowerCase();
-  let visibleCount = 0;
-  buildCards.forEach(card => {
-    const matches = card.textContent.toLocaleLowerCase().includes(query);
-    card.hidden = !matches;
-    if (matches) visibleCount++;
-  });
-  filterEmpty.classList.toggle('hidden', visibleCount > 0);
+const buildSearch = document.getElementById('build-search-input');
+const categorySelect = document.getElementById('category-select');
+const prodGrid = document.getElementById('prod-grid');
+const filterEmpty = document.getElementById('filter-empty');
+const filterEmptyMessage = document.getElementById('filter-empty-message');
+const moreTools = document.getElementById('more-tools');
+const initialParams = new URLSearchParams(window.location.search);
+const requestedCategory = initialParams.get('cat');
+let activeCategory = CATEGORY_ORDER.includes(requestedCategory) ? requestedCategory : 'all';
+buildSearch.value = initialParams.get('q') || '';
+
+function createToolCard(tool) {
+  const card = document.createElement('a');
+  card.className = 'prod-card';
+  card.href = tool.href;
+  card.dataset.toolId = tool.id;
+  card.dataset.category = tool.category;
+  card.dataset.searchText = `${tool.title} ${tool.description} ${CATEGORY_LABELS[tool.category]}`.toLocaleLowerCase();
+
+  const imageArea = document.createElement('div');
+  imageArea.className = 'prod-image';
+  const icon = document.createElement('img');
+  icon.className = 'project-icon';
+  icon.src = tool.icon;
+  icon.alt = `${tool.title} icon`;
+  imageArea.appendChild(icon);
+
+  if (tool.isNew) {
+    const newBadge = document.createElement('span');
+    newBadge.className = 'prod-badge badge-new';
+    newBadge.textContent = 'New';
+    imageArea.appendChild(newBadge);
+  }
+
+  if (tool.status !== 'live') {
+    const statusBadge = document.createElement('span');
+    statusBadge.className = 'prod-badge badge-soon';
+    statusBadge.textContent = 'In progress';
+    imageArea.appendChild(statusBadge);
+  }
+
+  const info = document.createElement('div');
+  info.className = 'prod-info';
+  const category = document.createElement('div');
+  category.className = 'prod-category';
+  category.textContent = CATEGORY_LABELS[tool.category];
+  const title = document.createElement('h3');
+  title.textContent = tool.title;
+  const description = document.createElement('p');
+  description.textContent = tool.description;
+  info.append(category, title, description);
+  card.append(imageArea, info);
+  return card;
 }
 
-buildSearch.addEventListener('input', filterBuilds);
+function createCategoryOption(id, label, count) {
+  const option = document.createElement('option');
+  option.value = id;
+  option.textContent = `${label} (${count})`;
+  categorySelect.appendChild(option);
+}
+
+createCategoryOption('all', 'All', TOOLS.length);
+CATEGORY_ORDER
+  .filter(category => TOOLS.some(tool => tool.category === category))
+  .forEach(category => {
+    const count = TOOLS.filter(tool => tool.category === category).length;
+    createCategoryOption(category, CATEGORY_LABELS[category], count);
+  });
+categorySelect.value = activeCategory;
+
+TOOLS.forEach(tool => prodGrid.insertBefore(createToolCard(tool), filterEmpty));
+
+function syncBuildUrl() {
+  const params = new URLSearchParams(window.location.search);
+  params.delete('cat');
+  params.delete('q');
+  const query = buildSearch.value.trim();
+  if (activeCategory !== 'all') params.set('cat', activeCategory);
+  if (query) params.set('q', query);
+  const search = params.toString();
+  const nextUrl = `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`;
+  history.replaceState(history.state, '', nextUrl);
+}
+
+function filterTools(updateUrl = true) {
+  const query = buildSearch.value.trim().toLocaleLowerCase();
+  let visibleCount = 0;
+  prodGrid.querySelectorAll('.prod-card').forEach(card => {
+    const matchesCategory = activeCategory === 'all' || card.dataset.category === activeCategory;
+    const matchesSearch = !query || card.dataset.searchText.includes(query);
+    card.hidden = !(matchesCategory && matchesSearch);
+    if (!card.hidden) visibleCount++;
+  });
+
+  categorySelect.value = activeCategory;
+  filterEmptyMessage.textContent = query
+    ? `No tools match “${buildSearch.value.trim()}”.`
+    : `No tools match “${CATEGORY_LABELS[activeCategory] || 'your filters'}”.`;
+  filterEmpty.hidden = visibleCount > 0;
+  moreTools.hidden = Boolean(query) || activeCategory !== 'all';
+  if (updateUrl) syncBuildUrl();
+}
+
+categorySelect.addEventListener('change', () => {
+  activeCategory = categorySelect.value;
+  filterTools();
+});
+
+buildSearch.addEventListener('input', () => filterTools());
 buildSearch.addEventListener('keydown', event => {
   if (event.key === 'Escape') {
     buildSearch.value = '';
-    filterBuilds();
+    filterTools();
     buildSearch.blur();
   }
+});
+
+document.getElementById('clear-filters').addEventListener('click', () => {
+  activeCategory = 'all';
+  buildSearch.value = '';
+  filterTools();
 });
 
 document.addEventListener('keydown', event => {
@@ -618,6 +704,8 @@ document.addEventListener('keydown', event => {
   event.preventDefault();
   buildSearch.focus();
 });
+
+filterTools();
 </script>
 
 </body>
