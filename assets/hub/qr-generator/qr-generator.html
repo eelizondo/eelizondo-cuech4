@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QR Code Generator — Cuech4 Hub</title>
-<link rel="icon" type="image/svg+xml" href="global_assets/qr-generator-icon.svg">
 <style>
   :root {
     --bg: #0a0c10; --panel: #14171d; --panel-2: #0e1015; --line: #262b36;
@@ -20,57 +19,98 @@
   .hub-breadcrumb:hover { color: var(--accent-text); }
   .btn-ghost { background: #191c24; border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: inherit; }
   .btn-ghost:hover { border-color: var(--accent-2); }
+  .btn-ghost.sm { padding: 6px 12px; font-size: 13px; }
 
-  main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 80px; }
-  .layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr); gap: 22px; align-items: start; }
-  .col-title { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 16px; font-weight: 600; }
-  .col-title svg { width: 18px; height: 18px; stroke: var(--accent-text); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; margin-bottom: 16px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 18px 16px 80px; }
 
-  .in-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .in-head h2 { margin: 0; font-size: 15px; font-weight: 600; }
-  .tools { display: flex; align-items: center; gap: 4px; }
-  .tool { background: none; border: 0; color: var(--muted); width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: grid; place-items: center; }
-  .tool:hover { color: var(--accent-text); background: #172033; }
-  .tool svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  .sep { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
-  textarea { width: 100%; min-height: 120px; background: var(--panel-2); border: 1px solid var(--line); color: var(--text); padding: 12px 14px; border-radius: 10px; font: 16px/1.5 inherit; font-family: inherit; resize: vertical; }
-  textarea:focus, input[type=text]:focus, input[type=number]:focus { outline: none; border-color: var(--accent-2); }
-  .msg { font-size: 12px; min-height: 16px; margin-top: 8px; color: var(--muted); }
-  .msg.err { color: var(--err); } .msg.ok { color: var(--ok); } .msg.warn { color: var(--warn); }
-  .drop-over textarea { border-style: dashed; border-color: var(--accent-2); }
+  /* type tabs */
+  .tabs { display: flex; gap: 2px; overflow-x: auto; border-bottom: 1px solid var(--line); margin-bottom: 20px; scrollbar-width: thin; }
+  .tab { background: none; border: 0; border-bottom: 2px solid transparent; color: var(--muted); font: 600 13px/1 inherit; font-family: inherit; letter-spacing: .04em; padding: 12px 13px; cursor: pointer; white-space: nowrap; }
+  .tab:hover { color: var(--text); }
+  .tab[aria-selected=true] { color: #fff; border-bottom-color: var(--accent-2); }
 
-  .opt { margin-bottom: 20px; } .opt:last-child { margin-bottom: 0; }
-  .opt > label, .lab { display: block; font-size: 15px; margin-bottom: 10px; }
-  .opt small { color: var(--muted); font-size: 12px; font-weight: 400; margin-left: 6px; }
-  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
-  .pill { background: var(--panel-2); border: 1px solid var(--line); color: var(--text); min-width: 44px; height: 38px; padding: 0 16px; border-radius: 99px; cursor: pointer; font: inherit; font-size: 14px; }
-  .pill:hover { border-color: #3a4357; }
-  .pill.on { background: #16254a; border-color: var(--accent-2); color: #fff; }
-  .rowline { display: flex; align-items: center; gap: 14px; }
-  input[type=range] { -webkit-appearance: none; appearance: none; flex: 1; height: 6px; border-radius: 99px; background: linear-gradient(90deg, var(--accent-2) var(--p, 0%), #2a2f3b var(--p, 0%)); outline: none; }
-  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--panel); border: 3px solid var(--accent-2); cursor: pointer; }
-  input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--panel); border: 3px solid var(--accent-2); cursor: pointer; }
-  input[type=number] { width: 84px; background: var(--panel-2); border: 1px solid var(--line); color: var(--text); padding: 8px 10px; border-radius: 8px; font: inherit; font-size: 14px; }
-  .unit { color: var(--muted); font-size: 13px; }
-  .colors { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-  .cbox { display: flex; align-items: center; gap: 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
-  .cbox input[type=color] { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; border: 1px solid #3a4357; border-radius: 6px; padding: 0; background: none; cursor: pointer; }
-  .cbox input[type=color]::-webkit-color-swatch-wrapper { padding: 0; } .cbox input[type=color]::-webkit-color-swatch { border: 0; border-radius: 5px; }
-  .cbox input[type=text] { width: 104px; background: none; border: 0; color: var(--text); font: 14px ui-monospace, Menlo, monospace; padding: 4px 0; }
-  .chk { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 15px; }
-  .chk input { width: 18px; height: 18px; accent-color: var(--accent-2); }
+  .layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(320px, 1fr); gap: 22px; align-items: start; }
+  .preview { position: sticky; top: 16px; }
 
-  .preview { border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; place-items: center; min-height: 300px; margin-bottom: 16px;
-    background-color: #12151b; background-image: linear-gradient(45deg, #1a1e27 25%, transparent 25%, transparent 75%, #1a1e27 75%), linear-gradient(45deg, #1a1e27 25%, transparent 25%, transparent 75%, #1a1e27 75%); background-size: 20px 20px; background-position: 0 0, 10px 10px; }
-  canvas { width: 100%; max-width: 420px; height: auto; aspect-ratio: 1; image-rendering: pixelated; display: block; }
-  .empty { color: var(--muted); text-align: center; font-size: 14px; padding: 40px 10px; }
-  .meta { font-size: 12px; color: var(--muted); margin: -4px 0 14px; text-align: center; }
-  .dl { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--accent); color: #fff; border: 0; border-radius: 12px; padding: 14px; font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; }
-  .dl:hover:not(:disabled) { background: #1d4ed8; } .dl:disabled { opacity: .45; cursor: not-allowed; }
-  .dl svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  /* accordion */
+  .acc { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
+  .acc-h { width: 100%; display: flex; align-items: center; gap: 12px; background: none; border: 0; color: var(--text); font: 600 14px/1 inherit; font-family: inherit; letter-spacing: .05em; text-transform: uppercase; padding: 0; cursor: pointer; text-align: left; }
+  .acc-ico { width: 48px; height: 48px; display: grid; place-items: center; background: #191e29; color: var(--muted); flex: none; }
+  .acc-ico svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .acc.open .acc-ico { background: var(--accent); color: #fff; }
+  .acc-h span.t { flex: 1; }
+  .acc-h .pm { color: var(--muted); font-size: 20px; padding-right: 16px; font-weight: 400; }
+  .acc-b { padding: 6px 18px 20px; display: none; }
+  .acc.open .acc-b { display: block; }
 
-  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } header { padding: 12px 16px; } }
+  .fl { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin: 14px 0 6px; }
+  .fl:first-child { margin-top: 10px; }
+  input[type=text], input[type=number], input[type=email], input[type=tel], input[type=datetime-local], input[type=date], select, textarea {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--line); color: var(--text); padding: 10px 12px; border-radius: 10px; font: 15px/1.4 inherit; font-family: inherit; color-scheme: dark; }
+  textarea { min-height: 96px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent-2); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .chk { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; margin: 14px 18px 0 0; user-select: none; }
+  .chk input, .rad input { accent-color: var(--accent-2); width: 16px; height: 16px; margin: 0; }
+  .rad { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; margin-right: 18px; }
+  .msg { font-size: 12.5px; margin-top: 12px; color: var(--muted); }
+  .msg.warn { color: var(--warn); } .msg.err { color: var(--err); }
+
+  /* colour rows */
+  .crow { display: flex; align-items: stretch; gap: 0; max-width: 220px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--panel-2); }
+  .crow input[type=color] { width: 44px; height: 42px; padding: 0; border: 0; background: none; cursor: pointer; flex: none; }
+  .crow input[type=color]::-webkit-color-swatch-wrapper { padding: 0; } .crow input[type=color]::-webkit-color-swatch { border: 0; }
+  .crow input[type=text] { border: 0; border-radius: 0; background: transparent; font-family: ui-monospace, Menlo, Consolas, monospace; }
+  .crow.bad { border-color: var(--err); }
+  .colors { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+  .colors > div { min-width: 0; }
+
+  /* shape pickers */
+  .shapes { display: flex; flex-wrap: wrap; gap: 8px; }
+  .shape { width: 56px; height: 56px; background: #f3f5f9; border: 2px solid transparent; border-radius: 10px; padding: 7px; cursor: pointer; display: grid; place-items: center; }
+  .shape svg { width: 100%; height: 100%; display: block; }
+  .shape:hover { border-color: #93c5fd; }
+  .shape[aria-pressed=true] { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(96,165,250,.45); }
+
+  /* logo */
+  .logo-row { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; margin-top: 10px; }
+  .logo-box { width: 96px; height: 96px; border-radius: 12px; background: repeating-conic-gradient(#e7eaf0 0 25%, #fff 0 50%) 0 0/16px 16px; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--line); color: #94a3b8; font-size: 11px; text-align: center; }
+  .logo-box img { max-width: 100%; max-height: 100%; display: block; }
+  .btn-main { background: var(--accent); border: 0; color: #fff; font-weight: 600; font-size: 15px; padding: 11px 20px; border-radius: 10px; cursor: pointer; font-family: inherit; }
+  .btn-main:hover:not(:disabled) { filter: brightness(1.12); }
+  .btn-main:disabled, .btn-out:disabled { opacity: .4; cursor: default; }
+  .btn-out { background: transparent; border: 1px solid var(--accent-2); color: var(--accent-text); font-weight: 600; font-size: 14px; padding: 9px 14px; border-radius: 10px; cursor: pointer; font-family: inherit; }
+  .btn-out:hover:not(:disabled) { background: rgba(96,165,250,.1); }
+  input[type=range] { width: 100%; accent-color: var(--accent-2); }
+
+  /* preview card */
+  .pcard { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+  .qrbox { border-radius: 12px; overflow: hidden; line-height: 0; background: #fff; min-height: 200px; display: grid; place-items: center; }
+  .qrbox.checker { background: repeating-conic-gradient(#d9dde5 0 25%, #fff 0 50%) 0 0/18px 18px; }
+  .qrbox svg { width: 100%; height: auto; display: block; }
+  .qr-empty { line-height: 1.5; padding: 60px 24px; color: #64748b; font-size: 14px; text-align: center; }
+  .qinfo { font-size: 12px; color: var(--muted); margin: 10px 0 0; min-height: 16px; text-align: center; }
+  .qwarn { font-size: 12.5px; margin-top: 8px; }
+  .qwarn.err { color: var(--err); } .qwarn.warn { color: var(--warn); }
+  .size-row { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+  .size-row b { color: var(--text); }
+  .dl { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .dl .btn-main { flex: 1 1 100%; }
+  .dl .btn-out { flex: 1 1 0; }
+  details { margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  summary { cursor: pointer; }
+  pre { white-space: pre-wrap; word-break: break-all; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px; color: var(--text); font: 12px/1.5 ui-monospace, Menlo, Consolas, monospace; max-height: 180px; overflow: auto; }
+  .note { font-size: 12px; color: var(--muted); margin-top: 12px; }
+  .toast { font-size: 12.5px; min-height: 16px; margin-top: 8px; color: var(--ok); text-align: center; }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .preview { position: static; order: -1; }
+    header { padding: 12px 16px; }
+    .row2, .row3 { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -78,78 +118,63 @@
 <header>
   <div>
     <h1 class="title">▦ QR Code Generator</h1>
-    <a href="../hub.html#latest-builds" class="hub-breadcrumb">← Cuech4 Hub</a>
+    <a href="index.html" class="hub-breadcrumb">← Cuech4 Hub</a>
   </div>
   <button class="btn-ghost" id="newBtn">＋ New</button>
 </header>
 
 <main>
+  <div class="tabs" id="tabs" role="tablist" aria-label="QR code content type"></div>
+
   <div class="layout">
-    <!-- LEFT: content + options -->
-    <div>
-      <h2 class="col-title"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg>Generate QR Code</h2>
-
-      <section class="card" id="inputCard">
-        <div class="in-head">
-          <h2>QR Code text</h2>
-          <div class="tools">
-            <button class="tool" id="uploadBtn" title="Open a text file" aria-label="Open a text file"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 17v-6"/><path d="m9.5 13.5 2.5-2.5 2.5 2.5"/></svg></button>
-            <button class="tool" id="copyBtn" title="Copy text" aria-label="Copy text"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg></button>
-            <span class="sep"></span>
-            <button class="tool" id="clearBtn" title="Clear text" aria-label="Clear text"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/></svg></button>
-          </div>
-        </div>
-        <textarea id="text" placeholder="Enter a link or any text, e.g. https://cuech4.com" spellcheck="false" autofocus></textarea>
-        <input type="file" id="file" accept=".txt,.md,.csv,.json,.vcf,text/*" hidden>
-        <div class="msg" id="msg"></div>
+    <div id="left">
+      <section class="acc open" id="accContent">
+        <button class="acc-h" aria-expanded="true"><span class="acc-ico" id="contentIco"></span><span class="t">Enter content</span><span class="pm">−</span></button>
+        <div class="acc-b"><div id="form"></div><div class="msg" id="formMsg"></div></div>
       </section>
 
-      <section class="card">
-        <div class="opt">
-          <label>Error correction level <small id="eccHint">~15% damage tolerated</small></label>
-          <div class="pills" id="ecc"></div>
-        </div>
-        <div class="opt">
-          <label>Mask pattern <small>Auto picks the best one</small></label>
-          <div class="pills" id="mask"></div>
-        </div>
-        <div class="opt">
-          <label for="marginNum">Margin <small>quiet zone, in modules</small></label>
-          <div class="rowline"><input type="range" id="margin" min="0" max="10" step="1" value="2"><input type="number" id="marginNum" min="0" max="10" value="2"></div>
-        </div>
-        <div class="opt">
-          <span class="lab">QR Code color</span>
-          <div class="colors">
-            <div class="cbox"><input type="color" id="fgPick" value="#000000" aria-label="Foreground color"><input type="text" id="fgHex" value="#000000ff" spellcheck="false" aria-label="Foreground hex"></div>
-            <div class="cbox"><input type="color" id="bgPick" value="#ffffff" aria-label="Background color"><input type="text" id="bgHex" value="#ffffffff" spellcheck="false" aria-label="Background hex"></div>
-            <label class="chk"><input type="checkbox" id="transp"> Transparent</label>
-          </div>
-        </div>
+      <section class="acc" id="accColors">
+        <button class="acc-h" aria-expanded="false"><span class="acc-ico"><svg viewBox="0 0 24 24"><path d="M20.5 3.5c-3 .5-8 4.5-9.5 8l2 2c3.5-1.5 7.500-6.500 7.500-10z"/><path d="M10.500 12.500c-2.500 0-4 1.500-4 4 0 1.500-1 2.500-2.500 3 3 1.500 8-.500 8-4.500z"/></svg></span><span class="t">Set colors</span><span class="pm">+</span></button>
+        <div class="acc-b" id="colorsBody"></div>
+      </section>
+
+      <section class="acc" id="accLogo">
+        <button class="acc-h" aria-expanded="false"><span class="acc-ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.700"/><path d="m21 16-5-5-9 9"/></svg></span><span class="t">Add logo image</span><span class="pm">+</span></button>
+        <div class="acc-b" id="logoBody"></div>
+      </section>
+
+      <section class="acc" id="accDesign">
+        <button class="acc-h" aria-expanded="false"><span class="acc-ico"><svg viewBox="0 0 24 24"><rect x="3.500" y="3.500" width="7" height="7" rx="1"/><rect x="13.500" y="3.500" width="7" height="7" rx="1"/><rect x="3.500" y="13.500" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h2.500v2.500H18z"/></svg></span><span class="t">Customize design</span><span class="pm">+</span></button>
+        <div class="acc-b" id="designBody"></div>
+      </section>
+
+      <section class="acc" id="accAdv">
+        <button class="acc-h" aria-expanded="false"><span class="acc-ico"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></span><span class="t">Advanced</span><span class="pm">+</span></button>
+        <div class="acc-b" id="advBody"></div>
       </section>
     </div>
 
-    <!-- RIGHT: preview + export -->
-    <div>
-      <h2 class="col-title"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1.5"/><path d="m21 15-4-4-9 9"/></svg>Preview</h2>
-      <div class="preview" id="previewBox">
-        <canvas id="cv" width="500" height="500" hidden></canvas>
-        <div class="empty" id="empty">Type something on the left and your QR code appears here.</div>
+    <aside class="preview">
+      <div class="pcard">
+        <div class="qrbox" id="qrbox"><div class="qr-empty">Enter your content to see the QR code here.</div></div>
+        <div class="qinfo" id="qinfo"></div>
+        <div id="qwarns"></div>
+        <div style="margin-top:16px">
+          <input type="range" id="size" min="200" max="2000" step="50" value="1000" aria-label="Download size in pixels">
+          <div class="size-row"><span>Low quality</span><b id="sizeLab">1000 × 1000 px</b><span>High quality</span></div>
+        </div>
+        <div class="dl">
+          <button class="btn-main" id="dlPng" disabled>Download PNG</button>
+          <button class="btn-out" id="dlSvg" disabled>.SVG</button>
+          <button class="btn-out" id="dlPdf" disabled>.PDF</button>
+          <button class="btn-out" id="dlJpg" disabled>.JPG</button>
+          <button class="btn-out" id="dlWebp" disabled>.WEBP</button>
+        </div>
+        <div class="toast" id="toast"></div>
+        <details><summary>Show the text inside this QR code</summary><pre id="payload"></pre></details>
+        <div class="note">Static QR codes never expire and don't track scans. Everything is made in your browser — nothing is uploaded. The PDF holds a high-resolution image of the code.</div>
       </div>
-      <div class="meta" id="meta"></div>
-
-      <section class="card">
-        <div class="opt">
-          <label for="sizeNum">Image size</label>
-          <div class="rowline"><input type="range" id="size" min="100" max="2000" step="10" value="500"><input type="number" id="sizeNum" min="100" max="2000" value="500"><span class="unit">px</span></div>
-        </div>
-        <div class="opt">
-          <label>Extension</label>
-          <div class="pills" id="ext"></div>
-          <div class="msg" id="extNote"></div>
-        </div>
-        <button class="dl" id="download" disabled><svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>Download</button>
-      </section>
-    </div>
+    </aside>
   </div>
 </main>
 
@@ -997,150 +1022,517 @@ var qrcodegen;
 <script>
 const { QrCode, QrSegment } = qrcodegen;
 const $ = (id) => document.getElementById(id);
+const el = (tag, attrs = {}, ...kids) => {
+  const e = document.createElement(tag);
+  for (const k in attrs) { if (k === "class") e.className = attrs[k]; else if (k === "text") e.textContent = attrs[k]; else if (k.startsWith("on")) e[k] = attrs[k]; else e.setAttribute(k, attrs[k]); }
+  kids.forEach(c => e.append(c)); return e;
+};
 
-/* ---------- state ---------- */
-const ECC = { L: { e: QrCode.Ecc.LOW, hint: "~7% damage tolerated" }, M: { e: QrCode.Ecc.MEDIUM, hint: "~15% damage tolerated" }, Q: { e: QrCode.Ecc.QUARTILE, hint: "~25% damage tolerated" }, H: { e: QrCode.Ecc.HIGH, hint: "~30% damage tolerated" } };
-const state = { ecc: "M", mask: -1, ext: "png", qr: null };
+/* =====================================================================
+   1. Content types — each builds the text that goes inside the QR code
+   ===================================================================== */
+const ICONS = {
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
+  doc: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.500 7 8.500 6 8.500-6"/>',
+  phone: '<path d="M5 4h4l2 5-2.500 1.500a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+  chat: '<path d="M4 5h16v11H9l-5 4z"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  pin: '<path d="M12 21s7-6.200 7-11.500a7 7 0 0 0-14 0C5 14.800 12 21 12 21z"/><circle cx="12" cy="9.500" r="2.500"/>',
+  wifi: '<path d="M2.500 9a14 14 0 0 1 19 0M5.500 12.500a9.500 9.500 0 0 1 13 0M8.500 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r="1"/>',
+  cal: '<rect x="3.500" y="5" width="17" height="15.500" rx="2.500"/><path d="M8 3v4M16 3v4M3.500 10h17"/>',
+  coin: '<circle cx="12" cy="12" r="9"/><path d="M9.500 8h4a2 2 0 0 1 0 4h-4h4.500a2 2 0 0 1 0 4H9.500M9.500 8v8M11 6.500V8M11 16v1.500M13.500 6.500V8M13.500 16v1.500"/>',
+  share: '<circle cx="6" cy="12" r="2.500"/><circle cx="18" cy="6" r="2.500"/><circle cx="18" cy="18" r="2.500"/><path d="m8.200 10.800 7.600-3.600M8.200 13.200l7.600 3.600"/>'
+};
+const svgIcon = (k) => `<svg viewBox="0 0 24 24">${ICONS[k]}</svg>`;
 
-function pills(containerId, items, current, onPick) {
-  const box = $(containerId); box.innerHTML = "";
-  items.forEach(it => {
-    const b = document.createElement("button"); b.type = "button";
-    b.className = "pill" + (it.value === current ? " on" : ""); b.textContent = it.label;
-    b.onclick = () => { onPick(it.value); [...box.children].forEach(c => c.classList.remove("on")); b.classList.add("on"); };
-    box.appendChild(b);
-  });
+const esc = (s) => String(s).replace(/([\;,:"])/g, "\\$1");          // WIFI / MECARD escaping
+const vEsc = (s) => String(s).replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n").replace(/;/g, "\;").replace(/,/g, "\\,"); // vCard / iCal
+const enc = encodeURIComponent;
+const withScheme = (u) => /^[a-z][a-z0-9+.-]*:/i.test(u) ? u : "https://" + u;
+const cleanPhone = (p) => { p = p.trim(); const plus = p.startsWith("+"); return (plus ? "+" : "") + p.replace(/[^\d]/g, ""); };
+const pad = (n) => String(n).padStart(2, "0");
+function icsDate(v, allDay) { // "2026-10-05T14:30" or "2026-10-05"
+  const [d, t = ""] = v.split("T"); const ds = d.replace(/-/g, "");
+  return allDay ? ds : ds + "T" + (t.replace(":", "") + "00").slice(0, 6);
 }
-pills("ecc", Object.keys(ECC).map(k => ({ label: k, value: k })), state.ecc, v => { state.ecc = v; $("eccHint").textContent = ECC[v].hint; render(); });
-pills("mask", [{ label: "Auto", value: -1 }, ...[0,1,2,3,4,5,6,7].map(n => ({ label: String(n), value: n }))], state.mask, v => { state.mask = v; render(); });
-pills("ext", [{ label: "PNG", value: "png" }, { label: "JPEG", value: "jpeg" }, { label: "WEBP", value: "webp" }], state.ext, v => { state.ext = v; updateExtNote(); });
+function addHour(v) { const d = new Date(v); d.setHours(d.getHours() + 1); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function nextDay(v) { const [y, m, d] = v.split("-").map(Number); const x = new Date(Date.UTC(y, m - 1, d + 1)); return `${x.getUTCFullYear()}-${pad(x.getUTCMonth() + 1)}-${pad(x.getUTCDate())}`; }
 
-/* ---------- sliders ---------- */
-function bindRange(rangeId, numId, min, max, cb) {
-  const r = $(rangeId), n = $(numId);
-  const paint = () => r.style.setProperty("--p", ((r.value - r.min) / (r.max - r.min) * 100) + "%");
-  r.oninput = () => { n.value = r.value; paint(); cb(); };
-  n.oninput = () => { let v = parseInt(n.value, 10); if (isNaN(v)) return; v = Math.max(min, Math.min(max, v)); r.value = v; paint(); cb(); };
-  n.onblur = () => { n.value = r.value; };
-  paint();
-}
-bindRange("margin", "marginNum", 0, 10, () => render());
-bindRange("size", "sizeNum", 100, 2000, () => render());
+const T = (id, label, icon, fields, build) => ({ id, label, icon, fields, build });
+const F = (id, label, kind = "text", extra = {}) => ({ id, label, kind, ...extra });
 
-/* ---------- colors (#rrggbb or #rrggbbaa) ---------- */
-function parseHex(s) {
-  const m = /^#?([0-9a-f]{6})([0-9a-f]{2})?$/i.exec(s.trim()) || /^#?([0-9a-f]{3})$/i.exec(s.trim());
-  if (!m) return null;
-  let rgb = m[1], a = m[2] || "ff";
-  if (rgb.length === 3) rgb = rgb.split("").map(c => c + c).join("");
-  return { r: parseInt(rgb.slice(0,2),16), g: parseInt(rgb.slice(2,4),16), b: parseInt(rgb.slice(4,6),16), a: parseInt(a,16) / 255, rgb: "#" + rgb.toLowerCase(), aHex: a.toLowerCase() };
-}
-const rgba = (c, a = c.a) => `rgba(${c.r},${c.g},${c.b},${a})`;
-function bindColor(pickId, hexId) {
-  const pick = $(pickId), hex = $(hexId);
-  pick.oninput = () => { const cur = parseHex(hex.value); hex.value = pick.value + (cur ? cur.aHex : "ff"); render(); };
-  hex.oninput = () => { const c = parseHex(hex.value); if (c) { pick.value = c.rgb; render(); } };
-  hex.onblur = () => { const c = parseHex(hex.value); hex.value = c ? c.rgb + c.aHex : pick.value + "ff"; };
-}
-bindColor("fgPick", "fgHex"); bindColor("bgPick", "bgHex");
-$("transp").onchange = () => { $("bgPick").disabled = $("bgHex").disabled = $("transp").checked; $("bgHex").style.opacity = $("transp").checked ? .45 : 1; render(); updateExtNote(); };
+const TYPES = [
+  T("url", "URL", "globe", [F("url", "Your URL", "text", { ph: "https://www.example.com" })],
+    v => { const u = v.url.trim(); if (!u) return null; return { text: withScheme(u), note: /^[a-z][a-z0-9+.-]*:/i.test(u) ? "" : "Added https:// in front, since a link needs it to open." }; }),
 
-function lum(c) { const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }; return .2126 * f(c.r) + .7152 * f(c.g) + .0722 * f(c.b); }
-function contrast(a, b) { const l1 = lum(a), l2 = lum(b); return (Math.max(l1, l2) + .05) / (Math.min(l1, l2) + .05); }
+  T("text", "Text", "doc", [F("text", "Your text", "textarea", { hint: "Line breaks are allowed." })],
+    v => v.text ? { text: v.text } : null),
 
-/* ---------- messages ---------- */
-function setMsg(text, cls) { $("msg").textContent = text || ""; $("msg").className = "msg " + (cls || ""); }
-function updateExtNote() {
-  $("extNote").className = "msg warn";
-  $("extNote").textContent = (state.ext === "jpeg" && $("transp").checked) ? "JPEG can't be transparent — the background will be white." : "";
-}
+  T("email", "Email", "mail", [F("to", "Your email", "email", { ph: "name@mail.com" }), F("subject", "Subject"), F("body", "Message", "textarea")],
+    v => {
+      const to = v.to.trim(); if (!to) return null;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return { err: "That email address doesn't look complete." };
+      const q = []; if (v.subject) q.push("subject=" + enc(v.subject)); if (v.body) q.push("body=" + enc(v.body));
+      return { text: "mailto:" + to + (q.length ? "?" + q.join("&") : "") };
+    }),
 
-/* ---------- render ---------- */
-function layout(qr, margin, size) {
-  const total = qr.size + margin * 2, cell = size / total;
-  return { total, cell, px: (i) => Math.round(i * cell) };
+  T("phone", "Phone", "phone", [F("num", "Your phone number", "tel", { ph: "+1 555 123 4567" })],
+    v => { const n = cleanPhone(v.num); if (!n.replace("+", "")) return null; return { text: "tel:" + n, note: n.startsWith("+") ? "" : "Tip: start with + and the country code so it works abroad too." }; }),
+
+  T("sms", "SMS", "chat", [F("num", "Phone number", "tel", { ph: "+1 555 123 4567" }), F("msg", "Message", "textarea")],
+    v => { const n = cleanPhone(v.num); if (!n.replace("+", "")) return null; return { text: "sms:" + n + (v.msg ? "?body=" + enc(v.msg) : "") }; }),
+
+  T("whatsapp", "WhatsApp", "chat", [F("num", "Phone number with country code", "tel", { ph: "+1 555 123 4567" }), F("msg", "Message (optional)", "textarea")],
+    v => { const n = v.num.replace(/[^\d]/g, ""); if (!n) return null; return { text: "https://wa.me/" + n + (v.msg ? "?text=" + enc(v.msg) : "") }; }),
+
+  T("vcard", "vCard", "user", [
+    F("first", "First name", "text", { row: "a" }), F("last", "Last name", "text", { row: "a" }),
+    F("org", "Company", "text", { row: "b" }), F("title", "Job title", "text", { row: "b" }),
+    F("mobile", "Mobile", "tel", { row: "c" }), F("work", "Work phone", "tel", { row: "c" }),
+    F("email", "Email", "email", { row: "d" }), F("url", "Website", "text", { row: "d" }),
+    F("street", "Street"), F("city", "City", "text", { row: "e" }), F("state", "State / region", "text", { row: "e" }),
+    F("zip", "ZIP / postal code", "text", { row: "f" }), F("country", "Country", "text", { row: "f" })],
+    v => {
+      if (!(v.first || v.last || v.org)) return null;
+      const L = ["BEGIN:VCARD", "VERSION:3.0", `N:${vEsc(v.last)};${vEsc(v.first)};;;`, `FN:${vEsc((v.first + " " + v.last).trim() || v.org)}`];
+      if (v.org) L.push("ORG:" + vEsc(v.org)); if (v.title) L.push("TITLE:" + vEsc(v.title));
+      if (v.mobile) L.push("TEL;TYPE=CELL:" + cleanPhone(v.mobile)); if (v.work) L.push("TEL;TYPE=WORK:" + cleanPhone(v.work));
+      if (v.email) L.push("EMAIL:" + v.email.trim()); if (v.url) L.push("URL:" + withScheme(v.url.trim()));
+      if (v.street || v.city || v.state || v.zip || v.country) L.push(`ADR;TYPE=WORK:;;${vEsc(v.street)};${vEsc(v.city)};${vEsc(v.state)};${vEsc(v.zip)};${vEsc(v.country)}`);
+      L.push("END:VCARD"); return { text: L.join("\n") };
+    }),
+
+  T("mecard", "MeCard", "user", [
+    F("first", "First name", "text", { row: "a" }), F("last", "Last name", "text", { row: "a" }),
+    F("tel", "Phone", "tel", { row: "b" }), F("email", "Email", "email", { row: "b" }),
+    F("url", "Website"), F("adr", "Address"), F("note", "Note")],
+    v => {
+      if (!(v.first || v.last)) return null;
+      let s = "MECARD:N:" + esc(v.last) + (v.first ? "," + esc(v.first) : "") + ";";
+      if (v.tel) s += "TEL:" + cleanPhone(v.tel) + ";"; if (v.email) s += "EMAIL:" + esc(v.email.trim()) + ";";
+      if (v.url) s += "URL:" + esc(withScheme(v.url.trim())) + ";"; if (v.adr) s += "ADR:" + esc(v.adr) + ";"; if (v.note) s += "NOTE:" + esc(v.note) + ";";
+      return { text: s + ";" };
+    }),
+
+  T("location", "Location", "pin", [F("lat", "Latitude", "text", { ph: "40.7128", row: "a" }), F("lng", "Longitude", "text", { ph: "-74.0060", row: "a" }),
+    F("fmt", "Format", "select", { options: [["maps", "Google Maps link (works on most phones)"], ["geo", "geo: link (opens the default maps app)"]] }),
+    F("_here", "Use my current location", "button")],
+    v => {
+      if (!v.lat.trim() && !v.lng.trim()) return null;
+      const la = parseFloat(v.lat), ln = parseFloat(v.lng);
+      if (!isFinite(la) || !isFinite(ln)) return { err: "Enter both latitude and longitude as numbers." };
+      if (Math.abs(la) > 90 || Math.abs(ln) > 180) return { err: "Latitude must be between −90 and 90, longitude between −180 and 180." };
+      return { text: v.fmt === "geo" ? `geo:${la},${ln}` : `https://www.google.com/maps?q=${la},${ln}` };
+    }),
+
+  T("wifi", "WiFi", "wifi", [F("ssid", "Network name (SSID)", "text", { row: "w" }), F("pass", "Password", "text", { row: "w" }),
+    F("enc", "Encryption", "select", { options: [["WPA", "WPA / WPA2 / WPA3"], ["WEP", "WEP"], ["nopass", "No encryption"]] }),
+    F("hidden", "Hidden network", "checkbox")],
+    v => {
+      if (!v.ssid) return null;
+      if (v.enc !== "nopass" && !v.pass) return { err: "Enter the WiFi password, or choose “No encryption”." };
+      return { text: `WIFI:T:${v.enc};S:${esc(v.ssid)};` + (v.enc !== "nopass" ? `P:${esc(v.pass)};` : "") + (v.hidden ? "H:true;" : "") + ";" };
+    }),
+
+  T("event", "Event", "cal", [F("title", "Event title"), F("allday", "All-day event", "checkbox"),
+    F("start", "Starts", "datetime-local", { row: "a" }), F("end", "Ends (optional)", "datetime-local", { row: "a" }),
+    F("loc", "Location"), F("desc", "Description", "textarea")],
+    v => {
+      if (!v.title || !v.start) return null;
+      const ad = !!v.allday, s = ad ? v.start.slice(0, 10) : v.start;
+      let e = v.end ? (ad ? v.end.slice(0, 10) : v.end) : ad ? s : addHour(s);
+      if (ad) e = nextDay(e);
+      if (!ad && e < s) return { err: "The end is before the start." };
+      const L = ["BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT", "SUMMARY:" + vEsc(v.title)];
+      L.push(ad ? "DTSTART;VALUE=DATE:" + icsDate(s, true) : "DTSTART:" + icsDate(s), ad ? "DTEND;VALUE=DATE:" + icsDate(e, true) : "DTEND:" + icsDate(e));
+      if (v.loc) L.push("LOCATION:" + vEsc(v.loc)); if (v.desc) L.push("DESCRIPTION:" + vEsc(v.desc));
+      L.push("END:VEVENT", "END:VCALENDAR"); return { text: L.join("\n") };
+    }),
+
+  T("bitcoin", "Bitcoin", "coin", [F("addr", "Bitcoin address"), F("amt", "Amount in BTC (optional)", "text", { ph: "0.005", row: "a" }), F("label", "Label (optional)", "text", { row: "a" }), F("msg", "Message (optional)")],
+    v => {
+      const a = v.addr.trim(); if (!a) return null;
+      if (v.amt && !/^\d+(\.\d{1,8})?$/.test(v.amt.trim())) return { err: "The amount should be a number with up to 8 decimals." };
+      const q = []; if (v.amt) q.push("amount=" + v.amt.trim()); if (v.label) q.push("label=" + enc(v.label)); if (v.msg) q.push("message=" + enc(v.msg));
+      const ok = /^(bc1[a-z0-9]{20,70}|[13][a-km-zA-HJ-NP-Z1-9]{25,39})$/.test(a);
+      return { text: "bitcoin:" + a + (q.length ? "?" + q.join("&") : ""), note: ok ? "Double-check the address — a typo sends money to the wrong place." : "That doesn't look like a Bitcoin address. Double-check it before using this code." };
+    }),
+
+  T("facebook", "Facebook", "share", [F("p", "Page or profile (username or link)", "text", { ph: "yourpage" })],
+    v => { const u = v.p.trim(); if (!u) return null; return { text: /facebook\.com|fb\.com|fb\.me/i.test(u) ? withScheme(u) : "https://www.facebook.com/" + u.replace(/^@/, "") }; }),
+  T("x", "X / Twitter", "share", [F("p", "Username or link", "text", { ph: "@yourname" })],
+    v => { const u = v.p.trim(); if (!u) return null; return { text: /(twitter|x)\.com\//i.test(u) ? withScheme(u) : "https://x.com/" + u.replace(/^@/, "") }; }),
+  T("youtube", "YouTube", "share", [F("p", "Video link, video ID, or @channel", "text", { ph: "https://youtu.be/…" })],
+    v => {
+      const u = v.p.trim(); if (!u) return null;
+      if (/youtube\.com|youtu\.be/i.test(u)) return { text: withScheme(u) };
+      if (/^[\w-]{11}$/.test(u)) return { text: "https://youtu.be/" + u };
+      return { text: "https://www.youtube.com/@" + u.replace(/^@/, "") };
+    })
+];
+
+/* =====================================================================
+   2. State (design settings are remembered; the content never is)
+   ===================================================================== */
+const DEFAULTS = { fg: "#000000", fg2: "#1d4ed8", grad: false, gradType: "diag", customEye: false, eyeFrame: "#1d4ed8", eyeBall: "#1d4ed8",
+  bg: "#ffffff", transparent: false, logoSize: 22, logoRemoveBg: true, body: "square", frame: "square", ball: "square", ecc: "M", mask: -1, margin: 4, size: 1000 };
+const S = { ...DEFAULTS, logo: null };
+let typeId = "url";
+const vals = {}; TYPES.forEach(t => { vals[t.id] = {}; t.fields.forEach(f => vals[t.id][f.id] = f.kind === "checkbox" ? false : f.kind === "select" ? f.options[0][0] : ""); });
+try {
+  const d = JSON.parse(localStorage.getItem("qr2_design") || "{}");
+  for (const k in DEFAULTS) if (k in d && typeof d[k] === typeof DEFAULTS[k]) S[k] = d[k];
+  const t = localStorage.getItem("qr2_type"); if (TYPES.some(x => x.id === t)) typeId = t;
+} catch {}
+const saveDesign = () => { try { const d = {}; for (const k in DEFAULTS) d[k] = S[k]; localStorage.setItem("qr2_design", JSON.stringify(d)); localStorage.setItem("qr2_type", typeId); } catch {} };
+
+/* =====================================================================
+   3. Shapes — every shape is drawn as SVG path data in "module" units
+   ===================================================================== */
+const f3 = (n) => +n.toFixed(3);
+const arc = (r, x, y) => r ? `A${f3(r)} ${f3(r)} 0 0 1 ${f3(x)} ${f3(y)}` : "";
+function rr(x, y, w, h, tl = 0, tr = 0, br = 0, bl = 0) {
+  return `M${f3(x + tl)} ${f3(y)}H${f3(x + w - tr)}${arc(tr, x + w, y + tr)}V${f3(y + h - br)}${arc(br, x + w - br, y + h)}H${f3(x + bl)}${arc(bl, x, y + h - bl)}V${f3(y + tl)}${arc(tl, x + tl, y)}Z`;
 }
-function draw(canvas, qr, opts) {
-  const { size, margin, fg, bg, transparent, flatten } = opts;
-  canvas.width = canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  ctx.clearRect(0, 0, size, size);
-  if (flatten) { ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, size, size); }
-  if (!transparent) { ctx.fillStyle = rgba(bg); ctx.fillRect(0, 0, size, size); }
-  const L = layout(qr, margin, size);
-  ctx.fillStyle = rgba(fg);
-  for (let y = 0; y < qr.size; y++) for (let x = 0; x < qr.size; x++) {
-    if (!qr.getModule(x, y)) continue;
-    const x0 = L.px(x + margin), y0 = L.px(y + margin);
-    ctx.fillRect(x0, y0, L.px(x + margin + 1) - x0, L.px(y + margin + 1) - y0);
+const circ = (cx, cy, r) => `M${f3(cx - r)} ${f3(cy)}a${f3(r)} ${f3(r)} 0 1 0 ${f3(2 * r)} 0a${f3(r)} ${f3(r)} 0 1 0 ${f3(-2 * r)} 0Z`;
+
+const BODY = {
+  square:  { label: "Square",       fn: (g, N) => cells(g, N, (x, y) => `M${x} ${y}h1v1h-1z`) },
+  rounded: { label: "Rounded",      fn: (g, N) => cells(g, N, (x, y) => rr(x, y, 1, 1, .32, .32, .32, .32)) },
+  liquid:  { label: "Connected",    fn: (g, N) => cells(g, N, (x, y) => { const u = g(x, y - 1), d = g(x, y + 1), l = g(x - 1, y), r = g(x + 1, y);
+      return rr(x, y, 1, 1, !u && !l ? .5 : 0, !u && !r ? .5 : 0, !d && !r ? .5 : 0, !d && !l ? .5 : 0); }) },
+  leaf:    { label: "Leaf",         fn: (g, N) => cells(g, N, (x, y) => rr(x, y, 1, 1, .5, 0, .5, 0)) },
+  dots:    { label: "Dots",         fn: (g, N) => cells(g, N, (x, y) => circ(x + .5, y + .5, .5)) },
+  small:   { label: "Small dots",   fn: (g, N) => cells(g, N, (x, y) => circ(x + .5, y + .5, .36)) },
+  diamond: { label: "Diamond",      fn: (g, N) => cells(g, N, (x, y) => `M${x + .5} ${y - .08}L${x + 1.08} ${y + .5}L${x + .5} ${y + 1.08}L${x - .08} ${y + .5}Z`) },
+  vbars:   { label: "Vertical bars",   fn: (g, N) => runs(g, N, true) },
+  hbars:   { label: "Horizontal bars", fn: (g, N) => runs(g, N, false) }
+};
+function cells(g, N, make) { let d = ""; for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (g(x, y)) d += make(x, y); return d; }
+function runs(g, N, vertical) {
+  let d = "";
+  for (let a = 0; a < N; a++) { let b = 0;
+    while (b < N) {
+      const on = (vertical ? g(a, b) : g(b, a));
+      if (!on) { b++; continue; }
+      let e = b; while (e < N && (vertical ? g(a, e) : g(e, a))) e++;
+      const len = e - b, inset = .07;
+      d += vertical ? rr(a + inset, b, 1 - 2 * inset, len, .43, .43, .43, .43) : rr(b, a + inset, len, 1 - 2 * inset, .43, .43, .43, .43);
+      b = e;
+    }
   }
+  return d;
 }
-function render() {
-  const text = $("text").value;
-  const cv = $("cv");
-  if (!text) { state.qr = null; cv.hidden = true; $("empty").hidden = false; $("download").disabled = true; $("meta").textContent = ""; setMsg("", ""); return; }
+const FRAME = {
+  square:  { label: "Square",   fn: (x, y) => rr(x, y, 7, 7) + rr(x + 1, y + 1, 5, 5) },
+  soft:    { label: "Soft",     fn: (x, y) => rr(x, y, 7, 7, 1, 1, 1, 1) + rr(x + 1, y + 1, 5, 5, .5, .5, .5, .5) },
+  rounded: { label: "Rounded",  fn: (x, y) => rr(x, y, 7, 7, 2, 2, 2, 2) + rr(x + 1, y + 1, 5, 5, 1, 1, 1, 1) },
+  circle:  { label: "Circle",   fn: (x, y) => circ(x + 3.5, y + 3.5, 3.5) + circ(x + 3.5, y + 3.5, 2.5) },
+  leaf:    { label: "Leaf",     fn: (x, y) => rr(x, y, 7, 7, 2.6, 0, 2.6, 0) + rr(x + 1, y + 1, 5, 5, 1.6, 0, 1.6, 0) }
+};
+const BALL = {
+  square:  { label: "Square",   fn: (x, y) => rr(x + 2, y + 2, 3, 3) },
+  soft:    { label: "Soft",     fn: (x, y) => rr(x + 2, y + 2, 3, 3, .5, .5, .5, .5) },
+  rounded: { label: "Rounded",  fn: (x, y) => rr(x + 2, y + 2, 3, 3, 1, 1, 1, 1) },
+  circle:  { label: "Circle",   fn: (x, y) => circ(x + 3.5, y + 3.5, 1.5) },
+  leaf:    { label: "Leaf",     fn: (x, y) => rr(x + 2, y + 2, 3, 3, 1.5, 0, 1.5, 0) },
+  diamond: { label: "Diamond",  fn: (x, y) => `M${x + 3.5} ${y + 1.7}L${x + 5.3} ${y + 3.5}L${x + 3.5} ${y + 5.3}L${x + 1.7} ${y + 3.5}Z` }
+};
+
+/* =====================================================================
+   4. Build the picture (one SVG string used for preview AND every download)
+   ===================================================================== */
+function buildSVG(qr, o, px) {
+  const N = qr.size, m = o.margin, W = N + 2 * m;
+  const finder = (x, y) => (x < 7 && y < 7) || (x >= N - 7 && y < 7) || (x < 7 && y >= N - 7);
+  let box = null;
+  if (o.logo) { const s = N * o.logoSize / 100; box = { x: (N - s) / 2, y: (N - s) / 2, s }; }
+  const pad = .5;
+  const knock = (x, y) => box && o.logoRemoveBg && x + .5 > box.x - pad && x + .5 < box.x + box.s + pad && y + .5 > box.y - pad && y + .5 < box.y + box.s + pad;
+  const g = (x, y) => x >= 0 && y >= 0 && x < N && y < N && qr.getModule(x, y) && !finder(x, y) && !knock(x, y);
+
+  let defs = "", fill = o.fg;
+  if (o.grad) {
+    const c = o.gradType;
+    defs = c === "radial"
+      ? `<radialGradient id="qg" gradientUnits="userSpaceOnUse" cx="${N / 2}" cy="${N / 2}" r="${f3(N * .72)}"><stop offset="0" stop-color="${o.fg}"/><stop offset="1" stop-color="${o.fg2}"/></radialGradient>`
+      : `<linearGradient id="qg" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${c === "vert" ? 0 : N}" y2="${c === "horiz" ? 0 : N}"><stop offset="0" stop-color="${o.fg}"/><stop offset="1" stop-color="${o.fg2}"/></linearGradient>`;
+    fill = "url(#qg)";
+  }
+  const frameFill = o.customEye ? o.eyeFrame : fill, ballFill = o.customEye ? o.eyeBall : fill;
+  const eyes = [[0, 0], [N - 7, 0], [0, N - 7]];
+  const size = px ? ` width="${px}" height="${px}"` : "";
+  let s = `<svg xmlns="http://www.w3.org/2000/svg"${size} viewBox="0 0 ${W} ${W}" shape-rendering="geometricPrecision">`;
+  if (defs) s += `<defs>${defs}</defs>`;
+  if (!o.transparent) s += `<rect width="${W}" height="${W}" fill="${o.bg}"/>`;
+  s += `<g transform="translate(${m} ${m})">`;
+  s += `<path d="${BODY[o.body].fn(g, N)}" fill="${fill}"/>`;
+  s += `<path d="${eyes.map(([x, y]) => FRAME[o.frame].fn(x, y)).join("")}" fill="${frameFill}" fill-rule="evenodd"/>`;
+  s += `<path d="${eyes.map(([x, y]) => BALL[o.ball].fn(x, y)).join("")}" fill="${ballFill}"/>`;
+  if (box) {
+    if (o.logoRemoveBg && !o.transparent) s += `<rect x="${f3(box.x - pad)}" y="${f3(box.y - pad)}" width="${f3(box.s + 2 * pad)}" height="${f3(box.s + 2 * pad)}" rx="${f3(Math.min(1.2, box.s * .12))}" fill="${o.bg}"/>`;
+    s += `<image href="${o.logo}" x="${f3(box.x)}" y="${f3(box.y)}" width="${f3(box.s)}" height="${f3(box.s)}" preserveAspectRatio="xMidYMid meet"/>`;
+  }
+  return s + `</g></svg>`;
+}
+
+/* thumbnails for the shape pickers (same drawing code, tiny sample) */
+const SAMPLE = ["1101011", "0110101", "1011010", "1101101", "0111010", "1010111", "0101101"];
+const sampleG = (x, y) => x >= 0 && y >= 0 && x < 7 && y < 7 && SAMPLE[y][x] === "1";
+const thumb = (d, rule) => `<svg viewBox="-.3 -.3 7.6 7.6"><path d="${d}" fill="#0f172a"${rule ? ' fill-rule="evenodd"' : ""}/></svg>`;
+
+/* =====================================================================
+   5. Update pipeline
+   ===================================================================== */
+let curQR = null, curPayload = null;
+function getPayload() {
+  const t = TYPES.find(x => x.id === typeId);
+  return t.build(vals[typeId]);
+}
+function lum(hex) { const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4)); return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]; }
+const contrast = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
+const ECCS = { L: QrCode.Ecc.LOW, M: QrCode.Ecc.MEDIUM, Q: QrCode.Ecc.QUARTILE, H: QrCode.Ecc.HIGH };
+
+let timer;
+const schedule = () => { clearTimeout(timer); timer = setTimeout(update, 60); };
+function setWarns(list) {
+  const w = $("qwarns"); w.textContent = "";
+  list.forEach(([cls, txt]) => w.append(el("div", { class: "qwarn " + cls, text: txt })));
+}
+function setDownloads(on) { ["dlPng", "dlSvg", "dlPdf", "dlJpg", "dlWebp"].forEach(id => $(id).disabled = !on); }
+
+function update() {
+  const p = getPayload(); curPayload = p;
+  const msg = $("formMsg"); msg.className = "msg"; msg.textContent = "";
+  const qb = $("qrbox"); qb.classList.toggle("checker", S.transparent);
+  const empty = (txt) => { curQR = null; qb.textContent = ""; qb.append(el("div", { class: "qr-empty", text: txt })); $("qinfo").textContent = ""; $("payload").textContent = ""; setDownloads(false); };
+  const warns = [];
+  if (!p) { empty("Enter your content to see the QR code here."); setWarns([]); return; }
+  if (p.err) { msg.className = "msg err"; msg.textContent = p.err; empty("Fix the highlighted problem to see the QR code."); setWarns([]); return; }
+  if (p.note) { msg.className = "msg warn"; msg.textContent = p.note; }
+
+  const ecc = S.logo ? "H" : S.ecc;
   let qr;
-  try { qr = QrCode.encodeSegments(QrSegment.makeSegments(text), ECC[state.ecc].e, 1, 40, state.mask, false); }
+  try { qr = QrCode.encodeSegments(QrSegment.makeSegments(p.text), ECCS[ecc], 1, 40, S.mask, false); }
   catch (e) {
-    state.qr = null; cv.hidden = true; $("empty").hidden = false; $("empty").textContent = "That's too much text for a QR code at this error-correction level.";
-    $("download").disabled = true; $("meta").textContent = "";
-    setMsg("⚠ Too long — try a lower error-correction level (L) or shorter text.", "err"); return;
+    empty("Too much content for one QR code.");
+    setWarns([["err", S.logo || ecc !== "L" ? "This is too long to fit. Shorten it" + (S.logo ? ", remove the logo" : "") + (ecc !== "L" && !S.logo ? ", or lower the error correction under Advanced" : "") + "." : "This is too long to fit in a QR code. Please shorten it."]]);
+    return;
   }
-  state.qr = qr;
-  const fg = parseHex($("fgHex").value) || parseHex("#000000ff");
-  const bg = parseHex($("bgHex").value) || parseHex("#ffffffff");
-  const transparent = $("transp").checked;
-  const size = parseInt($("size").value, 10), margin = parseInt($("margin").value, 10);
-  $("empty").hidden = true; cv.hidden = false;
-  draw(cv, qr, { size, margin, fg, bg, transparent, flatten: false });
-  $("meta").textContent = `Version ${qr.version} · ${qr.size}×${qr.size} modules · mask ${qr.mask} · ${size}×${size}px`;
-  $("download").disabled = false;
-  // scan-safety hints
-  const effBg = transparent ? null : bg;
-  if (fg.a < 1 || (effBg && effBg.a < 1)) setMsg("Semi-transparent colors can make the code hard to scan.", "warn");
-  else if (effBg && contrast(fg, effBg) < 3) setMsg("Low contrast between the two colors — the code may not scan.", "warn");
-  else if (effBg && lum(fg) > lum(effBg)) setMsg("Light-on-dark codes work in most phone apps, but some older scanners can't read them.", "warn");
-  else if (margin < 2) setMsg("A margin under 2 modules can make scanning unreliable.", "warn");
-  else setMsg("", "");
+  curQR = qr;
+  qb.innerHTML = buildSVG(qr, S, null);
+  $("qinfo").textContent = `${qr.size}×${qr.size} modules · version ${qr.version} · error correction ${ecc}${S.logo ? " (set by logo)" : ""}`;
+  $("payload").textContent = p.text;
+
+  const cols = S.grad ? [S.fg, S.fg2] : [S.fg];
+  if (!S.transparent) {
+    const worst = Math.min(...cols.map(c => contrast(c, S.bg)));
+    if (worst < 3) warns.push(["warn", "Low contrast between the code and background — it may not scan. Use a darker code on a lighter background."]);
+    else if (cols.every(c => lum(c) > lum(S.bg))) warns.push(["warn", "Light code on a dark background: some scanner apps can't read inverted codes. Test before printing."]);
+  } else warns.push(["warn", "Transparent background: place the code on a light, plain surface so it stays readable."]);
+  if (S.logo && S.logoSize > 30) warns.push(["warn", "That's a large logo. Scan the code with a phone before you use it."]);
+  if (["dots", "small", "diamond", "vbars", "hbars"].includes(S.body) && !S.logo && (S.ecc === "L")) warns.push(["warn", "Fancy shapes scan better with higher error correction (M or above)."]);
+  if (S.body === "small" || S.body === "diamond") warns.push(["warn", "This shape is harder for phones to read. Print it large and test it."]);
+  if (S.frame === "circle") warns.push(["warn", "Round eye frames read fine on most phones, but test-scan before printing."]);
+  if (S.margin < 2) warns.push(["warn", "A very small border can stop some scanners from finding the code."]);
+  setWarns(warns);
+  setDownloads(true);
 }
 
-/* ---------- download ---------- */
-$("download").onclick = () => {
-  if (!state.qr) return;
-  const fg = parseHex($("fgHex").value) || parseHex("#000000ff"), bg = parseHex($("bgHex").value) || parseHex("#ffffffff");
-  const size = parseInt($("size").value, 10), margin = parseInt($("margin").value, 10);
-  const out = document.createElement("canvas");
-  draw(out, state.qr, { size, margin, fg, bg, transparent: $("transp").checked, flatten: state.ext === "jpeg" });
-  out.toBlob(blob => {
-    if (!blob) return setMsg("⚠ Your browser couldn't export that format. Try PNG.", "err");
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `qr-code.${state.ext === "jpeg" ? "jpg" : state.ext}`;
-    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-    setMsg(`✓ Downloaded qr-code.${state.ext === "jpeg" ? "jpg" : state.ext}`, "ok");
-  }, "image/" + state.ext, 0.92);
-};
-
-/* ---------- toolbar / file ---------- */
-$("text").addEventListener("input", render);
-$("copyBtn").onclick = async () => {
-  const v = $("text").value; if (!v) return setMsg("Nothing to copy yet.", "err");
-  try { await navigator.clipboard.writeText(v); } catch { $("text").select(); document.execCommand("copy"); }
-  setMsg("✓ Text copied", "ok");
-};
-const clearAll = () => { $("text").value = ""; render(); $("text").focus(); };
-$("clearBtn").onclick = clearAll; $("newBtn").onclick = clearAll;
-function loadFile(f) {
-  if (!f) return;
-  if (f.size > 200 * 1024) return setMsg("That file is too big for a QR code (max ~200 KB, and QR codes hold far less).", "err");
-  const rd = new FileReader(); rd.onload = () => { $("text").value = String(rd.result); render(); }; rd.readAsText(f);
+/* =====================================================================
+   6. Downloads
+   ===================================================================== */
+const fileBase = () => "cuech4-qr-" + typeId;
+function saveBlob(blob, name) {
+  const a = el("a", { href: URL.createObjectURL(blob), download: name }); document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
-$("uploadBtn").onclick = () => $("file").click();
-$("file").onchange = (e) => { loadFile(e.target.files[0]); e.target.value = ""; };
-const card = $("inputCard");
-["dragenter", "dragover"].forEach(ev => card.addEventListener(ev, e => { e.preventDefault(); card.classList.add("drop-over"); }));
-["dragleave", "drop"].forEach(ev => card.addEventListener(ev, e => { e.preventDefault(); card.classList.remove("drop-over"); }));
-card.addEventListener("drop", e => loadFile(e.dataTransfer.files[0]));
+let tt; function toast(m, err) { const t = $("toast"); t.textContent = m; t.style.color = err ? "var(--err)" : "var(--ok)"; clearTimeout(tt); tt = setTimeout(() => t.textContent = "", 2500); }
+async function toCanvas(solid) {
+  const px = S.size, svg = buildSVG(curQR, S, px);
+  const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
+  try {
+    const img = new Image(); img.src = url; await img.decode();
+    const c = el("canvas", { width: px, height: px }); const ctx = c.getContext("2d");
+    if (solid) { ctx.fillStyle = S.transparent ? "#ffffff" : S.bg; ctx.fillRect(0, 0, px, px); }
+    ctx.drawImage(img, 0, 0, px, px); return c;
+  } finally { URL.revokeObjectURL(url); }
+}
+const toBlob = (c, type, q) => new Promise(r => c.toBlob(r, type, q));
+async function dlRaster(type, ext, solid) {
+  if (!curQR) return;
+  try { saveBlob(await toBlob(await toCanvas(solid), type, .95), `${fileBase()}.${ext}`); toast(`✓ ${ext.toUpperCase()} downloaded`); }
+  catch (e) { toast("Couldn't make that file. Try a smaller size.", true); }
+}
+function dlSvg() { if (!curQR) return; saveBlob(new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + buildSVG(curQR, S, S.size)], { type: "image/svg+xml" }), fileBase() + ".svg"); toast("✓ SVG downloaded"); }
+async function dlPdf() {
+  if (!curQR) return;
+  try {
+    const c = await toCanvas(true), jpg = new Uint8Array(await (await toBlob(c, "image/jpeg", .95)).arrayBuffer());
+    const px = c.width, pt = +(px * .75).toFixed(2), te = new TextEncoder(), parts = [], offs = []; let len = 0;
+    const add = (b) => { const u = typeof b === "string" ? te.encode(b) : b; parts.push(u); len += u.length; };
+    add("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
+    const obj = (n, body) => { offs[n] = len; add(`${n} 0 obj\n`); body(); add("\nendobj\n"); };
+    obj(1, () => add("<< /Type /Catalog /Pages 2 0 R >>"));
+    obj(2, () => add("<< /Type /Pages /Kids [3 0 R] /Count 1 >>"));
+    obj(3, () => add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pt} ${pt}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`));
+    obj(4, () => { add(`<< /Type /XObject /Subtype /Image /Width ${px} /Height ${px} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`); add(jpg); add("\nendstream"); });
+    const cs = `q ${pt} 0 0 ${pt} 0 0 cm /Im0 Do Q`;
+    obj(5, () => add(`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`));
+    const xr = len; add(`xref\n0 6\n0000000000 65535 f \n`);
+    for (let i = 1; i <= 5; i++) add(String(offs[i]).padStart(10, "0") + " 00000 n \n");
+    add(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);
+    saveBlob(new Blob(parts, { type: "application/pdf" }), fileBase() + ".pdf"); toast("✓ PDF downloaded");
+  } catch (e) { toast("Couldn't make the PDF. Try a smaller size.", true); }
+}
+$("dlPng").onclick = () => dlRaster("image/png", "png", false);
+$("dlJpg").onclick = () => dlRaster("image/jpeg", "jpg", true);
+$("dlWebp").onclick = () => dlRaster("image/webp", "webp", false);
+$("dlSvg").onclick = dlSvg; $("dlPdf").onclick = dlPdf;
+$("size").value = S.size; $("sizeLab").textContent = `${S.size} × ${S.size} px`;
+$("size").oninput = (e) => { S.size = +e.target.value; $("sizeLab").textContent = `${S.size} × ${S.size} px`; saveDesign(); };
 
-render();
+/* =====================================================================
+   7. UI — tabs, forms, accordions, design controls
+   ===================================================================== */
+function renderTabs() {
+  const box = $("tabs"); box.textContent = "";
+  TYPES.forEach(t => box.append(el("button", { class: "tab", role: "tab", "aria-selected": String(t.id === typeId), text: t.label, onclick: () => { typeId = t.id; saveDesign(); renderTabs(); renderForm(); update(); } })));
+}
+function renderForm() {
+  const t = TYPES.find(x => x.id === typeId), form = $("form"); form.textContent = "";
+  $("contentIco").innerHTML = svgIcon(t.icon);
+  const v = vals[typeId]; let rowBox = null, rowKey = null;
+  t.fields.forEach(fd => {
+    let wrap;
+    if (fd.kind === "checkbox") {
+      const cb = el("input", { type: "checkbox", id: "f_" + fd.id }); cb.checked = v[fd.id];
+      cb.onchange = () => { v[fd.id] = cb.checked; if (typeId === "event") syncEvent(); schedule(); };
+      wrap = el("label", { class: "chk" }, cb, fd.label);
+    } else if (fd.kind === "button") {
+      wrap = el("button", { class: "btn-ghost sm", type: "button", text: fd.label, style: "margin-top:14px", onclick: () => {
+        if (!navigator.geolocation) return toast("Your browser can't share location.", true);
+        navigator.geolocation.getCurrentPosition(pos => { v.lat = pos.coords.latitude.toFixed(6); v.lng = pos.coords.longitude.toFixed(6); renderForm(); update(); }, () => toast("Couldn't get your location (permission denied?).", true));
+      } });
+    } else {
+      let inp;
+      if (fd.kind === "textarea") inp = el("textarea", {});
+      else if (fd.kind === "select") { inp = el("select", {}); fd.options.forEach(([val, lab]) => inp.append(el("option", { value: val, text: lab }))); }
+      else { const kind = (typeId === "event" && fd.kind === "datetime-local" && v.allday) ? "date" : fd.kind; inp = el("input", { type: kind === "email" || kind === "tel" || kind.startsWith("date") ? kind : "text", autocomplete: "off" }); }
+      if (fd.ph) inp.placeholder = fd.ph; inp.id = "f_" + fd.id; inp.value = v[fd.id];
+      inp.addEventListener(fd.kind === "select" || fd.kind.startsWith("date") ? "change" : "input", () => { v[fd.id] = inp.value; schedule(); });
+      wrap = el("div", {}, el("label", { class: "fl", for: "f_" + fd.id, text: fd.label }), inp);
+      if (fd.hint) wrap.append(el("div", { class: "hint", text: fd.hint }));
+    }
+    if (fd.row) {
+      if (rowKey !== fd.row) { rowBox = el("div", { class: "row2" }); rowKey = fd.row; form.append(rowBox); }
+      rowBox.append(wrap);
+    } else { rowKey = null; form.append(wrap); }
+  });
+  if (typeId === "event") syncEvent();
+}
+function syncEvent() { const ad = vals.event.allday, a = $("f_start"), b = $("f_end"); if (!a) return;
+  [a, b].forEach(i => { const val = i.value; i.type = ad ? "date" : "datetime-local"; i.value = ad ? val.slice(0, 10) : (val.length === 10 ? val + "T09:00" : val); });
+  vals.event.start = a.value; vals.event.end = b.value; }
+
+document.querySelectorAll(".acc-h").forEach(h => h.onclick = () => {
+  const acc = h.parentElement, open = !acc.classList.contains("open");
+  acc.classList.toggle("open", open); h.setAttribute("aria-expanded", open); h.querySelector(".pm").textContent = open ? "−" : "+";
+});
+
+/* colour row: swatch + hex text, kept in sync */
+const HEX = /^#[0-9a-f]{6}$/i;
+function colorRow(key) {
+  const pick = el("input", { type: "color", "aria-label": key }), txt = el("input", { type: "text", maxlength: "7", spellcheck: "false" }), box = el("div", { class: "crow" }, pick, txt);
+  const set = (val) => { pick.value = val; txt.value = val.toUpperCase(); box.classList.remove("bad"); };
+  set(S[key]);
+  pick.oninput = () => { S[key] = pick.value; txt.value = pick.value.toUpperCase(); box.classList.remove("bad"); saveDesign(); schedule(); };
+  txt.oninput = () => { let t = txt.value.trim(); if (t && t[0] !== "#") t = "#" + t; if (HEX.test(t)) { S[key] = t.toLowerCase(); pick.value = S[key]; box.classList.remove("bad"); saveDesign(); schedule(); } else box.classList.add("bad"); };
+  txt.onblur = () => set(S[key]);
+  box.set = set; return box;
+}
+const field = (label, node) => el("div", {}, el("label", { class: "fl", text: label }), node);
+function radio(name, val, label, checked, on) { const i = el("input", { type: "radio", name }); i.checked = checked; i.onchange = () => on(val); return el("label", { class: "rad" }, i, label); }
+function check(label, checked, on) { const i = el("input", { type: "checkbox" }); i.checked = checked; i.onchange = () => on(i.checked); return el("label", { class: "chk" }, i, label); }
+
+function renderColors() {
+  const b = $("colorsBody"); b.textContent = "";
+  b.append(el("label", { class: "fl", text: "Code color" }));
+  const modes = el("div", {}, radio("gm", "single", "Single color", !S.grad, () => { S.grad = false; saveDesign(); renderColors(); schedule(); }),
+    radio("gm", "grad", "Gradient", S.grad, () => { S.grad = true; saveDesign(); renderColors(); schedule(); }),
+    check("Custom eye colors", S.customEye, (c) => { S.customEye = c; saveDesign(); renderColors(); schedule(); }));
+  b.append(modes);
+  const row = el("div", { class: "colors", style: "margin-top:10px" }, colorRow("fg"));
+  if (S.grad) {
+    row.append(colorRow("fg2"));
+    const sel = el("select", { style: "width:auto" }); [["diag", "Diagonal"], ["horiz", "Left → right"], ["vert", "Top → bottom"], ["radial", "Radial"]].forEach(([v, l]) => sel.append(el("option", { value: v, text: l })));
+    sel.value = S.gradType; sel.onchange = () => { S.gradType = sel.value; saveDesign(); schedule(); }; row.append(sel);
+  }
+  b.append(row);
+  if (S.customEye) {
+    b.append(el("label", { class: "fl", text: "Eye colors (outer frame · center)" }));
+    const fr = colorRow("eyeFrame"), ba = colorRow("eyeBall");
+    const copy = el("button", { class: "btn-ghost", type: "button", text: "Copy code color", onclick: () => { S.eyeFrame = S.eyeBall = S.fg; fr.set(S.fg); ba.set(S.fg); saveDesign(); schedule(); } });
+    const swap = el("button", { class: "btn-ghost", type: "button", title: "Swap the two eye colors", text: "⇄", onclick: () => { [S.eyeFrame, S.eyeBall] = [S.eyeBall, S.eyeFrame]; fr.set(S.eyeFrame); ba.set(S.eyeBall); saveDesign(); schedule(); } });
+    b.append(el("div", { class: "colors" }, fr, ba, swap, copy));
+  }
+  b.append(el("label", { class: "fl", text: "Background color" }));
+  b.append(el("div", { class: "colors" }, colorRow("bg"), check("Transparent", S.transparent, (c) => { S.transparent = c; saveDesign(); schedule(); })));
+  b.append(el("div", { class: "hint", style: "margin-top:12px", text: "Dark code on a light background scans best." }));
+}
+
+function renderLogo() {
+  const b = $("logoBody"); b.textContent = "";
+  const box = el("div", { class: "logo-box" }); if (S.logo) box.append(el("img", { src: S.logo, alt: "Your logo" })); else box.textContent = "No logo";
+  const file = el("input", { type: "file", accept: ".png,.jpg,.jpeg,.gif,.svg,.webp,image/*", hidden: "" });
+  file.onchange = () => {
+    const f = file.files[0]; file.value = ""; if (!f) return;
+    if (f.size > 2 * 1024 * 1024) return toast("That image is over 2 MB — try a smaller one.", true);
+    if (!f.type.startsWith("image/")) return toast("Please choose an image file.", true);
+    const rd = new FileReader(); rd.onload = () => { S.logo = String(rd.result); renderLogo(); update(); }; rd.onerror = () => toast("Couldn't read that image.", true); rd.readAsDataURL(f);
+  };
+  const up = el("button", { class: "btn-main", type: "button", text: "Upload image", onclick: () => file.click() });
+  const rm = el("button", { class: "btn-ghost", type: "button", text: "Remove logo", onclick: () => { S.logo = null; renderLogo(); update(); } }); rm.disabled = !S.logo;
+  b.append(el("div", { class: "logo-row" }, box, el("div", { style: "display:grid;gap:10px" }, up, rm), file));
+  b.append(check("Clear the code behind the logo", S.logoRemoveBg, (c) => { S.logoRemoveBg = c; saveDesign(); schedule(); }));
+  const lab = el("b", { text: S.logoSize + "%" }), r = el("input", { type: "range", min: "10", max: "35", value: S.logoSize });
+  r.oninput = () => { S.logoSize = +r.value; lab.textContent = S.logoSize + "%"; saveDesign(); schedule(); };
+  b.append(el("label", { class: "fl" }, "Logo size ", lab), r);
+  b.append(el("div", { class: "hint", style: "margin-top:12px", text: "PNG, JPG, GIF, SVG or WEBP, up to 2 MB. With a logo, error correction is set to High automatically so the code still scans. Only use images you have the right to use." }));
+}
+
+function renderDesign() {
+  const b = $("designBody"); b.textContent = "";
+  const group = (title, map, key, mk) => {
+    b.append(el("label", { class: "fl", text: title }));
+    const w = el("div", { class: "shapes" });
+    Object.keys(map).forEach(k => { const btn = el("button", { class: "shape", type: "button", title: map[k].label, "aria-label": title + ": " + map[k].label, "aria-pressed": String(S[key] === k) }); btn.innerHTML = mk(map[k]);
+      btn.onclick = () => { S[key] = k; saveDesign(); w.querySelectorAll(".shape").forEach(x => x.setAttribute("aria-pressed", "false")); btn.setAttribute("aria-pressed", "true"); schedule(); }; w.append(btn); });
+    b.append(w);
+  };
+  group("Body shape", BODY, "body", s => thumb(s.fn(sampleG, 7)));
+  group("Eye frame shape", FRAME, "frame", s => thumb(s.fn(0, 0), true));
+  group("Eye center shape", BALL, "ball", s => thumb(FRAME.square.fn(0, 0), true).replace("</svg>", "") + `<path d="${s.fn(0, 0)}" fill="#0f172a"/></svg>`);
+}
+
+function renderAdvanced() {
+  const b = $("advBody"); b.textContent = "";
+  const sel = el("select", {}); [["L", "L — Low (about 7% repair)"], ["M", "M — Medium (about 15%)"], ["Q", "Q — Quartile (about 25%)"], ["H", "H — High (about 30%)"]].forEach(([v, l]) => sel.append(el("option", { value: v, text: l })));
+  sel.value = S.ecc; sel.onchange = () => { S.ecc = sel.value; saveDesign(); schedule(); };
+  b.append(field("Error correction", sel), el("div", { class: "hint", text: "Higher levels survive scuffs and logos but make the code denser. Logos force High." }));
+  const mk = el("select", {}); mk.append(el("option", { value: "-1", text: "Automatic (recommended)" })); for (let i = 0; i < 8; i++) mk.append(el("option", { value: String(i), text: "Pattern " + i }));
+  mk.value = String(S.mask); mk.onchange = () => { S.mask = +mk.value; saveDesign(); schedule(); };
+  b.append(field("Mask pattern", mk));
+  const lab = el("b", { text: S.margin + " modules" }), r = el("input", { type: "range", min: "0", max: "10", value: S.margin });
+  r.oninput = () => { S.margin = +r.value; lab.textContent = S.margin + " modules"; saveDesign(); schedule(); };
+  b.append(el("label", { class: "fl" }, "Border (quiet zone) ", lab), r);
+  b.append(el("div", { style: "margin-top:16px" }, el("button", { class: "btn-ghost", type: "button", text: "Reset all design settings", onclick: () => {
+    Object.assign(S, DEFAULTS); S.logo = null; saveDesign(); $("size").value = S.size; $("sizeLab").textContent = `${S.size} × ${S.size} px`; renderColors(); renderLogo(); renderDesign(); renderAdvanced(); update(); } })));
+}
+
+$("newBtn").onclick = () => { const t = TYPES.find(x => x.id === typeId); t.fields.forEach(f => vals[typeId][f.id] = f.kind === "checkbox" ? false : f.kind === "select" ? f.options[0][0] : ""); renderForm(); update(); };
+
+renderTabs(); renderForm(); renderColors(); renderLogo(); renderDesign(); renderAdvanced(); update();
 </script>
 </body>
 </html>

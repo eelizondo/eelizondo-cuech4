@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Age Calculator — Cuech4 Hub</title>
+<link rel="icon" type="image/svg+xml" href="global_assets/age-calculator-icon.svg">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0d0c08; --panel: #17150e; --panel-2: #0f0e09; --line: #302c1c;
+    --text: #f1eee3; --muted: #9c957d;
+    --accent: #ca8a04; --accent-2: #facc15; --accent-text: #fde68a;
+    --ok: #34d399; --err: #f87171;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, -apple-system, sans-serif; line-height: 1.45; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid var(--line); background: #121009; }
+  .title { font-size: 20px; font-weight: 700; background: linear-gradient(90deg, var(--accent-2), #fde047 55%, #fdba74); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0; }
+  .hub-breadcrumb { color: var(--muted); font-size: 13px; text-decoration: none; transition: color .15s; }
+  .hub-breadcrumb:hover { color: var(--accent-text); }
+  .btn-ghost { background: #1a170e; border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 8px; }
+  .btn-ghost:hover { border-color: var(--accent-2); }
+  .btn-ghost svg, .btn-main svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+
+  main { max-width: 900px; margin: 0 auto; padding: 28px 16px 80px; }
+  .intro { color: var(--muted); font-size: 15px; max-width: 680px; margin: 0 0 14px; }
+  .tag { display: inline-block; font-size: 13px; font-weight: 600; color: var(--accent-text); border: 1px solid rgba(250,204,21,.28); background: rgba(250,204,21,.08); border-radius: 999px; padding: 4px 14px; margin-bottom: 22px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 22px; margin-bottom: 18px; }
+
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  label.f { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+  input[type=date] { width: 100%; height: 46px; background: #0a0907; border: 1px solid var(--line); border-radius: 12px; color: var(--text); padding: 0 14px; font: 16px/1 inherit; font-family: inherit; }
+  input[type=date]:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(250,204,21,.15); }
+  .actions { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; align-items: center; }
+  .btn-main { background: linear-gradient(180deg, #facc15, #eab308); border: 0; color: #231b00; font-weight: 600; font-size: 15px; padding: 12px 22px; border-radius: 12px; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 9px; box-shadow: 0 6px 22px rgba(234,179,8,.22); }
+  .btn-main:hover { filter: brightness(1.07); }
+  .err { color: var(--err); font-size: 13.5px; margin-top: 14px; min-height: 0; }
+  .toast { font-size: 12.5px; color: var(--ok); margin-left: 4px; }
+
+  .hero { text-align: center; padding: 34px 20px 38px; background: linear-gradient(180deg, #1f1b0f, #181509); border: 1px solid #3a3217; border-radius: 22px; margin-bottom: 16px; }
+  .hero .lab { font-size: 15px; margin-bottom: 10px; color: var(--text); }
+  .big { font-size: clamp(34px, 8vw, 58px); font-weight: 800; letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .big small { font-size: .5em; font-weight: 500; color: var(--muted); margin: 0 .35em 0 .12em; letter-spacing: 0; }
+  .big small:last-child { margin-right: 0; }
+  .sub { margin-top: 14px; font-size: 14px; color: var(--muted); }
+  .sub b { color: var(--accent-text); font-weight: 600; }
+
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px 10px 16px; text-align: center; }
+  .tile .v { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tile .k { font-size: 14px; color: var(--muted); margin-top: 4px; }
+  .tile.hl .v { color: var(--accent-2); }
+  .note { font-size: 12px; color: var(--muted); margin-top: 18px; text-align: center; }
+
+  @media (max-width: 700px) {
+    .fields { grid-template-columns: 1fr; }
+    .tiles { grid-template-columns: 1fr 1fr; }
+    header { padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1 class="title">🎂 Age Calculator</h1>
+    <a href="../hub.html#latest-builds" class="hub-breadcrumb">← Cuech4 Hub</a>
+  </div>
+  <button class="btn-ghost" id="newBtn">＋ New</button>
+</header>
+
+<main>
+  <p class="intro">Enter a date of birth to get an exact age in years, months and days, plus total days lived and the countdown to the next birthday. Change the "as of" date to see the age on any past or future day.</p>
+  <span class="tag">Date &amp; Time</span>
+
+  <section class="card">
+    <div class="fields">
+      <div>
+        <label class="f" for="dob">Date of birth</label>
+        <input type="date" id="dob" min="1900-01-01">
+      </div>
+      <div>
+        <label class="f" for="asof">Age as of</label>
+        <input type="date" id="asof" min="1900-01-01">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-main" id="calc"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>Calculate age</button>
+      <button class="btn-ghost" id="reset"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.3-4.6L4 8.5"/><path d="M4 4v4.5h4.5"/><path d="M4 13a8 8 0 0 0 14.3 4.6L20 15.5"/><path d="M20 20v-4.5h-4.5"/></svg>Reset</button>
+      <button class="btn-ghost" id="copy" hidden><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>Copy result</button>
+      <span class="toast" id="toast"></span>
+    </div>
+    <div class="err" id="err" role="alert"></div>
+  </section>
+
+  <div id="out" hidden>
+    <section class="hero">
+      <div class="lab" id="heroLab">Your age</div>
+      <div class="big" id="big"></div>
+      <div class="sub" id="sub"></div>
+    </section>
+    <section class="tiles">
+      <div class="tile"><div class="v" id="tDays">0</div><div class="k">Total days</div></div>
+      <div class="tile"><div class="v" id="tWeeks">0</div><div class="k">Total weeks</div></div>
+      <div class="tile"><div class="v" id="tMonths">0</div><div class="k">Total months</div></div>
+      <div class="tile hl"><div class="v" id="tBday">0</div><div class="k">Days to next birthday</div></div>
+    </section>
+  </div>
+  <div class="note">Calculated in your browser. Your dates are not uploaded or saved.</div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const DAY = 86400000;
+const fmt = (n) => n.toLocaleString("en-US");
+
+/* Dates are handled as plain calendar days (UTC midnight) so daylight-saving shifts can't change a count. */
+const parseISO = (s) => { const [y, m, d] = s.split("-").map(Number); return { y, m: m - 1, d }; };
+const toUTC = (y, m, d) => Date.UTC(y, m, d);
+const daysIn = (y, m) => new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+// add n months to a date, clamping to the end of a shorter month (Jan 31 + 1 month = Feb 28/29)
+function addMonths(dob, n) {
+  const t = dob.m + n, y = dob.y + Math.floor(t / 12), m = ((t % 12) + 12) % 12;
+  return toUTC(y, m, Math.min(dob.d, daysIn(y, m)));
+}
+function todayISO() {
+  const n = new Date(), p = (v) => String(v).padStart(2, "0");
+  return `${n.getFullYear()}-${p(n.getMonth() + 1)}-${p(n.getDate())}`;
+}
+const weekday = (ms, long) => new Date(ms).toLocaleDateString("en-US", { weekday: long ? "long" : "short", timeZone: "UTC" });
+const longDate = (ms) => new Date(ms).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
+
+function calculate(dobS, asS) {
+  const dob = parseISO(dobS), as = parseISO(asS);
+  const dobMs = toUTC(dob.y, dob.m, dob.d), asMs = toUTC(as.y, as.m, as.d);
+  if (asMs < dobMs) return null;
+  let months = (as.y - dob.y) * 12 + (as.m - dob.m);
+  if (addMonths(dob, months) > asMs) months--;
+  const years = Math.floor(months / 12), restMonths = months % 12;
+  const days = Math.round((asMs - addMonths(dob, months)) / DAY);
+  const totalDays = Math.round((asMs - dobMs) / DAY);
+
+  // next birthday on or after the as-of date (Feb 29 birthdays fall on Feb 28 in non-leap years)
+  let ny = as.y;
+  const bday = (y) => toUTC(y, dob.m, Math.min(dob.d, daysIn(y, dob.m)));
+  if (bday(ny) < asMs) ny++;
+  const nextMs = bday(ny);
+  return { years, months: restMonths, days, totalDays, totalWeeks: Math.floor(totalDays / 7), totalMonths: months,
+           daysToBday: Math.round((nextMs - asMs) / DAY), nextMs, turning: ny - dob.y, dobMs, asMs };
+}
+
+let lastText = "";
+function run() {
+  const dobS = $("dob").value, asS = $("asof").value, err = $("err");
+  err.textContent = "";
+  if (!dobS) { $("out").hidden = true; $("copy").hidden = true; err.textContent = "Please enter a date of birth."; return; }
+  if (!asS) { $("out").hidden = true; $("copy").hidden = true; err.textContent = "Please enter an \"as of\" date."; return; }
+  const r = calculate(dobS, asS);
+  if (!r) { $("out").hidden = true; $("copy").hidden = true; err.textContent = "The date of birth is after the \"as of\" date, so there's no age to show yet."; return; }
+
+  const isToday = asS === todayISO();
+  $("heroLab").textContent = isToday ? "Your age" : "Age on " + longDate(r.asMs);
+  const part = (n, u) => `${n}<small>${u}</small>`;
+  $("big").innerHTML = part(r.years, "yr") + part(r.months, "mo") + part(r.days, "d");
+  $("tDays").textContent = fmt(r.totalDays);
+  $("tWeeks").textContent = fmt(r.totalWeeks);
+  $("tMonths").textContent = fmt(r.totalMonths);
+  $("tBday").textContent = r.daysToBday === 0 ? "Today 🎉" : fmt(r.daysToBday);
+  const sub = $("sub"); sub.textContent = "";
+  const addB = (txt) => { const b = document.createElement("b"); b.textContent = txt; return b; };
+  sub.append("Born on a ", addB(weekday(r.dobMs, true)), " · ",
+    r.daysToBday === 0 ? "Happy birthday! Turning " : "Next birthday: ",
+    ...(r.daysToBday === 0 ? [addB(r.turning)] : [addB(longDate(r.nextMs)), ` (turning ${r.turning})`]));
+  const p = (n, u) => `${n} ${u}${n === 1 ? "" : "s"}`;
+  lastText = `${p(r.years, "year")}, ${p(r.months, "month")}, ${p(r.days, "day")} (${fmt(r.totalDays)} days)`;
+  $("out").hidden = false; $("copy").hidden = false;
+}
+
+$("calc").onclick = run;
+["dob", "asof"].forEach(id => {
+  $(id).addEventListener("keydown", e => { if (e.key === "Enter") run(); });
+  $(id).addEventListener("change", () => { if (!$("out").hidden || $("err").textContent) run(); });
+});
+function reset() {
+  $("dob").value = ""; $("asof").value = todayISO();
+  $("out").hidden = true; $("copy").hidden = true; $("err").textContent = ""; $("toast").textContent = "";
+  $("dob").focus();
+}
+$("reset").onclick = reset; $("newBtn").onclick = reset;
+$("asof").value = todayISO();
+$("asof").max = "2200-12-31"; $("dob").max = "2200-12-31";
+
+let tt;
+$("copy").onclick = async () => {
+  try { await navigator.clipboard.writeText(lastText); }
+  catch { const t = document.createElement("textarea"); t.value = lastText; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); }
+  $("toast").textContent = "✓ Copied"; clearTimeout(tt); tt = setTimeout(() => $("toast").textContent = "", 2000);
+};
+</script>
+</body>
+</html>
