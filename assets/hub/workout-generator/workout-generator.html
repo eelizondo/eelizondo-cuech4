@@ -65,12 +65,13 @@
   .exercise-track-head { display: flex; align-items: center; gap: 10px; padding: 11px 12px; }
   .exercise-toggle { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 0; color: inherit; text-align: left; background: transparent; border: 0; cursor: pointer; }
   .exercise-count { flex: none; display: grid; width: 30px; height: 30px; place-items: center; color: var(--accent-text); border: 1px solid var(--line); border-radius: 50%; font-size: 10px; font-weight: 700; }
+  .exercise-count.complete { color: var(--ok); border-color: var(--ok); }
   .exercise-name { flex: 1; min-width: 0; font-size: 13px; font-weight: 700; }
   .exercise-name small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; font-weight: 400; }
   .exercise-chevron { color: var(--muted); font-size: 12px; transition: transform .15s; }
   .exercise-toggle[aria-expanded="true"] .exercise-chevron { transform: rotate(180deg); }
   .weight-control { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--muted); font-size: 10px; white-space: nowrap; }
-  .weight-input { width: 84px; padding: 6px 7px; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; font-size: 11px; font-family: inherit; appearance: textfield; -moz-appearance: textfield; }
+  .weight-input { width: 84px; padding: 6px 7px; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; font-size: 11px; font-family: inherit; text-align: center; appearance: textfield; -moz-appearance: textfield; }
   .weight-input::-webkit-inner-spin-button, .weight-input::-webkit-outer-spin-button { margin: 0; -webkit-appearance: none; }
   .set-list { border-top: 1px solid var(--line); }
   .set-list.collapsed { display: none; }
@@ -343,11 +344,11 @@ function renderPlan(plan, scrollToResult = true) {
     return `<section class="exercise-track">
       <div class="exercise-track-head">
         <button type="button" class="exercise-toggle" aria-expanded="${exercise.expanded}" onclick="toggleExercise(${activeDay}, ${exerciseIndex})">
-          <span class="exercise-count">${done}/${exercise.sets}</span>
+          <span class="exercise-count ${done === exercise.sets ? "complete" : ""}">${done}/${exercise.sets}</span>
           <span class="exercise-name">${esc(exercise.name || "Exercise")}${exercise.notes ? `<small>${esc(exercise.notes)}</small>` : ""}</span>
           <span class="exercise-chevron" aria-hidden="true">⌄</span>
         </button>
-        <label class="weight-control">lbs/kg <input class="weight-input" type="number" min="0" step="0.5" value="${esc(exercise.weight)}" aria-label="Weight for ${esc(exercise.name || "exercise")}" onchange="setPlanWeight(${activeDay}, ${exerciseIndex}, this.value)"></label>
+        <label class="weight-control">lbs/kg <input class="weight-input" type="number" inputmode="decimal" min="0" step="0.5" value="${esc(exercise.weight)}" aria-label="Weight for ${esc(exercise.name || "exercise")}" onkeydown="blockWeightKey(event)" onpaste="pasteWeightValue(event, this)" oninput="sanitizeWeightInput(this)" onchange="setPlanWeight(${activeDay}, ${exerciseIndex}, this.value)"></label>
       </div>
       <div class="set-list ${exercise.expanded ? "" : "collapsed"}">${sets}</div>
     </section>`;
@@ -396,6 +397,30 @@ function setPlanWeight(dayIndex, exerciseIndex, weight) {
   if (!exercise) return;
   exercise.weight = weight;
   LS.set("wg_current", JSON.stringify(currentPlan));
+}
+
+function sanitizeWeightValue(value) {
+  value = String(value).replace(/[^0-9.]/g, "");
+  const decimal = value.indexOf(".");
+  if (decimal !== -1) value = value.slice(0, decimal + 1) + value.slice(decimal + 1).replace(/\./g, "");
+  return value;
+}
+
+function sanitizeWeightInput(input) {
+  const value = sanitizeWeightValue(input.value);
+  input.value = value;
+}
+
+function blockWeightKey(event) {
+  if (["e", "E", "+", "-"].includes(event.key)) event.preventDefault();
+}
+
+function pasteWeightValue(event, input) {
+  const text = event.clipboardData?.getData("text");
+  if (text === undefined) return;
+  event.preventDefault();
+  input.value = sanitizeWeightValue(text);
+  input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
 function resetWeekProgress() {
