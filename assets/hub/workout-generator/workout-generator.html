@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Workout Generator — Cuech4 Hub</title>
+<script>if ("scrollRestoration" in history) history.scrollRestoration = "manual";</script>
 <style>
   :root {
     --bg: #0b0c10; --panel: #15161d; --panel-2: #0f1015; --line: #272936;
@@ -248,6 +249,7 @@ function showSetupCards(show) {
 
 function restartRoutine() {
   currentPlan = null;
+  LS.set("wg_current", "");
   $("jsonIn").value = "";
   $("resultCard").hidden = true;
   showSetupCards(true);
@@ -256,8 +258,9 @@ function restartRoutine() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function renderPlan(plan) {
+function renderPlan(plan, scrollToResult = true) {
   currentPlan = plan;
+  LS.set("wg_current", JSON.stringify(plan));
   const chips = [plan.goal, plan.experience, plan.days.length + " days/week"].filter(Boolean)
     .map(c => `<span class="chip">${esc(c)}</span>`).join("");
   const equip = (plan.equipment || []).length ? `<div class="note">Equipment: ${plan.equipment.map(esc).join(", ")}</div>` : "";
@@ -274,7 +277,17 @@ function renderPlan(plan) {
   showSetupCards(false);
   $("saveBtn").onclick = savePlan; $("printBtn").onclick = () => window.print();
   $("againBtn").onclick = restartRoutine;
-  $("resultCard").scrollIntoView({ behavior: "smooth", block: "start" });
+  if (scrollToResult) $("resultCard").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function restoreCurrentPlan() {
+  const saved = LS.get("wg_current", "");
+  if (!saved) return;
+  try {
+    renderPlan(parsePlan(saved), false);
+    window.scrollTo(0, 0);
+  }
+  catch { LS.set("wg_current", ""); }
 }
 
 /* ---------- Step 3: build ---------- */
@@ -315,6 +328,8 @@ $("savedBtn").onclick = openSaved;
 $("closeModal").onclick = () => $("modal").classList.remove("open");
 $("modal").onclick = (e) => { if (e.target === $("modal")) $("modal").classList.remove("open"); };
 $("newBtn").onclick = restartRoutine;
+restoreCurrentPlan();
+window.addEventListener("pageshow", () => window.scrollTo(0, 0));
 </script>
 </body>
 </html>
