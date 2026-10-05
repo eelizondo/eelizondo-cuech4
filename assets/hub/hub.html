@@ -244,6 +244,16 @@ nav a.current { color: var(--green); }
 .section-head h2 { font-size: 26px; }
 .section-link { color: var(--accent-text); font-size: 13px; font-weight: 500; text-decoration: none; }
 .section-link:hover { text-decoration: underline; }
+.build-search {
+  display: flex; align-items: center; gap: 9px; width: min(100%, 280px);
+  padding: 8px 10px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+}
+.build-search svg { width: 16px; height: 16px; flex: none; color: var(--icon-c); }
+.build-search input { width: 100%; min-width: 0; padding: 0; color: var(--header-c); background: transparent; border: 0; outline: 0; font: 13px 'Inter', sans-serif; }
+.build-search input::placeholder { color: var(--label-c); }
+.build-search kbd { flex: none; padding: 2px 6px; color: var(--label-c); background: var(--panel-2); border: 1px solid var(--border); border-radius: 4px; font: 11px 'Space Mono', monospace; }
+.filter-empty { max-width: 1200px; margin: 18px auto 0; color: var(--label-c); font-size: 13px; }
+.filter-empty.hidden { display: none; }
 
 /* PRODUCT GRID */
 .prod-grid {
@@ -256,6 +266,7 @@ nav a.current { color: var(--green); }
   color: inherit; text-decoration: none; display: block;
   transition: border-color 0.2s ease, transform 0.15s ease;
 }
+.prod-card[hidden] { display: none; }
 .prod-card:hover { border-color: var(--border); transform: translateY(-3px); }
 .prod-card.soon { opacity: 0.58; cursor: default; }
 .prod-card.soon:hover { border-color: var(--border); transform: none; }
@@ -380,6 +391,11 @@ footer {
 <section class="section reveal reveal-2" id="latest-builds">
   <div class="section-head">
     <h2>Latest builds</h2>
+    <label class="build-search" for="build-search-input">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+      <input id="build-search-input" type="search" placeholder="Filter builds" autocomplete="off">
+      <kbd aria-hidden="true">/</kbd>
+    </label>
   </div>
   <div class="prod-grid">
     <a class="prod-card" href="workout-generator/workout-generator.html">
@@ -424,13 +440,13 @@ footer {
         <p>Generate secure passwords with adjustable length and character types.</p>
       </div>
     </a>
-    <article class="prod-card soon" aria-disabled="true">
-      <div class="prod-image">✦<span class="prod-badge badge-soon">In progress</span></div>
+    <a class="prod-card" href="text-diff/text-diff.html">
+      <div class="prod-image"><img class="project-icon" src="text-diff/global_assets/text-diff-icon.svg" alt="Text Diff Checker icon"><span class="prod-badge badge-best">Live</span></div>
       <div class="prod-info">
-        <h3>Coming soon</h3>
-        <p>A new tool is in progress.</p>
+        <h3>Text Diff Checker</h3>
+        <p>Compare two versions of text and inspect their differences.</p>
       </div>
-    </article>
+    </a>
     <article class="prod-card soon" aria-disabled="true">
       <div class="prod-image">✦<span class="prod-badge badge-soon">In progress</span></div>
       <div class="prod-info">
@@ -446,6 +462,7 @@ footer {
       </div>
     </article>
   </div>
+  <p class="filter-empty hidden" id="filter-empty" role="status">No builds match that search.</p>
 </section>
 
 <section class="section reveal reveal-3">
@@ -548,6 +565,38 @@ if (projectsLink) {
     requestAnimationFrame(scrollFrame);
   });
 }
+
+const buildSearch = document.getElementById('build-search-input');
+const buildCards = [...document.querySelectorAll('#latest-builds .prod-grid > .prod-card')];
+const filterEmpty = document.getElementById('filter-empty');
+
+function filterBuilds() {
+  const query = buildSearch.value.trim().toLocaleLowerCase();
+  let visibleCount = 0;
+  buildCards.forEach(card => {
+    const matches = card.textContent.toLocaleLowerCase().includes(query);
+    card.hidden = !matches;
+    if (matches) visibleCount++;
+  });
+  filterEmpty.classList.toggle('hidden', visibleCount > 0);
+}
+
+buildSearch.addEventListener('input', filterBuilds);
+buildSearch.addEventListener('keydown', event => {
+  if (event.key === 'Escape') {
+    buildSearch.value = '';
+    filterBuilds();
+    buildSearch.blur();
+  }
+});
+
+document.addEventListener('keydown', event => {
+  const target = event.target;
+  if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) return;
+  if (target instanceof Element && target.closest('input, textarea, select, [contenteditable="true"]')) return;
+  event.preventDefault();
+  buildSearch.focus();
+});
 </script>
 
 </body>

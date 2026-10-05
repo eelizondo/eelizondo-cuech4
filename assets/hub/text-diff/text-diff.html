@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Text Diff Checker — Cuech4 Hub</title>
+<link rel="icon" type="image/svg+xml" href="global_assets/text-diff-icon.svg">
+<style>
+  :root {
+    --bg: #0a0d0d; --panel: #121717; --panel-2: #0c1010; --line: #243030;
+    --text: #e8f1f0; --muted: #86a09d;
+    --accent: #0d9488; --accent-2: #2dd4bf; --accent-text: #99f6e4;
+    --ok: #34d399; --err: #f87171; --warn: #fbbf24;
+    --add-bg: rgba(52,211,153,.13); --add-hl: rgba(52,211,153,.38);
+    --del-bg: rgba(248,113,113,.13); --del-hl: rgba(248,113,113,.40);
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, -apple-system, sans-serif; line-height: 1.45; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid var(--line); background: #0e1313; }
+  .title { font-size: 20px; font-weight: 700; background: linear-gradient(90deg, var(--accent-2), #5eead4 60%, #67e8f9); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0; }
+  .hub-breadcrumb { color: var(--muted); font-size: 13px; text-decoration: none; transition: color .15s; }
+  .hub-breadcrumb:hover { color: var(--accent-text); }
+  .btn-ghost { background: #131a1a; border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-ghost:hover { border-color: var(--accent); }
+
+  main { max-width: 1280px; margin: 0 auto; padding: 24px 16px 80px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; margin-bottom: 18px; }
+  h2 { margin: 0 0 6px; font-size: 17px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  h2 svg, .privacy svg { width: 18px; height: 18px; stroke: var(--accent-text); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .privacy { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; margin: 0 0 16px; }
+  .privacy svg { width: 15px; height: 15px; stroke: var(--muted); }
+  .label { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+
+  .modes { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .mode { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; min-width: 250px; }
+  .mode:has(input:checked) { border-color: var(--accent); background: #0f1f1e; }
+  .mode input { accent-color: var(--accent-2); margin-top: 3px; }
+  .mode b { font-weight: 500; font-size: 14px; display: block; }
+  .mode span { font-size: 13px; color: var(--muted); }
+
+  .toggles { display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 12px 16px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 16px; }
+  .tg { display: inline-flex; align-items: center; gap: 9px; font-size: 14px; cursor: pointer; user-select: none; }
+  .tg input { position: absolute; opacity: 0; pointer-events: none; }
+  .sw { width: 38px; height: 22px; border-radius: 11px; background: #2a3535; position: relative; transition: background .15s; flex: none; }
+  .sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #0a0d0d; transition: transform .15s, background .15s; }
+  .tg input:checked + .sw { background: var(--accent-2); }
+  .tg input:checked + .sw::after { transform: translateX(16px); }
+  .tg input:focus-visible + .sw { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+
+  .panes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .pane { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 8px; transition: border-color .15s; }
+  .pane.drop-over { border-color: var(--accent-2); border-style: dashed; }
+  .pane-head { display: flex; justify-content: space-between; align-items: center; padding: 2px 6px 8px; }
+  .pane-head b { font-weight: 500; font-size: 14px; }
+  .tools { display: flex; align-items: center; gap: 2px; }
+  .tool { background: none; border: 0; color: var(--muted); width: 34px; height: 34px; border-radius: 8px; cursor: pointer; display: grid; place-items: center; }
+  .tool:hover { color: var(--accent-text); background: #12211f; }
+  .tool svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .sep { width: 1px; height: 20px; background: var(--line); margin: 0 4px; }
+  textarea { width: 100%; height: 280px; min-height: 120px; resize: vertical; background: #090c0c; border: 1px solid var(--line); border-radius: 8px; color: var(--text); padding: 12px; font: 13.5px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; tab-size: 4; }
+  textarea:focus { outline: none; border-color: var(--accent); }
+  textarea::placeholder { color: #566a68; }
+
+  .actions { display: flex; justify-content: center; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+  .btn-main { background: linear-gradient(180deg, #14b8a6, #0d9488); border: 0; color: #031412; font-weight: 600; font-size: 15px; padding: 11px 26px; border-radius: 10px; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 22px rgba(20,184,166,.28); }
+  .btn-main:hover { filter: brightness(1.08); }
+  .btn-main svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .toast { text-align: center; font-size: 12px; min-height: 16px; margin-top: 10px; color: var(--ok); }
+
+  /* ---- results ---- */
+  .summary { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 12px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .chip { font-size: 12.5px; padding: 3px 10px; border-radius: 999px; border: 1px solid; font-weight: 500; white-space: nowrap; }
+  .chip.same { color: var(--ok); border-color: rgba(52,211,153,.4); background: rgba(52,211,153,.1); }
+  .chip.add { color: var(--ok); border-color: rgba(52,211,153,.35); background: rgba(52,211,153,.08); }
+  .chip.del { color: var(--err); border-color: rgba(248,113,113,.35); background: rgba(248,113,113,.08); }
+  .chip.chg { color: var(--warn); border-color: rgba(251,191,36,.35); background: rgba(251,191,36,.08); }
+  .meta { display: flex; align-items: center; gap: 14px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+  .nav { display: inline-flex; align-items: center; gap: 4px; }
+  .nav button { background: #131a1a; border: 1px solid var(--line); color: var(--text); width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  .nav button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent-text); }
+  .nav button:disabled { opacity: .35; cursor: default; }
+  .stale { color: var(--warn); }
+
+  .diff-wrap { border: 1px solid var(--line); border-radius: 12px; overflow: auto; max-height: 70vh; background: #090c0c; }
+  .grid { display: grid; font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .grid > div { min-height: 1.55em; }
+  .gh { position: sticky; top: 0; z-index: 2; background: #101616; border-bottom: 1px solid var(--line); padding: 8px 12px; font-family: Inter, system-ui, sans-serif; font-size: 13px; font-weight: 500; display: flex; justify-content: space-between; align-items: center; }
+  .gh > span:last-child { display: inline-flex; align-items: center; flex: none; }
+  .gh .ro { white-space: nowrap; font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; margin-right: 6px; }
+  .gh .tool { width: 28px; height: 28px; }
+  .gh .tool svg { width: 16px; height: 16px; }
+  .gh.r { border-left: 1px solid var(--line); }
+  .ln { color: #566a68; text-align: right; padding: 0 10px; user-select: none; min-width: 3.2em; background: #0b1010; }
+  .gt { color: #566a68; text-align: center; user-select: none; padding: 0 2px; }
+  .tx { padding: 0 10px; white-space: pre; }
+  .wrap .tx { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .tx.lt { border-right: 1px solid var(--line); }
+  .del { background: var(--del-bg); } .del.gt { color: var(--err); }
+  .add { background: var(--add-bg); } .add.gt { color: var(--ok); }
+  .gap { background: repeating-linear-gradient(135deg, #0c1111 0 6px, #0a0e0e 6px 12px); }
+  .hl-d { background: var(--del-hl); border-radius: 3px; }
+  .hl-a { background: var(--add-hl); border-radius: 3px; }
+  .nohl .del, .nohl .add { background: transparent; }
+  .nohl .hl-d, .nohl .hl-a { background: transparent; }
+  .flash-row { animation: flash 1.4s ease-out; }
+  @keyframes flash { 0% { box-shadow: inset 0 2px 0 var(--accent-2), inset 0 -2px 0 var(--accent-2); } 100% { box-shadow: inset 0 2px 0 transparent, inset 0 -2px 0 transparent; } }
+  .note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+  @media (max-width: 860px) {
+    .panes { grid-template-columns: 1fr; }
+    header { padding: 12px 16px; }
+    .mode { min-width: 0; flex: 1 1 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1 class="title">🔍 Text Diff Checker</h1>
+    <a href="../hub.html" class="hub-breadcrumb">← Cuech4 Hub</a>
+  </div>
+  <button class="btn-ghost" id="newBtn">＋ New</button>
+</header>
+
+<main>
+  <section class="card">
+    <h2>
+      <svg viewBox="0 0 24 24"><path d="M3 6h7M3 12h5M3 18h7"/><circle cx="16" cy="13" r="3.5"/><path d="m21 18-2.5-2.5"/></svg>
+      Compare Text Differences
+    </h2>
+    <p class="privacy">
+      <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+      The comparison runs in your browser. Your text is never uploaded or saved.
+    </p>
+
+    <div class="label">Comparison mode</div>
+    <div class="modes">
+      <label class="mode"><input type="radio" name="mode" value="default" checked><div><b>Default</b><span>Enter texts, then click the button to compare</span></div></label>
+      <label class="mode"><input type="radio" name="mode" value="live"><div><b>Real-time</b><span>See differences update as you type</span></div></label>
+    </div>
+
+    <div class="toggles">
+      <label class="tg"><input type="checkbox" id="tLn" checked><span class="sw"></span>Line Numbers</label>
+      <label class="tg"><input type="checkbox" id="tGt" checked><span class="sw"></span>Gutter</label>
+      <label class="tg"><input type="checkbox" id="tHl" checked><span class="sw"></span>Highlight Changes</label>
+      <label class="tg"><input type="checkbox" id="tWrap" checked><span class="sw"></span>Line Wrap</label>
+      <label class="tg"><input type="checkbox" id="tCase"><span class="sw"></span>Ignore Case</label>
+      <label class="tg"><input type="checkbox" id="tWs"><span class="sw"></span>Ignore Whitespace</label>
+    </div>
+
+    <div class="panes">
+      <div class="pane" id="paneA">
+        <div class="pane-head"><b>Before</b>
+          <div class="tools">
+            <button class="tool" id="upA" title="Open a text file" aria-label="Open a text file into Before"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 17v-6"/><path d="m9.5 13.5 2.5-2.5 2.5 2.5"/></svg></button>
+            <button class="tool" id="copyA" title="Copy text" aria-label="Copy Before text"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg></button>
+            <span class="sep"></span>
+            <button class="tool" id="clrA" title="Clear" aria-label="Clear Before text"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/></svg></button>
+          </div>
+        </div>
+        <textarea id="txtA" spellcheck="false" placeholder="Paste the original text here"></textarea>
+        <input type="file" id="fileA" accept=".txt,.md,.csv,.json,.html,.js,.css,.xml,.yml,.yaml,text/*" hidden>
+      </div>
+      <div class="pane" id="paneB">
+        <div class="pane-head"><b>Modified</b>
+          <div class="tools">
+            <button class="tool" id="upB" title="Open a text file" aria-label="Open a text file into Modified"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 17v-6"/><path d="m9.5 13.5 2.5-2.5 2.5 2.5"/></svg></button>
+            <button class="tool" id="copyB" title="Copy text" aria-label="Copy Modified text"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg></button>
+            <span class="sep"></span>
+            <button class="tool" id="clrB" title="Clear" aria-label="Clear Modified text"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/></svg></button>
+          </div>
+        </div>
+        <textarea id="txtB" spellcheck="false" placeholder="Paste the changed text here"></textarea>
+        <input type="file" id="fileB" accept=".txt,.md,.csv,.json,.html,.js,.css,.xml,.yml,.yaml,text/*" hidden>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-main" id="cmp"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M6 8.5v4a3 3 0 0 0 3 3h6.5"/><path d="m13 12.5 2.5 3-2.5 3"/></svg>Compare</button>
+      <button class="btn-ghost" id="swap" title="Swap Before and Modified">⇄ Swap</button>
+    </div>
+    <div class="toast" id="toast"></div>
+  </section>
+
+  <section class="card" id="res" hidden>
+    <div class="summary">
+      <div class="chips" id="chips"></div>
+      <div class="meta">
+        <span id="lineInfo"></span>
+        <span class="nav" id="nav">
+          <button id="prev" title="Previous difference" aria-label="Previous difference">↑</button>
+          <button id="next" title="Next difference" aria-label="Next difference">↓</button>
+          <span id="pos"></span>
+        </span>
+      </div>
+    </div>
+    <div class="diff-wrap"><div class="grid wrap" id="grid"></div></div>
+    <div class="note" id="capNote" hidden></div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const SETTINGS_KEY = "td_settings";
+const MAX_ROWS = 20000;
+const MAX_FILE = 2 * 1024 * 1024;
+
+/* ---------------- settings ---------------- */
+const toggles = { ln: "tLn", gt: "tGt", hl: "tHl", wrap: "tWrap", icase: "tCase", iws: "tWs" };
+let mode = "default";
+try {
+  const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
+  for (const k in toggles) if (typeof s[k] === "boolean") $(toggles[k]).checked = s[k];
+  if (s.mode === "live") { mode = "live"; document.querySelector('input[name=mode][value=live]').checked = true; }
+} catch {}
+function saveSettings() {
+  try {
+    const s = { mode };
+    for (const k in toggles) s[k] = $(toggles[k]).checked;
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+  } catch {}
+}
+const opt = (k) => $(toggles[k]).checked;
+
+/* ---------------- diff core (Myers O(ND)) ---------------- */
+function myers(a, b) {
+  const n = a.length, m = b.length, max = n + m;
+  if (max === 0) return [];
+  const off = max, v = new Int32Array(2 * max + 2), trace = [];
+  let found = -1;
+  for (let d = 0; d <= max && found < 0; d++) {
+    trace.push(v.slice(off - d, off + d + 1));
+    for (let k = -d; k <= d; k += 2) {
+      let x = (k === -d || (k !== d && v[off + k - 1] < v[off + k + 1])) ? v[off + k + 1] : v[off + k - 1] + 1;
+      let y = x - k;
+      while (x < n && y < m && a[x] === b[y]) { x++; y++; }
+      v[off + k] = x;
+      if (x >= n && y >= m) { found = d; break; }
+    }
+  }
+  const ops = [];
+  let x = n, y = m;
+  for (let d = found; d >= 0; d--) {
+    const vd = trace[d], get = (k) => vd[k + d], k = x - y;
+    if (d === 0) { while (x > 0 && y > 0) { x--; y--; ops.push({ t: "=", i: x, j: y }); } break; }
+    const prevK = (k === -d || (k !== d && get(k - 1) < get(k + 1))) ? k + 1 : k - 1;
+    const prevX = get(prevK), prevY = prevX - prevK;
+    const midX = prevK === k + 1 ? prevX : prevX + 1, midY = prevK === k + 1 ? prevY + 1 : prevY;
+    while (x > midX && y > midY) { x--; y--; ops.push({ t: "=", i: x, j: y }); }
+    if (prevK === k + 1) ops.push({ t: "+", j: prevY }); else ops.push({ t: "-", i: prevX });
+    x = prevX; y = prevY;
+  }
+  return ops.reverse();
+}
+function diffKeys(a, b) {
+  let s = 0;
+  while (s < a.length && s < b.length && a[s] === b[s]) s++;
+  let ea = a.length, eb = b.length;
+  while (ea > s && eb > s && a[ea - 1] === b[eb - 1]) { ea--; eb--; }
+  const ops = [];
+  for (let i = 0; i < s; i++) ops.push({ t: "=", i, j: i });
+  for (const o of myers(a.slice(s, ea), b.slice(s, eb))) {
+    ops.push(o.t === "=" ? { t: "=", i: o.i + s, j: o.j + s } : o.t === "-" ? { t: "-", i: o.i + s } : { t: "+", j: o.j + s });
+  }
+  for (let k = 0; k < a.length - ea; k++) ops.push({ t: "=", i: ea + k, j: eb + k });
+  return ops;
+}
+
+/* ---------------- helpers ---------------- */
+const splitLines = (t) => t === "" ? [] : t.split(/\r\n|\r|\n/);
+function lineKey(s) {
+  if (opt("iws")) s = s.replace(/\s+/g, " ").trim();
+  if (opt("icase")) s = s.toLowerCase();
+  return s;
+}
+const TOKEN_RE = /\s+|[\p{L}\p{N}_]+|[^\s\p{L}\p{N}_]/gu;
+function tokenKey(t) {
+  if (opt("iws") && /^\s+$/.test(t)) return " ";
+  return opt("icase") ? t.toLowerCase() : t;
+}
+function intraDiff(sa, sb) {
+  if (sa.length + sb.length > 4000) return null;
+  const ta = sa.match(TOKEN_RE) || [], tb = sb.match(TOKEN_RE) || [];
+  const ops = diffKeys(ta.map(tokenKey), tb.map(tokenKey));
+  const da = new Set(), db = new Set();
+  for (const o of ops) { if (o.t === "-") da.add(o.i); else if (o.t === "+") db.add(o.j); }
+  return { ta, tb, da, db };
+}
+function fillText(el, text, tokens, changed, cls) {
+  if (!tokens) { el.textContent = text; return; }
+  let buf = "", cur = false;
+  const flush = () => {
+    if (!buf) return;
+    if (cur) { const s = document.createElement("span"); s.className = cls; s.textContent = buf; el.appendChild(s); }
+    else el.appendChild(document.createTextNode(buf));
+    buf = "";
+  };
+  tokens.forEach((t, idx) => {
+    const c = changed.has(idx) && !/^\s+$/.test(t);
+    if (c !== cur) { flush(); cur = c; }
+    buf += t;
+  });
+  flush();
+}
+const plural = (n, w) => `${n.toLocaleString("en-US")} ${w}${n === 1 ? "" : "s"}`;
+
+/* ---------------- compare + render ---------------- */
+let jumpCells = [], jumpIdx = -1, dirty = false;
+
+function compare() {
+  const A = splitLines($("txtA").value), B = splitLines($("txtB").value);
+  const ops = diffKeys(A.map(lineKey), B.map(lineKey));
+
+  // build side-by-side rows, pairing delete/insert runs
+  const rows = [];
+  let dels = [], inss = [];
+  const flush = () => {
+    const k = Math.min(dels.length, inss.length);
+    for (let p = 0; p < k; p++) rows.push({ type: "chg", i: dels[p], j: inss[p] });
+    for (let p = k; p < dels.length; p++) rows.push({ type: "del", i: dels[p] });
+    for (let p = k; p < inss.length; p++) rows.push({ type: "add", j: inss[p] });
+    dels = []; inss = [];
+  };
+  for (const o of ops) {
+    if (o.t === "-") dels.push(o.i);
+    else if (o.t === "+") inss.push(o.j);
+    else { flush(); rows.push({ type: "eq", i: o.i, j: o.j }); }
+  }
+  flush();
+
+  let nAdd = 0, nDel = 0, nChg = 0;
+  rows.forEach(r => { if (r.type === "add") nAdd++; else if (r.type === "del") nDel++; else if (r.type === "chg") nChg++; });
+
+  // summary
+  const chips = $("chips"); chips.textContent = "";
+  const addChip = (cls, txt) => { const c = document.createElement("span"); c.className = "chip " + cls; c.textContent = txt; chips.appendChild(c); };
+  if (nAdd + nDel + nChg === 0) addChip("same", "✓ No differences");
+  else {
+    if (nAdd) addChip("add", `+ ${plural(nAdd, "line")} added`);
+    if (nDel) addChip("del", `− ${plural(nDel, "line")} removed`);
+    if (nChg) addChip("chg", `~ ${plural(nChg, "line")} changed`);
+  }
+  $("lineInfo").textContent = `Original: ${plural(A.length, "line")} · Modified: ${plural(B.length, "line")}`;
+
+  // grid
+  const grid = $("grid"); grid.textContent = "";
+  jumpCells = []; jumpIdx = -1;
+  const frag = document.createDocumentFragment();
+  const mk = (cls, txt) => { const d = document.createElement("div"); d.className = cls; if (txt !== undefined) d.textContent = txt; return d; };
+
+  const head = (label, id, right) => {
+    const h = mk("gh" + (right ? " r" : "")); h.dataset.span = "1";
+    const l = document.createElement("span"); l.textContent = label;
+    const r = document.createElement("span");
+    const ro = mk("ro", "Read-only"); r.appendChild(ro);
+    const b = document.createElement("button"); b.className = "tool"; b.title = "Copy " + label; b.setAttribute("aria-label", "Copy " + label + " text");
+    b.innerHTML = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>';
+    b.onclick = () => copyText($(id).value, label);
+    r.appendChild(b); h.append(l, r); return h;
+  };
+  frag.append(head("Before", "txtA", false), head("Modified", "txtB", true));
+
+  const shown = rows.length > MAX_ROWS ? rows.slice(0, MAX_ROWS) : rows;
+  let prevChanged = false;
+  shown.forEach((r) => {
+    const changed = r.type !== "eq";
+    const L = [mk("ln"), mk("gt"), mk("tx lt")], R = [mk("ln"), mk("gt"), mk("tx")];
+    const setSide = (cells, cls, num, mark) => { cells.forEach(c => { if (cls) c.classList.add(cls); }); cells[0].textContent = num; cells[1].textContent = mark; };
+    if (r.type === "eq") {
+      setSide(L, "", r.i + 1, ""); setSide(R, "", r.j + 1, "");
+      L[2].textContent = A[r.i]; R[2].textContent = B[r.j];
+    } else if (r.type === "del") {
+      setSide(L, "del", r.i + 1, "−"); setSide(R, "gap", "", "");
+      L[2].textContent = A[r.i];
+    } else if (r.type === "add") {
+      setSide(L, "gap", "", ""); setSide(R, "add", r.j + 1, "+");
+      R[2].textContent = B[r.j];
+    } else {
+      setSide(L, "del", r.i + 1, "−"); setSide(R, "add", r.j + 1, "+");
+      const d = intraDiff(A[r.i], B[r.j]);
+      fillText(L[2], A[r.i], d && d.ta, d && d.da, "hl-d");
+      fillText(R[2], B[r.j], d && d.tb, d && d.db, "hl-a");
+    }
+    if (changed && !prevChanged) { [...L, ...R].forEach(c => c.classList.add("jump")); jumpCells.push(L[0]); }
+    prevChanged = changed;
+    // empty text needs a min-height; fine via CSS, nothing else to do
+    frag.append(...L, ...R);
+  });
+  grid.appendChild(frag);
+  const cap = $("capNote");
+  if (rows.length > MAX_ROWS) { cap.hidden = false; cap.textContent = `Showing the first ${MAX_ROWS.toLocaleString("en-US")} of ${rows.length.toLocaleString("en-US")} rows.`; }
+  else cap.hidden = true;
+
+  applyView();
+  $("res").hidden = false;
+  dirty = false; markStale();
+  updateNav();
+}
+
+function applyView() {
+  const grid = $("grid");
+  const ln = opt("ln"), gt = opt("gt"), wrap = opt("wrap");
+  grid.classList.toggle("wrap", wrap);
+  grid.classList.toggle("nohl", !opt("hl"));
+  const txt = wrap ? "minmax(0,1fr)" : "minmax(max-content,1fr)";
+  const half = (ln ? "auto " : "") + (gt ? "22px " : "") + txt;
+  grid.style.gridTemplateColumns = half + " " + half;
+  const span = 1 + (ln ? 1 : 0) + (gt ? 1 : 0);
+  grid.querySelectorAll(".ln").forEach(e => e.hidden = !ln);
+  grid.querySelectorAll(".gt").forEach(e => e.hidden = !gt);
+  grid.querySelectorAll(".gh").forEach(e => e.style.gridColumn = "span " + span);
+}
+
+function updateNav() {
+  const n = jumpCells.length;
+  $("nav").hidden = n === 0;
+  $("prev").disabled = $("next").disabled = n === 0;
+  $("pos").textContent = n ? (jumpIdx < 0 ? `${n} diff${n === 1 ? "" : "s"}` : `${jumpIdx + 1} / ${n}`) : "";
+}
+function jump(dir) {
+  const n = jumpCells.length; if (!n) return;
+  jumpIdx = jumpIdx < 0 ? (dir > 0 ? 0 : n - 1) : (jumpIdx + dir + n) % n;
+  const cell = jumpCells[jumpIdx], grid = $("grid");
+  grid.querySelectorAll(".flash-row").forEach(e => e.classList.remove("flash-row"));
+  const idx = [...grid.children].indexOf(cell);
+  for (let k = idx; k < idx + 6; k++) grid.children[k].classList.add("flash-row");
+  cell.scrollIntoView({ block: "center", behavior: "smooth" });
+  updateNav();
+}
+$("prev").onclick = () => jump(-1);
+$("next").onclick = () => jump(1);
+
+function markStale() {
+  const li = $("lineInfo");
+  li.querySelectorAll(".stale").forEach(e => e.remove());
+  if (dirty && mode === "default" && !$("res").hidden) {
+    const s = document.createElement("span"); s.className = "stale"; s.textContent = " · text changed — press Compare";
+    li.appendChild(s);
+  }
+}
+
+/* ---------------- events ---------------- */
+let rtTimer;
+function onInput() {
+  if (mode === "live") { clearTimeout(rtTimer); rtTimer = setTimeout(compare, 150); }
+  else { dirty = true; markStale(); }
+}
+$("txtA").addEventListener("input", onInput);
+$("txtB").addEventListener("input", onInput);
+$("cmp").onclick = compare;
+[$("txtA"), $("txtB")].forEach(t => t.addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") compare(); }));
+
+document.querySelectorAll("input[name=mode]").forEach(r => r.addEventListener("change", () => {
+  mode = document.querySelector("input[name=mode]:checked").value;
+  $("cmp").hidden = mode === "live";
+  saveSettings();
+  if (mode === "live") compare(); else markStale();
+}));
+$("cmp").hidden = mode === "live";
+
+["ln", "gt", "hl", "wrap"].forEach(k => $(toggles[k]).addEventListener("change", () => { saveSettings(); if (!$("res").hidden) applyView(); }));
+["icase", "iws"].forEach(k => $(toggles[k]).addEventListener("change", () => { saveSettings(); if (!$("res").hidden) compare(); }));
+
+let toastTimer;
+function toast(msg, err) {
+  const t = $("toast"); t.textContent = msg; t.style.color = err ? "var(--err)" : "var(--ok)";
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.textContent = "", 2500);
+}
+async function copyText(v, label) {
+  if (!v) return toast(`${label} is empty.`, true);
+  try { await navigator.clipboard.writeText(v); }
+  catch { const ta = document.createElement("textarea"); ta.value = v; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); }
+  toast(`✓ ${label} copied`);
+}
+$("copyA").onclick = () => copyText($("txtA").value, "Before");
+$("copyB").onclick = () => copyText($("txtB").value, "Modified");
+$("clrA").onclick = () => { $("txtA").value = ""; onInput(); $("txtA").focus(); };
+$("clrB").onclick = () => { $("txtB").value = ""; onInput(); $("txtB").focus(); };
+$("swap").onclick = () => {
+  const a = $("txtA").value; $("txtA").value = $("txtB").value; $("txtB").value = a;
+  if (!$("res").hidden || mode === "live") compare();
+};
+$("newBtn").onclick = () => {
+  $("txtA").value = ""; $("txtB").value = "";
+  $("res").hidden = true; $("grid").textContent = ""; jumpCells = []; dirty = false;
+  $("txtA").focus();
+};
+
+/* ---- open file / drag & drop ---- */
+function loadInto(which, f) {
+  if (!f) return;
+  if (f.size > MAX_FILE) return toast("That file is over 2 MB — try a smaller one.", true);
+  const rd = new FileReader();
+  rd.onload = () => { $("txt" + which).value = String(rd.result); onInput(); toast(`✓ Loaded ${f.name}`); };
+  rd.onerror = () => toast("Couldn't read that file.", true);
+  rd.readAsText(f);
+}
+["A", "B"].forEach(w => {
+  $("up" + w).onclick = () => $("file" + w).click();
+  $("file" + w).onchange = (e) => { loadInto(w, e.target.files[0]); e.target.value = ""; };
+  const p = $("pane" + w);
+  ["dragenter", "dragover"].forEach(ev => p.addEventListener(ev, e => { e.preventDefault(); p.classList.add("drop-over"); }));
+  ["dragleave", "drop"].forEach(ev => p.addEventListener(ev, e => { e.preventDefault(); p.classList.remove("drop-over"); }));
+  p.addEventListener("drop", e => loadInto(w, e.dataTransfer.files[0]));
+});
+</script>
+</body>
+</html>
