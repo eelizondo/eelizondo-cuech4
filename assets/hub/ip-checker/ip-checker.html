@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IP Address Checker — Cuech4 Hub</title>
+<style>
+  :root {
+    --bg: #0a0c10; --panel: #14171d; --panel-2: #0e1015; --line: #262b36;
+    --text: #e8ecf4; --muted: #8b93a5; --accent: #2563eb; --accent-2: #60a5fa; --accent-text: #93c5fd;
+    --ok: #34d399; --err: #f87171; --warn: #fbbf24;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, -apple-system, sans-serif; line-height: 1.45; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid var(--line); background: #10131a; }
+  .title { font-size: 20px; font-weight: 700; background: linear-gradient(90deg, var(--accent-2), #22d3ee); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0; }
+  .hub-breadcrumb { color: var(--muted); font-size: 13px; text-decoration: none; transition: color .15s; }
+  .hub-breadcrumb:hover { color: var(--accent-text); }
+  .btn-ghost { background: #191c24; border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: inherit; }
+  .btn-ghost:hover { border-color: var(--accent-2); } .btn-ghost:disabled { opacity: .6; cursor: wait; }
+
+  main { max-width: 940px; margin: 0 auto; padding: 24px 16px 80px; display: grid; gap: 26px; }
+  .sec-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+  .sec-title .l { display: flex; align-items: center; gap: 9px; }
+  .sec-title svg { width: 19px; height: 19px; stroke: var(--accent-text); fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+
+  .field { margin-bottom: 18px; }
+  .field:last-of-type { margin-bottom: 0; }
+  .flabel { font-size: 15px; margin: 0 0 8px; color: #cfd6e4; }
+  .row { display: flex; }
+  .val { flex: 1; min-width: 0; background: var(--panel-2); border: 1px solid var(--line); border-right: 0; border-radius: 10px 0 0 10px; padding: 13px 15px; font-size: 16px; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; min-height: 49px; }
+  .val.dim { color: var(--muted); }
+  .cp { display: flex; align-items: center; justify-content: center; gap: 8px; background: #1b1e26; border: 1px solid var(--line); border-radius: 0 10px 10px 0; color: var(--text); padding: 0 18px; font: inherit; font-size: 14px; cursor: pointer; min-width: 100px; }
+  .cp:hover:not(:disabled) { border-color: var(--accent-2); color: var(--accent-text); } .cp:disabled { opacity: .4; cursor: not-allowed; }
+  .cp.done { color: var(--ok); border-color: var(--ok); }
+  .cp svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 7px; }
+  .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--accent-2); border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -2px; margin-right: 8px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  .note { font-size: 12px; color: var(--muted); margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .note.err { color: var(--err); border-top: 0; padding-top: 0; margin-top: 12px; }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+  .card.list { padding: 8px 22px; }
+  .item { padding: 14px 0; border-bottom: 1px solid #1b1f28; }
+  .item:last-child { border-bottom: 0; }
+  .item .k { font-size: 14px; color: var(--muted); margin-bottom: 3px; }
+  .item .v { font-size: 16px; overflow-wrap: anywhere; }
+
+  @media (max-width: 600px) { header { padding: 12px 16px; } .cp { min-width: 84px; padding: 0 12px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1 class="title">🌐 IP Address Checker</h1>
+    <a href="../hub.html" class="hub-breadcrumb">← Cuech4 Hub</a>
+  </div>
+  <button class="btn-ghost" id="refresh">↻ Refresh</button>
+</header>
+
+<main>
+  <section>
+    <h2 class="sec-title"><span class="l"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>IP Address Information</span></h2>
+    <div class="card">
+      <div class="field">
+        <div class="flabel">IPv4 Address</div>
+        <div class="row"><div class="val dim" id="v4"><span class="spin"></span>Checking…</div><button class="cp" id="cp4" disabled><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>Copy</button></div>
+      </div>
+      <div class="field">
+        <div class="flabel">IPv6 Address</div>
+        <div class="row"><div class="val dim" id="v6"><span class="spin"></span>Checking…</div><button class="cp" id="cp6" disabled><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>Copy</button></div>
+        <div class="hint" id="v6hint" hidden>Many home and mobile networks don't support IPv6 yet — an IPv4-only result is normal.</div>
+      </div>
+      <div class="note err" id="netErr" hidden></div>
+      <div class="note">Your address is looked up with ipify and icanhazip — the only requests this page makes. Nothing is stored or logged by this page. If you use a VPN or proxy, this shows the VPN's address, not your own.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec-title">
+      <span class="l"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Device Information</span>
+      <button class="btn-ghost" id="copyAll">Copy all</button>
+    </h2>
+    <div class="card list" id="device"></div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const COPY_SVG = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>';
+
+/* ---------- copy helper ---------- */
+function copyText(text, btn, label = "Copy") {
+  const done = () => { btn.classList.add("done"); btn.innerHTML = (btn.classList.contains("cp") ? COPY_SVG : "") + "Copied"; setTimeout(() => { btn.classList.remove("done"); btn.innerHTML = (btn.classList.contains("cp") ? COPY_SVG : "") + label; }, 1300); };
+  const fallback = () => { const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); done(); } catch {} t.remove(); };
+  navigator.clipboard ? navigator.clipboard.writeText(text).then(done, fallback) : fallback();
+}
+
+/* ---------- IP lookup ---------- */
+const V4_RE = /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/;
+const V6_RE = /^[0-9a-f:.]+$/i;
+const isV4 = (s) => V4_RE.test(s);
+const isV6 = (s) => s.includes(":") && V6_RE.test(s);
+
+async function fetchText(url, json) {
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 6000);
+  try {
+    const r = await fetch(url, { signal: ctl.signal, cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    const body = json ? (await r.json()).ip : (await r.text());
+    return String(body).trim();
+  } finally { clearTimeout(t); }
+}
+async function firstValid(sources, valid) {
+  for (const [url, json] of sources) {
+    try { const ip = await fetchText(url, json); if (valid(ip)) return ip; } catch {}
+  }
+  return null;
+}
+const lookupV4 = () => firstValid([["https://api.ipify.org?format=json", true], ["https://ipv4.icanhazip.com", false]], isV4);
+const lookupV6 = () => firstValid([["https://api6.ipify.org?format=json", true], ["https://ipv6.icanhazip.com", false]], isV6);
+
+function showIP(id, cpId, ip, emptyText) {
+  const el = $(id), cp = $(cpId);
+  if (ip) { el.textContent = ip; el.classList.remove("dim"); cp.disabled = false; cp.onclick = () => copyText(ip, cp); }
+  else { el.textContent = emptyText; el.classList.add("dim"); cp.disabled = true; }
+}
+async function checkIPs() {
+  for (const [id, cp] of [["v4", "cp4"], ["v6", "cp6"]]) { $(id).innerHTML = '<span class="spin"></span>Checking…'; $(id).classList.add("dim"); $(cp).disabled = true; }
+  $("v6hint").hidden = true; $("netErr").hidden = true;
+  const [v4, v6] = await Promise.all([lookupV4(), lookupV6()]);
+  showIP("v4", "cp4", v4, "Not detected");
+  showIP("v6", "cp6", v6, "Not detected");
+  $("v6hint").hidden = !!v6;
+  if (!v4 && !v6) {
+    $("netErr").hidden = false;
+    $("netErr").textContent = navigator.onLine ? "Couldn't reach the lookup services. An ad blocker or privacy extension may be blocking them — try again or turn it off for this page." : "You appear to be offline. Reconnect and press Refresh.";
+  }
+}
+
+/* ---------- device info ---------- */
+function deviceInfo() {
+  const n = navigator, s = screen, now = new Date(), loc = n.language || "en-US";
+  const rows = [
+    ["User Agent", n.userAgent],
+    ["Language", (n.languages && n.languages.length ? n.languages : [n.language]).join(", ")],
+    ["Cookie Enabled", String(n.cookieEnabled)],
+    ["Screen Size", `${s.width} × ${s.height}`],
+    ["Device Pixel Ratio", (window.devicePixelRatio || 1).toFixed(2)],
+    ["Color Depth", `${s.colorDepth} bits`],
+    ["Available Screen Size", `${s.availWidth} × ${s.availHeight}`],
+    ["Window Size", `${window.innerWidth} × ${window.innerHeight}`],
+    ["Timezone", Intl.DateTimeFormat().resolvedOptions().timeZone || "Unknown"],
+    ["Display Language", loc],
+    ["Online", n.onLine ? "Yes" : "No"]
+  ];
+  const c = n.connection || n.mozConnection || n.webkitConnection;
+  if (c && (c.effectiveType || c.downlink)) rows.push(["Connection", [c.effectiveType, c.downlink ? `${c.downlink} Mbps` : null].filter(Boolean).join(" · ")]);
+  let when; try { when = now.toLocaleString(loc, { dateStyle: "full", timeStyle: "long" }); } catch { when = now.toString(); }
+  rows.push(["Information Retrieved At", when]);
+  return rows;
+}
+let currentRows = [];
+function renderDevice() {
+  currentRows = deviceInfo();
+  $("device").innerHTML = "";
+  currentRows.forEach(([k, v]) => {
+    const d = document.createElement("div"); d.className = "item";
+    const kk = document.createElement("div"); kk.className = "k"; kk.textContent = k;
+    const vv = document.createElement("div"); vv.className = "v"; vv.textContent = v;
+    d.append(kk, vv); $("device").appendChild(d);
+  });
+}
+$("copyAll").onclick = () => {
+  const lines = [`IPv4: ${$("cp4").disabled ? "Not detected" : $("v4").textContent}`, `IPv6: ${$("cp6").disabled ? "Not detected" : $("v6").textContent}`, ...currentRows.map(([k, v]) => `${k}: ${v}`)];
+  copyText(lines.join("\n"), $("copyAll"), "Copy all");
+};
+
+/* ---------- go ---------- */
+async function refresh() {
+  const b = $("refresh"); b.disabled = true; b.textContent = "↻ Checking…";
+  renderDevice();
+  await checkIPs();
+  b.disabled = false; b.textContent = "↻ Refresh";
+}
+$("refresh").onclick = refresh;
+window.addEventListener("resize", () => { /* keep window size fresh when the user resizes, without re-querying IPs */ const i = currentRows.findIndex(r => r[0] === "Window Size"); if (i >= 0) { currentRows[i][1] = `${window.innerWidth} × ${window.innerHeight}`; $("device").children[i].querySelector(".v").textContent = currentRows[i][1]; } });
+window.addEventListener("online", refresh);
+refresh();
+</script>
+</body>
+</html>
