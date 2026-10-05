@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Color Code Converter — Cuech4 Hub</title>
+<link rel="icon" type="image/svg+xml" href="global_assets/color-converter-icon.svg">
+<style>
+  :root {
+    --bg: #0e0c0a; --panel: #181614; --panel-2: #100f0d; --line: #2b2723;
+    --text: #f1ece6; --muted: #958d84; --accent: #ea580c; --accent-2: #fb923c; --accent-text: #fdba74;
+    --ok: #34d399; --err: #f87171;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, -apple-system, sans-serif; line-height: 1.45; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid var(--line); background: #141210; }
+  .title { font-size: 20px; font-weight: 700; background: linear-gradient(90deg, var(--accent-2), #fbbf24); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0; }
+  .hub-breadcrumb { color: var(--muted); font-size: 13px; text-decoration: none; transition: color .15s; }
+  .hub-breadcrumb:hover { color: var(--accent-text); }
+  .btn-ghost { background: #1c1a17; border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: inherit; }
+  .btn-ghost:hover { border-color: var(--accent-2); }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  /* banner = live swatch + all values */
+  .banner { position: relative; border-radius: 14px; overflow: hidden; margin-bottom: 26px; border: 1px solid var(--line);
+    background-color: #1a1815; background-image: linear-gradient(45deg, #26221e 25%, transparent 25%, transparent 75%, #26221e 75%), linear-gradient(45deg, #26221e 25%, transparent 25%, transparent 75%, #26221e 75%); background-size: 16px 16px; background-position: 0 0, 8px 8px; }
+  .banner-fill { position: absolute; inset: 0; }
+  .banner-grid { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px 18px; padding: 24px 22px; }
+  .bv { background: none; border: 0; padding: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; min-width: 0; }
+  .bv span { display: block; font-size: 12px; opacity: .8; letter-spacing: .03em; margin-bottom: 3px; }
+  .bv b { display: block; font-weight: 500; font-size: 16px; overflow-wrap: anywhere; }
+  .bv[data-k="CMYK"] { grid-column: span 2; }
+  .bv:hover b { text-decoration: underline; text-underline-offset: 3px; }
+
+  .cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 26px; align-items: start; }
+  .col-title { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 16px; font-weight: 600; }
+  .col-title svg { width: 18px; height: 18px; stroke: var(--accent-text); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-bottom: 14px; }
+  .card h3 { margin: 0 0 12px; font-size: 14px; font-weight: 600; }
+
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 14px; }
+  .tab { display: flex; align-items: center; justify-content: center; gap: 8px; background: none; border: 0; color: var(--muted); padding: 11px; border-radius: 9px; font: inherit; font-size: 15px; cursor: pointer; }
+  .tab svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .tab.on { background: var(--accent); color: #fff; font-weight: 600; }
+  .tab:not(.on):hover { color: var(--text); }
+
+  input[type=text], select { width: 100%; background: var(--panel-2); border: 1px solid var(--line); color: var(--text); padding: 13px 14px; border-radius: 10px; font: inherit; font-size: 17px; }
+  input[type=text]:focus, select:focus { outline: none; border-color: var(--accent-2); }
+  input.bad { border-color: var(--err) !important; }
+  .formats { display: grid; grid-template-columns: 70px 1fr; gap: 3px 10px; font-size: 13px; }
+  .formats dt { color: var(--text); margin: 0; } .formats dd { margin: 0; }
+  .fmt { background: none; border: 0; padding: 0; color: var(--muted); font: 12.5px ui-monospace, Menlo, monospace; cursor: pointer; text-align: left; }
+  .fmt:hover { color: var(--accent-text); }
+  .info { display: flex; align-items: center; gap: 12px; border: 1px solid #5a3417; background: #25170c; color: var(--accent-text); border-radius: 12px; padding: 16px 18px; font-size: 15px; }
+  .info.err { border-color: #6b2323; background: #2a1212; color: var(--err); }
+  .info svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  /* picker */
+  .picker { display: grid; gap: 14px; max-width: 420px; margin: 0 auto; }
+  .sv { position: relative; height: 190px; border-radius: 10px; cursor: crosshair; touch-action: none; outline-offset: 2px;
+    background: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent), hsl(var(--hue, 0) 100% 50%); }
+  .sv:focus-visible { outline: 2px solid var(--accent-2); }
+  .thumb { position: absolute; width: 20px; height: 20px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.5), inset 0 0 0 1px rgba(0,0,0,.3); transform: translate(-50%, -50%); pointer-events: none; }
+  input[type=range].sl { -webkit-appearance: none; appearance: none; width: 100%; height: 14px; border-radius: 99px; outline: none; margin: 0; }
+  #hue { background: linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); }
+  #alpha { background: linear-gradient(90deg, transparent, var(--solid, #f97316)), repeating-conic-gradient(#3a352f 0 25%, #1e1b18 0 50%) 0 0 / 12px 12px; }
+  input[type=range].sl::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.55); cursor: pointer; }
+  input[type=range].sl::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.55); cursor: pointer; }
+  .pk-row { display: grid; grid-template-columns: 112px 1fr; gap: 10px; }
+  .pk-row select, .pk-row input { font-size: 15px; padding: 10px 12px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .pre { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,.2); cursor: pointer; padding: 0; }
+  .pre:hover { transform: scale(1.18); }
+
+  /* results */
+  .res { padding: 20px; }
+  .res .lab { font-size: 15px; margin: 0 0 8px; }
+  .res .row { display: flex; margin-bottom: 14px; }
+  .res .val { flex: 1; min-width: 0; background: var(--panel-2); border: 1px solid var(--line); border-right: 0; border-radius: 10px 0 0 10px; padding: 12px 14px; font-size: 16px; overflow-wrap: anywhere; }
+  .res .cp { display: flex; align-items: center; gap: 8px; background: #1e1c19; border: 1px solid var(--line); border-radius: 0 10px 10px 0; color: var(--text); padding: 0 16px; font: inherit; font-size: 14px; cursor: pointer; min-width: 98px; justify-content: center; }
+  .res .cp:hover { border-color: var(--accent-2); color: var(--accent-text); }
+  .res .cp.done { color: var(--ok); border-color: var(--ok); }
+  .res .cp svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .res hr { border: 0; border-top: 1px solid var(--line); margin: 6px 0 18px; }
+
+  @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } .banner-grid { grid-template-columns: 1fr 1fr; } .bv[data-k="CMYK"] { grid-column: span 2; } header { padding: 12px 16px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1 class="title">🎨 Color Code Converter</h1>
+    <a href="../hub.html" class="hub-breadcrumb">← Cuech4 Hub</a>
+  </div>
+  <button class="btn-ghost" id="newBtn">＋ New</button>
+</header>
+
+<main>
+  <section class="banner" id="banner" aria-label="Current color">
+    <div class="banner-fill" id="bannerFill"></div>
+    <div class="banner-grid" id="bannerGrid"></div>
+  </section>
+
+  <div class="cols">
+    <div>
+      <h2 class="col-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="15.5" cy="10" r="1"/><path d="M12 21c-1.5 0-2-1.5-1-2.8.9-1.2.4-2.7-1.2-2.7"/></svg>Enter color to convert</h2>
+      <div class="tabs" role="tablist">
+        <button class="tab on" id="tabInput" role="tab"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 12.5h.01M10 12.5h.01M14 12.5h.01M18 12.5h.01M7.5 16h9"/></svg>Input</button>
+        <button class="tab" id="tabPicker" role="tab"><svg viewBox="0 0 24 24"><path d="M12 3s6 6.2 6 10.5A6 6 0 0 1 6 13.5C6 9.2 12 3 12 3z"/></svg>Picker</button>
+      </div>
+
+      <div id="paneInput">
+        <section class="card">
+          <h3>Color code</h3>
+          <input type="text" id="code" value="#f97316" spellcheck="false" autocomplete="off" aria-label="Color code">
+        </section>
+        <section class="card">
+          <h3>Supported Formats <span style="color:var(--muted);font-weight:400;font-size:12px">— click one to try it</span></h3>
+          <dl class="formats" id="formats"></dl>
+        </section>
+        <div class="info" id="info"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg><span id="infoText">Format is auto-detected</span></div>
+      </div>
+
+      <div id="panePicker" hidden>
+        <section class="card">
+          <h3 style="text-align:center">Color picker</h3>
+          <div class="picker">
+            <div class="sv" id="sv" tabindex="0" role="slider" aria-label="Saturation and brightness"><div class="thumb" id="svThumb"></div></div>
+            <input type="range" class="sl" id="hue" min="0" max="360" step="0.1" value="0" aria-label="Hue">
+            <input type="range" class="sl" id="alpha" min="0" max="100" step="1" value="100" aria-label="Opacity">
+            <div class="pk-row">
+              <select id="pkFmt" aria-label="Format"></select>
+              <input type="text" id="pkText" spellcheck="false" autocomplete="off" aria-label="Color value">
+            </div>
+            <div class="presets" id="presets"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="col-title"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg>Conversion Result</h2>
+      <section class="card res" id="results"></section>
+    </div>
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+/* ================= color math ================= */
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const f2 = (n) => String(+(+n).toFixed(2));
+const hex2 = (n) => Math.round(clamp(n, 0, 255)).toString(16).padStart(2, "0");
+
+function rgb2hsv(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+  let h = 0;
+  if (d) { if (mx === r) h = ((g - b) / d) % 6; else if (mx === g) h = (b - r) / d + 2; else h = (r - g) / d + 4; h *= 60; if (h < 0) h += 360; }
+  return { h, s: mx === 0 ? 0 : d / mx, v: mx };
+}
+function hsv2rgb(h, s, v) {
+  h = ((h % 360) + 360) % 360; const c = v * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = v - c;
+  let r = 0, g = 0, b = 0;
+  if (h < 60) [r, g, b] = [c, x, 0]; else if (h < 120) [r, g, b] = [x, c, 0]; else if (h < 180) [r, g, b] = [0, c, x];
+  else if (h < 240) [r, g, b] = [0, x, c]; else if (h < 300) [r, g, b] = [x, 0, c]; else [r, g, b] = [c, 0, x];
+  return { r: (r + m) * 255, g: (g + m) * 255, b: (b + m) * 255 };
+}
+function rgb2hsl(r, g, b) {
+  const { h, v } = rgb2hsv(r, g, b); r /= 255; g /= 255; b /= 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+  return { h, s: d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1)), l };
+}
+function hsl2rgb(h, s, l) { const v = l + s * Math.min(l, 1 - l); return hsv2rgb(h, v === 0 ? 0 : 2 * (1 - l / v), v); }
+function rgb2cmyk(r, g, b) {
+  r /= 255; g /= 255; b /= 255; const k = 1 - Math.max(r, g, b);
+  if (k >= 1) return { c: 0, m: 0, y: 0, k: 1 };
+  return { c: (1 - r - k) / (1 - k), m: (1 - g - k) / (1 - k), y: (1 - b - k) / (1 - k), k };
+}
+function cmyk2rgb(c, m, y, k) { return { r: 255 * (1 - c) * (1 - k), g: 255 * (1 - m) * (1 - k), b: 255 * (1 - y) * (1 - k) }; }
+const toLin = (c) => (c /= 255) <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+const fromLin = (c) => 255 * (c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
+function rgb2oklch(r, g, b) {
+  r = toLin(r); g = toLin(g); b = toLin(b);
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  const L = 0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s;
+  const A = 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s;
+  const B = 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s;
+  const C = Math.hypot(A, B); let h = C < 0.0004 ? 0 : Math.atan2(B, A) * 180 / Math.PI; if (h < 0) h += 360;
+  return { L, C, h };
+}
+function oklch2rgb(L, C, h) {
+  const A = C * Math.cos(h * Math.PI / 180), B = C * Math.sin(h * Math.PI / 180);
+  const l = Math.pow(L + 0.3963377774 * A + 0.2158037573 * B, 3), m = Math.pow(L - 0.1055613458 * A - 0.0638541728 * B, 3), s = Math.pow(L - 0.0894841775 * A - 1.2914855480 * B, 3);
+  return { r: fromLin(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s), g: fromLin(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s), b: fromLin(-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s) };
+}
+
+/* ================= parsing (auto-detect) ================= */
+const NAMED_CTX = document.createElement("canvas").getContext("2d");
+function parseNamed(s) {
+  if (!/^[a-z]+$/i.test(s)) return null;
+  NAMED_CTX.fillStyle = "#010203"; NAMED_CTX.fillStyle = s;
+  const v = NAMED_CTX.fillStyle;
+  if (v === "#010203" && s.toLowerCase() !== "") { NAMED_CTX.fillStyle = "#040506"; NAMED_CTX.fillStyle = s; if (NAMED_CTX.fillStyle === "#040506") return null; }
+  return parseHex(v);
+}
+function parseHex(s) {
+  const m = /^#?([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.exec(s); if (!m) return null;
+  let h = m[1]; if (h.length <= 4) h = h.split("").map(c => c + c).join("");
+  return { r: parseInt(h.slice(0, 2), 16), g: parseInt(h.slice(2, 4), 16), b: parseInt(h.slice(4, 6), 16), a: h.length === 8 ? parseInt(h.slice(6, 8), 16) / 255 : 1 };
+}
+function num(tok, pctScale = 1, allowPct = true) { // "50%" -> 0.5*pctScale ; "0.5" -> 0.5
+  const m = /^([+-]?(?:\d+\.?\d*|\.\d+))(%|deg|turn|rad)?$/i.exec(tok); if (!m) return NaN;
+  const v = parseFloat(m[1]); if (m[2] === "%") return allowPct ? v / 100 * pctScale : NaN; return v;
+}
+function parseFunc(str) {
+  const m = /^([a-z-]+)\(\s*([^)]*?)\s*\)$/i.exec(str); if (!m) return null;
+  const name = m[1].toLowerCase(), toks = m[2].replace(/[,/]/g, " ").split(/\s+/).filter(Boolean);
+  const hueOf = (t) => { const mm = /(turn|rad)$/i.exec(t); const v = parseFloat(t); return mm ? (mm[1].toLowerCase() === "turn" ? v * 360 : v * 180 / Math.PI) : v; };
+  const alphaOf = (t) => t === undefined ? 1 : clamp(num(t, 1), 0, 1);
+  const pct = (t) => { const v = num(t, 1); return /%$/.test(t) ? v : (v > 1 ? v / 100 : v); }; // "50" or "50%" or "0.5"
+  const ok = (...v) => v.every(x => !isNaN(x));
+  let rgb, a;
+  if (name === "rgb" || name === "rgba") {
+    if (toks.length < 3 || toks.length > 4) return null;
+    const ch = (t) => /%$/.test(t) ? num(t, 255) : num(t);
+    const [r, g, b] = [ch(toks[0]), ch(toks[1]), ch(toks[2])]; a = alphaOf(toks[3]); if (!ok(r, g, b, a)) return null; rgb = { r, g, b };
+  } else if (name === "hsl" || name === "hsla") {
+    if (toks.length < 3 || toks.length > 4) return null;
+    const h = hueOf(toks[0]), s = pct(toks[1].replace(/%?$/, "%")), l = pct(toks[2].replace(/%?$/, "%")); a = alphaOf(toks[3]); if (!ok(h, s, l, a)) return null;
+    rgb = hsl2rgb(h, clamp(s, 0, 1), clamp(l, 0, 1));
+  } else if (name === "hsv" || name === "hsb") {
+    if (toks.length < 3 || toks.length > 4) return null;
+    const h = hueOf(toks[0]), s = pct(toks[1].replace(/%?$/, "%")), v = pct(toks[2].replace(/%?$/, "%")); a = alphaOf(toks[3]); if (!ok(h, s, v, a)) return null;
+    rgb = hsv2rgb(h, clamp(s, 0, 1), clamp(v, 0, 1));
+  } else if (name === "oklch") {
+    if (toks.length < 3 || toks.length > 4) return null;
+    const L = /%$/.test(toks[0]) ? num(toks[0]) : num(toks[0]), C = /%$/.test(toks[1]) ? num(toks[1], 0.4) : num(toks[1]), h = hueOf(toks[2]); a = alphaOf(toks[3]); if (!ok(L, C, h, a)) return null;
+    rgb = oklch2rgb(clamp(L, 0, 1), Math.max(0, C), h);
+  } else if (name === "cmyk" || name === "device-cmyk") {
+    if (toks.length < 4 || toks.length > 5) return null;
+    const [c, m2, y, k] = toks.slice(0, 4).map(pct); a = alphaOf(toks[4]); if (!ok(c, m2, y, k, a)) return null;
+    rgb = cmyk2rgb(clamp(c, 0, 1), clamp(m2, 0, 1), clamp(y, 0, 1), clamp(k, 0, 1));
+  } else return null;
+  return { r: clamp(rgb.r, 0, 255), g: clamp(rgb.g, 0, 255), b: clamp(rgb.b, 0, 255), a };
+}
+function parseColor(input) {
+  const s = input.trim(); if (!s) return null;
+  return parseHex(s) || parseFunc(s) || parseNamed(s);
+}
+
+/* ================= formatting ================= */
+const alphaPart = (a) => a < 1 ? ` / ${f2(a)}` : "";
+const FORMATS = [
+  { key: "HEX",   fn: (c) => "#" + hex2(c.r) + hex2(c.g) + hex2(c.b) },
+  { key: "RGB",   fn: (c) => `rgb(${f2(Math.round(c.r))} ${f2(Math.round(c.g))} ${f2(Math.round(c.b))}${alphaPart(c.a)})` },
+  { key: "HSL",   fn: (c) => { const o = rgb2hsl(c.r, c.g, c.b); return `hsl(${f2(o.h)} ${f2(o.s * 100)}% ${f2(o.l * 100)}%${alphaPart(c.a)})`; } },
+  { key: "OKLCH", fn: (c) => { const o = rgb2oklch(c.r, c.g, c.b); return `oklch(${f2(o.L)} ${f2(o.C)} ${f2(o.h)}${alphaPart(c.a)})`; } },
+  { key: "HEX8",  fn: (c) => "#" + hex2(c.r) + hex2(c.g) + hex2(c.b) + hex2(c.a * 255) },
+  { key: "HSV",   fn: (c) => { const o = rgb2hsv(c.r, c.g, c.b); return `hsv(${f2(o.h)} ${f2(o.s * 100)}% ${f2(o.v * 100)}%${alphaPart(c.a)})`; } },
+  { key: "CMYK",  fn: (c) => { const o = rgb2cmyk(c.r, c.g, c.b); return `device-cmyk(${f2(o.c * 100)}% ${f2(o.m * 100)}% ${f2(o.y * 100)}% ${f2(o.k * 100)}%${alphaPart(c.a)})`; } }
+];
+const SAMPLE = { r: 134, g: 131, b: 213, a: 1 }; // #8683d5, used for the "Supported Formats" examples
+
+/* ================= state ================= */
+const DEFAULT = parseHex("#f97316");
+const state = { r: DEFAULT.r, g: DEFAULT.g, b: DEFAULT.b, a: 1, h: 0, s: 0, v: 0 };
+function setRGB(c, keepHue = true) {
+  state.r = c.r; state.g = c.g; state.b = c.b; state.a = c.a === undefined ? state.a : c.a;
+  const o = rgb2hsv(c.r, c.g, c.b);
+  if (!(keepHue && (o.s === 0 || o.v === 0))) state.h = o.h; // keep hue for grays/black so the slider doesn't jump
+  state.s = o.s; state.v = o.v;
+}
+function setHSV(h, s, v) { state.h = h; state.s = s; state.v = v; const c = hsv2rgb(h, s, v); state.r = c.r; state.g = c.g; state.b = c.b; }
+setRGB(DEFAULT, false);
+
+/* ================= UI build ================= */
+const COPY_SVG = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>';
+const byKey = Object.fromEntries(FORMATS.map(f => [f.key, f]));
+const ORDER_BANNER = ["HEX", "RGB", "HSL", "OKLCH", "HEX8", "HSV", "CMYK"];
+
+$("bannerGrid").innerHTML = ORDER_BANNER.map(k => `<button class="bv" data-k="${k}" title="Click to copy ${k}"><span>${k}</span><b></b></button>`).join("");
+$("results").innerHTML = ["HEX", "RGB", "HSL", "OKLCH", "|", "HEX8", "HSV", "CMYK"].map(k => k === "|" ? "<hr>" :
+  `<div class="lab">${k}</div><div class="row"><div class="val" data-k="${k}"></div><button class="cp" data-k="${k}">${COPY_SVG}Copy</button></div>`).join("");
+$("formats").innerHTML = ORDER_BANNER.map(k => `<dt>${k}</dt><dd><button class="fmt" data-ex="${k}"></button></dd>`).join("");
+$("pkFmt").innerHTML = ORDER_BANNER.map(k => `<option>${k}</option>`).join("");
+["#ffffff", "#000000", "#ef4444", "#f97316", "#facc15", "#4ade80", "#2dd4bf", "#38bdf8", "#6366f1", "#ec4899"].forEach(h => {
+  const b = document.createElement("button"); b.className = "pre"; b.style.background = h; b.title = h; b.setAttribute("aria-label", h);
+  b.onclick = () => { setRGB(parseHex(h), false); state.a = 1; render(); }; $("presets").appendChild(b);
+});
+document.querySelectorAll(".fmt").forEach(b => { b.textContent = byKey[b.dataset.ex].fn(SAMPLE); b.onclick = () => { $("code").value = b.textContent; onCodeInput(); $("code").focus(); }; });
+
+/* ================= render ================= */
+let typing = null; // which text field the user is editing, so we don't overwrite it
+function textOn(c) { return (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) > 150 || c.a < 0.45 ? "#14110e" : "#ffffff"; }
+function render() {
+  const c = { r: Math.round(state.r), g: Math.round(state.g), b: Math.round(state.b), a: state.a };
+  const vals = Object.fromEntries(FORMATS.map(f => [f.key, f.fn(c)]));
+  // banner
+  $("bannerFill").style.background = `rgba(${c.r},${c.g},${c.b},${c.a})`;
+  $("banner").style.color = textOn(c);
+  document.querySelectorAll(".bv").forEach(b => b.querySelector("b").textContent = vals[b.dataset.k]);
+  // results
+  document.querySelectorAll(".res .val").forEach(v => v.textContent = vals[v.dataset.k]);
+  // picker
+  $("sv").style.setProperty("--hue", state.h);
+  $("svThumb").style.left = (state.s * 100) + "%"; $("svThumb").style.top = ((1 - state.v) * 100) + "%";
+  $("svThumb").style.background = `rgb(${c.r},${c.g},${c.b})`;
+  if (typing !== "hue") $("hue").value = state.h;
+  if (typing !== "alpha") $("alpha").value = Math.round(state.a * 100);
+  $("alpha").style.setProperty("--solid", `rgb(${c.r},${c.g},${c.b})`);
+  if (typing !== "pkText") $("pkText").value = vals[$("pkFmt").value];
+  if (typing !== "code") { $("code").value = vals[c.a < 1 ? "HEX8" : "HEX"]; $("code").classList.remove("bad"); }
+  if (typing !== "code") setInfo(false);
+  $("sv").setAttribute("aria-valuetext", `Saturation ${Math.round(state.s * 100)}%, brightness ${Math.round(state.v * 100)}%`);
+}
+function setInfo(bad) {
+  $("info").classList.toggle("err", bad);
+  $("infoText").textContent = bad ? "Couldn't read that color — try a format from the list above." : "Format is auto-detected";
+}
+
+/* ================= events ================= */
+function onCodeInput() {
+  const c = parseColor($("code").value);
+  if (!c) { $("code").classList.add("bad"); setInfo(true); return; }
+  $("code").classList.remove("bad"); setInfo(false);
+  typing = "code"; setRGB(c); render(); typing = null;
+}
+$("code").addEventListener("input", onCodeInput);
+$("code").addEventListener("blur", () => { typing = null; if (!$("code").classList.contains("bad")) render(); });
+
+$("pkText").addEventListener("input", () => {
+  const c = parseColor($("pkText").value); $("pkText").classList.toggle("bad", !c); if (!c) return;
+  typing = "pkText"; setRGB(c); render(); typing = null;
+});
+$("pkText").addEventListener("blur", () => { $("pkText").classList.remove("bad"); render(); });
+$("pkFmt").addEventListener("change", render);
+
+$("hue").addEventListener("input", () => { typing = "hue"; setHSV(parseFloat($("hue").value), state.s, state.v); render(); typing = null; });
+$("alpha").addEventListener("input", () => { typing = "alpha"; state.a = parseInt($("alpha").value, 10) / 100; render(); typing = null; });
+
+function svFromEvent(e) {
+  const r = $("sv").getBoundingClientRect();
+  setHSV(state.h, clamp((e.clientX - r.left) / r.width, 0, 1), 1 - clamp((e.clientY - r.top) / r.height, 0, 1)); render();
+}
+let dragging = false;
+$("sv").addEventListener("pointerdown", (e) => { dragging = true; $("sv").setPointerCapture(e.pointerId); svFromEvent(e); e.preventDefault(); });
+$("sv").addEventListener("pointermove", (e) => { if (dragging) svFromEvent(e); });
+$("sv").addEventListener("pointerup", () => dragging = false);
+$("sv").addEventListener("pointercancel", () => dragging = false);
+$("sv").addEventListener("keydown", (e) => {
+  const step = e.shiftKey ? 0.1 : 0.01; let { s, v } = state;
+  if (e.key === "ArrowLeft") s -= step; else if (e.key === "ArrowRight") s += step; else if (e.key === "ArrowUp") v += step; else if (e.key === "ArrowDown") v -= step; else return;
+  e.preventDefault(); setHSV(state.h, clamp(s, 0, 1), clamp(v, 0, 1)); render();
+});
+
+function copyText(text, btn) {
+  const done = () => { if (!btn) return; const old = btn.innerHTML; btn.classList.add("done"); btn.innerHTML = btn.classList.contains("cp") ? COPY_SVG + "Copied" : old; setTimeout(() => { btn.classList.remove("done"); btn.innerHTML = old; }, 1200); };
+  (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(done, () => {
+    const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); done(); } catch {} t.remove();
+  });
+}
+document.querySelectorAll(".cp").forEach(b => b.onclick = () => copyText(document.querySelector(`.res .val[data-k="${b.dataset.k}"]`).textContent, b));
+document.querySelectorAll(".bv").forEach(b => b.onclick = () => { const orig = b.querySelector("b").textContent; copyText(orig); b.querySelector("b").textContent = "Copied ✓"; setTimeout(render, 900); });
+
+function showTab(which) {
+  $("tabInput").classList.toggle("on", which === "input"); $("tabPicker").classList.toggle("on", which === "picker");
+  $("paneInput").hidden = which !== "input"; $("panePicker").hidden = which !== "picker";
+}
+$("tabInput").onclick = () => showTab("input"); $("tabPicker").onclick = () => showTab("picker");
+$("newBtn").onclick = () => { setRGB(DEFAULT, false); state.a = 1; render(); };
+
+render();
+</script>
+</body>
+</html>
