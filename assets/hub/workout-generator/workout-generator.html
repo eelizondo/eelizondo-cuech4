@@ -360,10 +360,10 @@ function renderPlan(plan, scrollToResult = true) {
     <div class="progress-track"><span style="width:${percent}%"></span></div>
     <div class="day-tabs">${dayTabs}</div>
     <section class="day"><h3>${esc(activePlanDay.day || `Day ${activeDay + 1}`)}</h3><div class="focus">${esc(activePlanDay.focus || "")}</div>${exercises}</section>${tips}
-    <div class="actions"><button class="btn big" id="saveBtn">💾 Save plan</button><button class="btn-ghost" id="printBtn">🖨 Print</button><button class="btn-ghost" id="againBtn">Generate Routine Again</button></div>`;
+    <div class="actions"><button class="btn big" id="saveBtn">💾 Save plan</button><button class="btn-ghost" id="againBtn">Generate Routine Again</button></div>`;
   $("resultCard").hidden = false;
   showSetupCards(false);
-  $("saveBtn").onclick = savePlan; $("printBtn").onclick = () => window.print();
+  $("saveBtn").onclick = savePlan;
   $("againBtn").onclick = restartRoutine;
   $("resetWeek").onclick = resetWeekProgress;
   if (scrollToResult) $("resultCard").scrollIntoView({ behavior: "smooth", block: "start" });
