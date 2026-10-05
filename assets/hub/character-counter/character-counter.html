@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Character Counter — Cuech4 Hub</title>
+<link rel="icon" type="image/svg+xml" href="global_assets/character-counter-icon.svg">
+<style>
+  :root {
+    --bg: #0c0b0e; --panel: #16151b; --panel-2: #0f0e13; --line: #292730;
+    --text: #eeeaf0; --muted: #918b9c; --accent: #db2777; --accent-2: #f472b6; --accent-text: #f9a8d4;
+    --ok: #34d399; --err: #f87171;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, -apple-system, sans-serif; line-height: 1.45; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid var(--line); background: #131217; }
+  .title { font-size: 20px; font-weight: 700; background: linear-gradient(90deg, var(--accent-2), #fb7185); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0; }
+  .hub-breadcrumb { color: var(--muted); font-size: 13px; text-decoration: none; transition: color .15s; }
+  .hub-breadcrumb:hover { color: var(--accent-text); }
+  .btn-ghost { background: #1b1a21; border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: inherit; }
+  .btn-ghost:hover { border-color: var(--accent); }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 80px; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(360px, 1fr); gap: 20px; align-items: start; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+
+  .in-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .in-head h2, .res-head { margin: 0; font-size: 15px; font-weight: 600; }
+  .tools { display: flex; align-items: center; gap: 4px; }
+  .tool { background: none; border: 0; color: var(--muted); width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: grid; place-items: center; }
+  .tool:hover { color: var(--accent-text); background: #221b23; }
+  .tool svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .sep { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
+  textarea { width: 100%; min-height: 440px; background: var(--panel-2); border: 1px solid var(--line); color: var(--text); padding: 14px; border-radius: 10px; font: 15px/1.6 inherit; font-family: inherit; resize: vertical; }
+  textarea:focus { outline: none; border-color: var(--accent); }
+  textarea::placeholder { color: #5f5a69; }
+  .toast { font-size: 12px; min-height: 16px; margin-top: 8px; color: var(--ok); }
+  .drop-over textarea { border-color: var(--accent-2); border-style: dashed; }
+
+  .res-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .res-head svg { width: 18px; height: 18px; stroke: var(--accent-text); fill: none; stroke-width: 2; stroke-linecap: round; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--panel-2); }
+  .stat { padding: 12px 14px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-height: 92px; display: flex; flex-direction: column; justify-content: space-between; }
+  .stat:nth-child(2n) { border-right: 0; }
+  .stat:nth-last-child(-n+2) { border-bottom: 0; }
+  .stat .lab { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; white-space: nowrap; }
+  .stat .lab span { color: var(--muted); text-align: right; font-size: 12px; }
+  .stat .val { align-self: flex-end; font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .stat .val.pop { animation: pop .25s ease; }
+  .stat.hl .val { color: var(--accent-text); }
+  .stat .unit { font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 3px; }
+  @keyframes pop { 0% { transform: scale(1.12); color: var(--accent-2); } 100% { transform: scale(1); } }
+  .note { font-size: 12px; color: var(--muted); margin-top: 12px; }
+
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } textarea { min-height: 280px; } header { padding: 12px 16px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1 class="title">🔢 Character Counter</h1>
+    <a href="../hub.html" class="hub-breadcrumb">← Cuech4 Hub</a>
+  </div>
+  <button class="btn-ghost" id="clearTop">＋ New</button>
+</header>
+
+<main>
+  <div class="layout">
+    <section class="card" id="inputCard">
+      <div class="in-head">
+        <h2>Input text</h2>
+        <div class="tools">
+          <button class="tool" id="uploadBtn" title="Open a text file" aria-label="Open a text file">
+            <svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 17v-6"/><path d="m9.5 13.5 2.5-2.5 2.5 2.5"/></svg>
+          </button>
+          <button class="tool" id="copyBtn" title="Copy text" aria-label="Copy text">
+            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>
+          </button>
+          <span class="sep"></span>
+          <button class="tool" id="clearBtn" title="Clear text" aria-label="Clear text">
+            <svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/></svg>
+          </button>
+        </div>
+      </div>
+      <textarea id="text" placeholder="Enter the text you want to count" spellcheck="false" autofocus></textarea>
+      <input type="file" id="file" accept=".txt,.md,.csv,.json,.html,.js,.css,text/*" hidden>
+      <div class="toast" id="toast"></div>
+    </section>
+
+    <aside class="card">
+      <div class="res-head">
+        <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        Character and Line Count Results
+      </div>
+      <div class="stats">
+        <div class="stat hl"><div class="lab">Characters <span>w/ spaces</span></div><div class="val" id="cWith">0</div></div>
+        <div class="stat"><div class="lab">Characters <span>w/o spaces</span></div><div class="val" id="cWithout">0</div></div>
+        <div class="stat"><div class="lab">Characters <span>trimmed</span></div><div class="val" id="cTrim">0</div></div>
+        <div class="stat"><div class="lab">Words <span>split by spaces</span></div><div class="val" id="words">0</div></div>
+        <div class="stat"><div class="lab">Lines <span>w/ empty</span></div><div class="val" id="lWith">0</div></div>
+        <div class="stat"><div class="lab">Lines <span>w/o empty</span></div><div class="val" id="lWithout">0</div></div>
+        <div class="stat"><div class="lab">Manuscript <span id="ms-label">400 chars/page</span></div><div class="val" id="pages">0</div></div>
+        <div class="stat"><div class="lab">Size <span>UTF-8</span></div><div class="val" id="size">0<span class="unit">B</span></div></div>
+      </div>
+      <div class="note">Emoji and accented letters count as one character. Everything stays in your browser — nothing is uploaded.</div>
+    </aside>
+  </div>
+</main>
+
+<script>
+const CHARS_PER_PAGE = 400; // manuscript paper (genkō yōshi style): 400 characters per page
+const $ = (id) => document.getElementById(id);
+const enc = new TextEncoder();
+$("ms-label").textContent = CHARS_PER_PAGE + " chars/page";
+
+const fmt = (n) => n.toLocaleString("en-US");
+function fmtSize(bytes) {
+  if (bytes < 1024) return `${fmt(bytes)}<span class="unit">B</span>`;
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(bytes < 10240 ? 2 : 1)}<span class="unit">KB</span>`;
+  return `${(bytes / 1048576).toFixed(2)}<span class="unit">MB</span>`;
+}
+const len = (s) => Array.from(s).length; // counts code points, so an emoji is 1 character
+
+function compute(t) {
+  const lines = t === "" ? [] : t.split(/\r\n|\r|\n/);
+  const withSpaces = len(t);
+  return {
+    cWith: withSpaces,
+    cWithout: len(t.replace(/\s/g, "")),
+    cTrim: len(t.trim()),
+    words: (t.trim().match(/\S+/g) || []).length,
+    lWith: lines.length,
+    lWithout: lines.filter(l => l.trim() !== "").length,
+    pages: withSpaces === 0 ? 0 : Math.ceil(withSpaces / CHARS_PER_PAGE),
+    bytes: enc.encode(t).length
+  };
+}
+
+let last = {};
+function setVal(id, html, raw) {
+  if (last[id] === raw) return;
+  last[id] = raw;
+  const el = $(id); el.innerHTML = html;
+  el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+}
+function update() {
+  const r = compute($("text").value);
+  ["cWith", "cWithout", "cTrim", "words", "lWith", "lWithout", "pages"].forEach(k => setVal(k, fmt(r[k]), r[k]));
+  setVal("size", fmtSize(r.bytes), r.bytes);
+}
+$("text").addEventListener("input", update);
+
+let toastTimer;
+function toast(msg, err) {
+  const t = $("toast"); t.textContent = msg; t.style.color = err ? "var(--err)" : "var(--ok)";
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.textContent = "", 2500);
+}
+
+/* ---- toolbar ---- */
+$("copyBtn").onclick = async () => {
+  const v = $("text").value;
+  if (!v) return toast("Nothing to copy yet.", true);
+  try { await navigator.clipboard.writeText(v); }
+  catch { $("text").select(); document.execCommand("copy"); }
+  toast("✓ Text copied");
+};
+function clearAll() { $("text").value = ""; update(); $("text").focus(); }
+$("clearBtn").onclick = clearAll;
+$("clearTop").onclick = clearAll;
+
+/* ---- open file / drag & drop ---- */
+function loadFile(f) {
+  if (!f) return;
+  if (f.size > 5 * 1024 * 1024) return toast("That file is over 5 MB — try a smaller one.", true);
+  const rd = new FileReader();
+  rd.onload = () => { $("text").value = String(rd.result); update(); toast(`✓ Loaded ${f.name}`); };
+  rd.onerror = () => toast("Couldn't read that file.", true);
+  rd.readAsText(f);
+}
+$("uploadBtn").onclick = () => $("file").click();
+$("file").onchange = (e) => { loadFile(e.target.files[0]); e.target.value = ""; };
+const card = $("inputCard");
+["dragenter", "dragover"].forEach(ev => card.addEventListener(ev, e => { e.preventDefault(); card.classList.add("drop-over"); }));
+["dragleave", "drop"].forEach(ev => card.addEventListener(ev, e => { e.preventDefault(); card.classList.remove("drop-over"); }));
+card.addEventListener("drop", e => loadFile(e.dataTransfer.files[0]));
+
+update();
+</script>
+</body>
+</html>
