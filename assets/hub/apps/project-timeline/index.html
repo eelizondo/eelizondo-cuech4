@@ -263,6 +263,7 @@
 const $ = s => document.querySelector(s);
 const DAY = 864e5, ROW = 30, MAXL = 4, MINROWS = 18, KEY = 'tl_state_v1', SKEY = 'tl_settings';
 const COL_DEFAULTS = [46, 250, 72, 96, 96, 92, 104, 96], COL_MIN = [38, 130, 56, 72, 72, 64, 82, 80], COL_MAX = 640;
+const GRID_MIN_WIDTH = 260, GRID_GUTTER = 12, GANTT_MIN_WIDTH = 220, SPLITTER_WIDTH = 7;
 const STATUSES = ['Not Started', 'In Progress', 'On Hold', 'Completed'];
 const SCLS = {'Not Started': 'b-ns', 'In Progress': 'b-ip', 'On Hold': 'b-hold', 'Completed': 'b-ok'};
 const RCLS = {'Not Started': 's-ns', 'In Progress': 's-ip', 'On Hold': 's-hold', 'Completed': 's-complete'};
@@ -556,9 +557,27 @@ function saveColumnWidths() {
   set.cw = colWidths.slice();
   lsSet(SKEY, JSON.stringify(set));
 }
+function gridPaneBounds() {
+  const available = Math.max(1, $('#sheet').clientWidth - GANTT_MIN_WIDTH - SPLITTER_WIDTH);
+  const max = Math.min(colWidths.reduce((sum, width) => sum + width, 0) + GRID_GUTTER, available);
+  return {min: Math.min(GRID_MIN_WIDTH, max), max};
+}
+function applyGridPaneWidth(requestedWidth) {
+  const {min, max} = gridPaneBounds();
+  const width = Math.max(min, Math.min(max, requestedWidth));
+  $('#sheet').style.setProperty('--gw', width + 'px');
+  set.gw = Math.round(width);
+  return width;
+}
+function clampGridPaneToTable() {
+  const sheet = $('#sheet'), current = parseFloat(sheet.style.getPropertyValue('--gw')) || sheet.clientWidth * .6;
+  const width = applyGridPaneWidth(current);
+  if (Math.round(current) !== Math.round(width)) lsSet(SKEY, JSON.stringify(set));
+}
 function resizeColumn(index, width) {
   colWidths[index] = Math.max(COL_MIN[index], Math.min(COL_MAX, Math.round(width)));
   applyColumnWidths();
+  clampGridPaneToTable();
 }
 function initColumnResizers() {
   const headers = document.querySelectorAll('#grid thead th');
@@ -1101,10 +1120,11 @@ document.querySelector('.vt').addEventListener('click', e => { const b = e.targe
   const sync = (a, b) => () => { if (lock) return; lock = true; b.scrollTop = a.scrollTop; requestAnimationFrame(() => { lock = false; }); };
   g.addEventListener('scroll', sync(g, t)); t.addEventListener('scroll', sync(t, g));
   const sp = $('#split'), sheet = $('#sheet');
-  if (set.gw) sheet.style.setProperty('--gw', set.gw + 'px');
+  applyGridPaneWidth(Number.isFinite(set.gw) && set.gw > 0 ? set.gw : colWidths.reduce((sum, width) => sum + width, 0) + GRID_GUTTER);
+  lsSet(SKEY, JSON.stringify(set));
   sp.addEventListener('pointerdown', e => {
     sp.setPointerCapture(e.pointerId); sp.classList.add('drag');
-    const mv = ev => { const r = sheet.getBoundingClientRect(); const w = Math.max(260, Math.min(r.width - 220, ev.clientX - r.left)); sheet.style.setProperty('--gw', w + 'px'); set.gw = Math.round(w); };
+    const mv = ev => { const r = sheet.getBoundingClientRect(); applyGridPaneWidth(ev.clientX - r.left); };
     const up = () => { sp.classList.remove('drag'); sp.removeEventListener('pointermove', mv); sp.removeEventListener('pointerup', up); lsSet(SKEY, JSON.stringify(set)); };
     sp.addEventListener('pointermove', mv); sp.addEventListener('pointerup', up);
   });
