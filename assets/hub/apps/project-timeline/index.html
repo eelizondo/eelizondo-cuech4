@@ -86,6 +86,10 @@
   td input.lock { color: var(--muted); cursor: default; }
   td input.lock:focus { background: transparent; outline-color: #3a4422; }
   td input.bad { color: var(--err); }
+  td.pred-cell { position: relative; }
+  .pred-fill-handle { display: none; position: absolute; right: -4px; bottom: -4px; z-index: 5; width: 8px; min-width: 0; height: 8px; padding: 0; border: 1px solid var(--text); border-radius: 1px; background: var(--accent-2); cursor: crosshair; touch-action: none; }
+  td.pred-cell:focus-within .pred-fill-handle { display: block; }
+  tr.pred-fill-range td.pred-cell { outline: 1px dashed var(--accent-2); outline-offset: -3px; }
   #native-date-picker { position: fixed; z-index: 5; width: 1px; height: 1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
   .nm { display: flex; align-items: center; }
   .nm input { padding-left: 4px; }
@@ -318,6 +322,7 @@ function workBetween(a, b) {
   let c = 0; for (let d = a; d <= b; d++) if (isWork(d)) c++;
   return Math.max(c, 1);
 }
+const durationSpan = duration => duration > 0 ? Math.ceil(duration) : 0;
 
 /* ---------- state ---------- */
 let S, C = {}, sel = new Set(), anchor = null, undoS = [], redoS = [], sessionPw = null, dirty = false, saveT = null;
@@ -329,8 +334,10 @@ let colWidths = Array.isArray(set.cw) && set.cw.length === COL_DEFAULTS.length
   : COL_DEFAULTS.slice();
 set.cw = colWidths.slice();
 
-const blank = () => ({id: uid(), level: 0, name: '', dur: null, start: null, preds: [], status: 'Not Started', notes: '', collapsed: false});
+const blank = () => ({id: uid(), level: 0, name: '', dur: null, start: null, preds: [], status: '', notes: '', collapsed: false});
 const blankState = () => ({name: '', cal: 'work', tasks: [], exp: {date: '', n: 0}});
+const hasTaskFields = task => !!(String(task.name || '').trim() || String(task.notes || '').trim() || task.dur != null || task.start != null || (task.preds && task.preds.length));
+const hasTaskContent = task => hasTaskFields(task) || (!!task.status && task.status !== 'Not Started');
 function sanitize(arr) {
   const seen = new Set(), out = [];
   for (const o of (Array.isArray(arr) ? arr : []).slice(0, 5000)) {
@@ -339,16 +346,18 @@ function sanitize(arr) {
     seen.add(id);
     const int = v => Number.isFinite(v) ? Math.round(v) : null;
     const savedStatus = o.status === 'Complete' ? 'Completed' : o.status === 'Blocked' ? 'On Hold' : o.status;
-    out.push({
+    const task = {
       id, level: Math.max(0, Math.min(MAXL, int(o.level) || 0)),
       name: String(o.name || '').slice(0, 500), notes: String(o.notes || '').slice(0, 2000),
-      dur: o.dur == null ? null : Math.max(0, Math.min(3650, int(o.dur) || 0)),
+      dur: o.dur == null ? null : Math.max(0, Math.min(3650, Number.isFinite(Number(o.dur)) ? Math.round(Number(o.dur) * 100) / 100 : 0)),
       start: o.start == null ? null : int(o.start),
       status: STATUSES.includes(savedStatus) ? savedStatus : 'Not Started',
       collapsed: !!o.collapsed,
       preds: (Array.isArray(o.preds) ? o.preds : []).filter(p => p && typeof p.id === 'string').slice(0, 20)
         .map(p => ({id: p.id, t: ['FS','SS','FF','SF'].includes(p.t) ? p.t : 'FS', lag: Math.max(-999, Math.min(999, int(p.lag) || 0))}))
-    });
+    };
+    if (task.status === 'Not Started' && !hasTaskFields(task)) task.status = '';
+    out.push(task);
   }
   return out;
 }
@@ -376,7 +385,14 @@ function automaticStatus(i) {
   if (childStatuses.some(status => status === 'In Progress' || status === 'Completed')) return 'In Progress';
   return 'Not Started';
 }
-const displayedStatus = i => isParent(i) ? automaticStatus(i) : (S.tasks[i].status || 'Not Started');
+function displayedStatus(i) {
+  const task = S.tasks[i];
+  if (isParent(i)) {
+    if (!hasTaskFields(task) && !S.tasks.slice(i + 1, blockEnd(i)).some(hasTaskContent)) return '';
+    return automaticStatus(i);
+  }
+  return hasTaskContent(task) ? (task.status || 'Not Started') : '';
+}
 function visibleRows() {
   const out = []; let hide = null;
   S.tasks.forEach((t, i) => {
@@ -420,13 +436,13 @@ function compute() {
           let s;
           if (p.t === 'FS') s = addWork(c.end, 1 + p.lag);
           else if (p.t === 'SS') s = addWork(c.start, p.lag);
-          else { const e = addWork(p.t === 'FF' ? c.end : c.start, p.lag); s = d > 0 ? addWork(e, -(d - 1)) : e; }
+          else { const e = addWork(p.t === 'FF' ? c.end : c.start, p.lag); s = d > 0 ? addWork(e, -(durationSpan(d) - 1)) : e; }
           best = best == null ? s : Math.max(best, s);
         }
         start = best; dur = d;
       }
       let end = null;
-      if (start != null) { start = snap(start); if (dur == null) dur = 1; end = dur > 0 ? addWork(start, dur - 1) : start; }
+      if (start != null) { start = snap(start); if (dur == null) dur = 1; end = dur > 0 ? addWork(start, durationSpan(dur) - 1) : start; }
       res = {start, end, dur, locked, err};
     }
     st[i] = 2; C[t.id] = res; return res;
@@ -449,7 +465,7 @@ function parsePreds(str, selfIdx) {
   }
   return {list: out};
 }
-const durStr = c => (c && c.dur != null) ? c.dur + 'd' : '';
+const durStr = c => (c && c.dur != null) ? (Number.isInteger(c.dur) ? c.dur : Number(c.dur.toFixed(2))) + 'd' : '';
 
 /* ---------- history / persistence ---------- */
 const snapshot = () => JSON.stringify({name: S.name, cal: S.cal, tasks: S.tasks});
@@ -525,8 +541,8 @@ function rowHtml(i) {
     '<td><input data-col="dur" class="num' + (par ? ' lock' : '') + '"' + (par ? ' readonly' : '') + ' value="' + durStr(c) + '" aria-label="Duration"></td>' +
     '<td><input data-col="start" class="num' + (lockStart ? ' lock' : '') + '"' + (lockStart ? ' readonly' : '') + ' value="' + fmt(c.start) + '" aria-label="Start date"></td>' +
     '<td><input data-col="end" class="num' + (par ? ' lock' : '') + '"' + (par ? ' readonly' : '') + ' value="' + fmt(c.end) + '" aria-label="End date"></td>' +
-    '<td><input data-col="pred" class="num' + (par ? ' lock' : '') + (c.err ? ' bad' : '') + '"' + (par ? ' readonly' : '') + ' title="' + esc(c.err || '') + '" value="' + esc(predStr(t)) + '" aria-label="Predecessors"></td>' +
-    '<td><select data-col="status" aria-label="Status"' + (autoStatus ? ' disabled title="Automatically calculated from sub-task statuses"' : '') + '>' + STATUSES.map(s => '<option value="' + s + '"' + (s === status ? ' selected' : '') + '>' + s + '</option>').join('') + '</select></td>' +
+    '<td class="pred-cell"><input data-col="pred" class="num' + (par ? ' lock' : '') + (c.err ? ' bad' : '') + '"' + (par ? ' readonly' : '') + ' title="' + esc(c.err || '') + '" value="' + esc(predStr(t)) + '" aria-label="Predecessors"><button type="button" class="pred-fill-handle" aria-label="Fill predecessor pattern down" title="Drag down to fill predecessor pattern"></button></td>' +
+    '<td><select data-col="status" aria-label="Status"' + (autoStatus ? ' disabled title="Automatically calculated from sub-task statuses"' : '') + '><option value=""' + (status === '' ? ' selected' : '') + '></option>' + STATUSES.map(s => '<option value="' + s + '"' + (s === status ? ' selected' : '') + '>' + s + '</option>').join('') + '</select></td>' +
     '<td><input data-col="notes" value="' + esc(t.notes) + '" spellcheck="false" aria-label="Notes"></td></tr>';
 }
 function renderGrid() { $('#tbody').innerHTML = visibleRows().map(rowHtml).join(''); }
@@ -838,6 +854,43 @@ function reorderTaskBlock(sourceId, targetId, before) {
 const tb = $('#tbody');
 const nativeDatePicker = $('#native-date-picker');
 let activeDateField = null;
+let predecessorFill = null;
+function clearPredFillRange() {
+  tb.querySelectorAll('tr.pred-fill-range').forEach(row => row.classList.remove('pred-fill-range'));
+}
+function updatePredFillRange(event) {
+  if (!predecessorFill) return;
+  const row = document.elementFromPoint(event.clientX, event.clientY)?.closest('#tbody tr[data-id]');
+  const start = idxOf(predecessorFill.sourceId), end = row ? idxOf(row.dataset.id) : -1;
+  clearPredFillRange();
+  predecessorFill.targetId = end > start ? row.dataset.id : null;
+  if (end <= start) return;
+  for (let i = start + 1; i <= end; i++) {
+    const target = tb.querySelector(`tr[data-id="${S.tasks[i].id}"]`);
+    if (target) target.classList.add('pred-fill-range');
+  }
+}
+function fillPredecessorsDown(sourceId, targetId, sourcePreds) {
+  const start = idxOf(sourceId), end = idxOf(targetId);
+  if (start < 0 || end <= start || !sourcePreds.length) return;
+  const updates = [];
+  for (let i = start + 1; i <= end; i++) {
+    if (isParent(i)) continue;
+    const preds = sourcePreds.map(pred => {
+      const shiftedIndex = idxOf(pred.id) + (i - start);
+      if (shiftedIndex < 0 || shiftedIndex >= S.tasks.length || shiftedIndex === i) return null;
+      return {id: S.tasks[shiftedIndex].id, t: pred.t, lag: pred.lag};
+    }).filter(Boolean);
+    updates.push({id: S.tasks[i].id, preds});
+  }
+  if (!updates.length) return;
+  const selectedIds = [sourceId, ...updates.map(update => update.id)];
+  mutate(() => {
+    updates.forEach(update => { byId(update.id).preds = update.preds; });
+    selectOnly(selectedIds);
+  }, true);
+  focusCell(targetId, 'pred');
+}
 function openDatePicker(field) {
   if (field.readOnly || field.disabled || typeof nativeDatePicker.showPicker !== 'function') return;
   const bounds = field.getBoundingClientRect(), parsed = parseDate(field.value);
@@ -860,6 +913,36 @@ nativeDatePicker.addEventListener('change', () => {
 tb.addEventListener('click', e => {
   const field = e.target.closest('[data-col="start"], [data-col="end"]');
   if (field) openDatePicker(field);
+});
+tb.addEventListener('pointerdown', e => {
+  const handle = e.target.closest('.pred-fill-handle');
+  if (!handle || (e.pointerType === 'mouse' && e.button !== 0)) return;
+  const row = handle.closest('tr[data-id]'), task = byId(row.dataset.id);
+  if (!row || !task || isParent(idxOf(task.id))) return;
+  e.preventDefault();
+  handle.setPointerCapture(e.pointerId);
+  predecessorFill = {sourceId: task.id, sourcePreds: task.preds.map(pred => ({...pred})), pointerId: e.pointerId, startX: e.clientX, startY: e.clientY, active: false, targetId: null};
+});
+tb.addEventListener('pointermove', e => {
+  if (!predecessorFill || e.pointerId !== predecessorFill.pointerId) return;
+  if (!predecessorFill.active && e.clientY - predecessorFill.startY < 5) return;
+  predecessorFill.active = true;
+  e.preventDefault();
+  updatePredFillRange(e);
+});
+function finishPredecessorFill(e) {
+  if (!predecessorFill || e.pointerId !== predecessorFill.pointerId) return;
+  const fill = predecessorFill;
+  predecessorFill = null;
+  clearPredFillRange();
+  if (fill.active && fill.targetId) fillPredecessorsDown(fill.sourceId, fill.targetId, fill.sourcePreds);
+}
+tb.addEventListener('pointerup', finishPredecessorFill);
+tb.addEventListener('pointercancel', e => {
+  if (predecessorFill && e.pointerId === predecessorFill.pointerId) {
+    predecessorFill = null;
+    clearPredFillRange();
+  }
 });
 let pointerDrag = null;
 function clearDropTargets() {
@@ -926,8 +1009,8 @@ tb.addEventListener('change', e => {
   else if (col === 'status') mutate(() => { t.status = v; });
   else if (col === 'dur') {
     const s = v.trim(); if (!s) return mutate(() => { t.dur = null; });
-    const m = s.match(/^(\d+)\s*([dw])?$/i); if (!m) return bad('Duration should be whole days, like 3 or 2w.');
-    const n = Math.min(3650, +m[1] * (m[2] && m[2].toLowerCase() === 'w' ? (S.cal === 'all' ? 7 : 5) : 1));
+    const m = s.match(/^(\d+(?:\.\d{1,2})?|\.\d{1,2})\s*([dw])?$/i); if (!m) return bad('Duration should be days or weeks, like 3, .5d or 2w.');
+    const n = Math.min(3650, Math.round(+m[1] * (m[2] && m[2].toLowerCase() === 'w' ? (S.cal === 'all' ? 7 : 5) : 1) * 100) / 100);
     mutate(() => { t.dur = n; });
   } else if (col === 'start') {
     const r = parseDate(v); if (r.err) return bad('Couldn’t read that date. Try 3/12/26 or 2026-03-12.');
