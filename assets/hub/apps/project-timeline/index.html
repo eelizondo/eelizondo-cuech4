@@ -86,6 +86,7 @@
   td input.lock { color: var(--muted); cursor: default; }
   td input.lock:focus { background: transparent; outline-color: #3a4422; }
   td input.bad { color: var(--err); }
+  #native-date-picker { position: fixed; z-index: 5; width: 1px; height: 1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
   .nm { display: flex; align-items: center; }
   .nm input { padding-left: 4px; }
   .tg { flex: none; width: 18px; height: 18px; border: 1px solid var(--line); background: #0a0c06; color: var(--text); border-radius: 4px; font-size: 13px; line-height: 1; padding: 0; cursor: pointer; margin-left: 2px; }
@@ -128,6 +129,10 @@
   .b-hold { background: #f59e0b; }
   .b-blk { background: #ef4444; }
   .sum { height: 8px; border-radius: 1px; background: #bcc79a; }
+  .sum.b-ns { background: #64748b; }
+  .sum.b-ip { background: #a3e635; }
+  .sum.b-hold { background: #f59e0b; }
+  .sum.b-ok { background: #10b981; }
   .sum::before, .sum::after { content: ""; position: absolute; top: 8px; border: 4px solid transparent; border-top-color: #bcc79a; }
   .sum::before { left: 0; border-left-color: #bcc79a; }
   .sum::after { right: 0; border-right-color: #bcc79a; }
@@ -200,8 +205,8 @@
     <button class="tb" data-act="addRow" title="Add row below"><i data-i="plus"></i> Row</button>
     <button class="tb" data-act="addChild" title="Add sub-task below"><i data-i="plus"></i> Sub-task</button>
     <span class="sep"></span>
-    <button class="tb" data-act="outdent" title="Outdent (Alt+←)"><i data-i="outdent"></i></button>
-    <button class="tb" data-act="indent" title="Indent (Alt+→)"><i data-i="indent"></i></button>
+    <button class="tb" data-act="outdent" title="Outdent selected row(s) (Alt+←)"><i data-i="outdent"></i></button>
+    <button class="tb" data-act="indent" title="Indent selected row(s) (Alt+→)"><i data-i="indent"></i></button>
     <button class="tb" data-act="up" title="Move up (Alt+↑)"><i data-i="up"></i></button>
     <button class="tb" data-act="down" title="Move down (Alt+↓)"><i data-i="down"></i></button>
     <button class="tb" data-act="del" title="Delete selected rows"><i data-i="trash"></i></button>
@@ -246,6 +251,7 @@
 <div id="toast" hidden></div>
 <dialog id="dlg"><div class="dh" id="dT"></div><div class="db" id="dB"></div><div class="df" id="dF"></div></dialog>
 <input type="file" id="file" accept=".txt,text/plain" hidden>
+<input type="date" id="native-date-picker" tabindex="-1" aria-hidden="true">
 
 <script>
 (() => {
@@ -357,6 +363,20 @@ const idxOf = id => S.tasks.findIndex(t => t.id === id);
 const byId = id => S.tasks.find(t => t.id === id);
 const isParent = i => i + 1 < S.tasks.length && S.tasks[i + 1].level > S.tasks[i].level;
 const blockEnd = i => { const T = S.tasks; let j = i + 1; while (j < T.length && T[j].level > T[i].level) j++; return j; };
+function automaticStatus(i) {
+  if (!isParent(i)) return null;
+  const childStatuses = [];
+  const end = blockEnd(i);
+  for (let j = i + 1; j < end;) {
+    childStatuses.push(displayedStatus(j));
+    j = isParent(j) ? blockEnd(j) : j + 1;
+  }
+  if (childStatuses.includes('On Hold')) return 'On Hold';
+  if (childStatuses.length && childStatuses.every(status => status === 'Completed')) return 'Completed';
+  if (childStatuses.some(status => status === 'In Progress' || status === 'Completed')) return 'In Progress';
+  return 'Not Started';
+}
+const displayedStatus = i => isParent(i) ? automaticStatus(i) : (S.tasks[i].status || 'Not Started');
 function visibleRows() {
   const out = []; let hide = null;
   S.tasks.forEach((t, i) => {
@@ -495,9 +515,10 @@ function modal(o) {
 /* ---------- grid render ---------- */
 function rowHtml(i) {
   const t = S.tasks[i], c = C[t.id] || {}, par = isParent(i);
+  const autoStatus = par, status = displayedStatus(i);
   const lockStart = par || c.locked;
-  return '<tr data-id="' + t.id + '" class="l' + t.level + (par ? ' p' : '') + (sel.has(t.id) ? ' sel' : '') + (RCLS[t.status] ? ' ' + RCLS[t.status] : '') + '">' +
-    '<td class="n drag-handle" title="Drag to reorder this task and its sub-tasks" aria-label="Drag row ' + (i + 1) + ' to reorder">' + (i + 1) + '</td>' +
+  return '<tr data-id="' + t.id + '" class="l' + t.level + (par ? ' p' : '') + (sel.has(t.id) ? ' sel' : '') + (RCLS[status] ? ' ' + RCLS[status] : '') + '">' +
+    '<td class="n drag-handle" title="Click to select; Shift-click a range; Ctrl/Cmd-click to toggle. Drag to reorder." aria-label="Select row ' + (i + 1) + '; use Shift-click or Ctrl/Cmd-click to select multiple rows; drag to reorder">' + (i + 1) + '</td>' +
     '<td><div class="nm" style="padding-left:' + (6 + t.level * 16) + 'px">' +
       (par ? '<button class="tg" data-tg aria-label="Collapse or expand" aria-expanded="' + !t.collapsed + '">' + (t.collapsed ? '+' : '−') + '</button>' : '<span class="tg sp"></span>') +
       '<input data-col="name" value="' + esc(t.name) + '" spellcheck="false" aria-label="Task name"></div></td>' +
@@ -505,7 +526,7 @@ function rowHtml(i) {
     '<td><input data-col="start" class="num' + (lockStart ? ' lock' : '') + '"' + (lockStart ? ' readonly' : '') + ' value="' + fmt(c.start) + '" aria-label="Start date"></td>' +
     '<td><input data-col="end" class="num' + (par ? ' lock' : '') + '"' + (par ? ' readonly' : '') + ' value="' + fmt(c.end) + '" aria-label="End date"></td>' +
     '<td><input data-col="pred" class="num' + (par ? ' lock' : '') + (c.err ? ' bad' : '') + '"' + (par ? ' readonly' : '') + ' title="' + esc(c.err || '') + '" value="' + esc(predStr(t)) + '" aria-label="Predecessors"></td>' +
-    '<td><select data-col="status" aria-label="Status">' + STATUSES.map(s => '<option value="' + s + '"' + (s === t.status ? ' selected' : '') + '>' + s + '</option>').join('') + '</select></td>' +
+    '<td><select data-col="status" aria-label="Status"' + (autoStatus ? ' disabled title="Automatically calculated from sub-task statuses"' : '') + '>' + STATUSES.map(s => '<option value="' + s + '"' + (s === status ? ' selected' : '') + '>' + s + '</option>').join('') + '</select></td>' +
     '<td><input data-col="notes" value="' + esc(t.notes) + '" spellcheck="false" aria-label="Notes"></td></tr>';
 }
 function renderGrid() { $('#tbody').innerHTML = visibleRows().map(rowHtml).join(''); }
@@ -579,8 +600,11 @@ function refreshCells() {
     const s = set_('start', fmt(c.start)); const lock = par || c.locked;
     s.readOnly = lock; s.classList.toggle('lock', lock);
     const p = set_('pred', predStr(t)); p.classList.toggle('bad', !!c.err); p.title = c.err || '';
-    const st = tr.querySelector('[data-col="status"]'); st.value = t.status;
-    tr.classList.remove('s-ns', 's-ip', 's-hold', 's-complete'); if (RCLS[t.status]) tr.classList.add(RCLS[t.status]);
+    const index = idxOf(t.id), autoStatus = isParent(index), status = displayedStatus(index);
+    const st = tr.querySelector('[data-col="status"]'); st.value = status;
+    st.disabled = autoStatus;
+    st.title = autoStatus ? 'Automatically calculated from sub-task statuses' : '';
+    tr.classList.remove('s-ns', 's-ip', 's-hold', 's-complete'); if (RCLS[status]) tr.classList.add(RCLS[status]);
   });
 }
 function paintSel() {
@@ -639,10 +663,10 @@ function renderGantt() {
     const t = T[i], c = C[t.id] || {}, par = isParent(i), top = v * ROW;
     h += '<div class="grow' + (par && t.level < 2 ? ' p' + t.level : '') + (sel.has(t.id) ? ' sel' : '') + '" data-id="' + t.id + '" style="top:' + top + 'px"></div>';
     if (c.start == null) return;
-    const x = X(c.start), w = Math.max((c.end - c.start + 1) * px - 2, 4), tip = esc((t.name || 'Untitled') + ' — ' + fmt(c.start) + (c.end !== c.start ? ' → ' + fmt(c.end) : '') + ' (' + c.dur + 'd)' + (t.status ? ' · ' + t.status : ''));
-    if (par) { bars += '<div class="bar2 sum" data-id="' + t.id + '" title="' + tip + '" style="left:' + x + 'px;top:' + (top + 8) + 'px;width:' + w + 'px"></div>'; pos[t.id] = {l: x, r: x + w, y: top + 12}; }
-    else if (c.dur === 0) { const cx = x + px / 2; bars += '<div class="ms ' + SCLS[t.status] + '" data-id="' + t.id + '" title="' + tip + '" style="left:' + (cx - 7) + 'px;top:' + (top + 8) + 'px"></div>'; pos[t.id] = {l: cx - 9, r: cx + 9, y: top + 15}; }
-    else { bars += '<div class="bar2 ' + SCLS[t.status] + '" data-id="' + t.id + '" title="' + tip + '" style="left:' + x + 'px;top:' + (top + 7) + 'px;width:' + w + 'px"></div>'; pos[t.id] = {l: x, r: x + w, y: top + 15}; }
+    const status = displayedStatus(i), x = X(c.start), w = Math.max((c.end - c.start + 1) * px - 2, 4), tip = esc((t.name || 'Untitled') + ' — ' + fmt(c.start) + (c.end !== c.start ? ' → ' + fmt(c.end) : '') + ' (' + c.dur + 'd) · ' + status);
+    if (par) { bars += '<div class="bar2 sum ' + SCLS[status] + '" data-id="' + t.id + '" title="' + tip + '" style="left:' + x + 'px;top:' + (top + 8) + 'px;width:' + w + 'px"></div>'; pos[t.id] = {l: x, r: x + w, y: top + 12}; }
+    else if (c.dur === 0) { const cx = x + px / 2; bars += '<div class="ms ' + SCLS[status] + '" data-id="' + t.id + '" title="' + tip + '" style="left:' + (cx - 7) + 'px;top:' + (top + 8) + 'px"></div>'; pos[t.id] = {l: cx - 9, r: cx + 9, y: top + 15}; }
+    else { bars += '<div class="bar2 ' + SCLS[status] + '" data-id="' + t.id + '" title="' + tip + '" style="left:' + x + 'px;top:' + (top + 7) + 'px;width:' + w + 'px"></div>'; pos[t.id] = {l: x, r: x + w, y: top + 15}; }
     if (px >= 8 && t.name) labels += '<span class="bl" style="left:' + (pos[t.id].r + 8) + 'px;top:' + (top + (par ? 5 : 7)) + 'px">' + esc(t.name) + '</span>';
   });
   if (td >= t0 && td <= t1) h += '<div class="today" style="left:' + (X(td) + px / 2 - 1) + 'px" title="Today"></div>';
@@ -701,6 +725,35 @@ function selIdx() {
 }
 function keepFocus() { const ae = document.activeElement; const tr = ae && ae.closest && ae.closest('tr[data-id]'); return tr && ae.dataset.col ? {id: tr.dataset.id, col: ae.dataset.col} : null; }
 function selectOnly(ids) { sel = new Set(ids); }
+function selectedTaskBlocks() {
+  const blocks = [];
+  let coveredUntil = -1;
+  for (const start of selIdx()) {
+    if (start < coveredUntil) continue;
+    const end = blockEnd(start);
+    blocks.push({start, end, ids: S.tasks.slice(start, end).map(task => task.id)});
+    coveredUntil = end;
+  }
+  return blocks;
+}
+function adjustSelectedLevels(delta) {
+  const T = S.tasks;
+  const blocks = selectedTaskBlocks().filter(({start, end}) => {
+    if (delta < 0) return T[start].level > 0;
+    if (start === 0 || T[start].level > T[start - 1].level) return false;
+    return Math.max(...T.slice(start, end).map(task => task.level)) < MAXL;
+  });
+  if (!blocks.length) return;
+
+  const focus = keepFocus();
+  const ids = blocks.flatMap(block => block.ids);
+  const moved = new Set(ids);
+  mutate(() => {
+    T.forEach(task => { if (moved.has(task.id)) task.level += delta; });
+    selectOnly(ids);
+  }, true);
+  if (focus && moved.has(focus.id)) focusCell(focus.id, focus.col);
+}
 const actions = {
   addRow() {
     const a = selIdx(), T = S.tasks; let at = T.length, lvl = 0;
@@ -715,14 +768,10 @@ const actions = {
     mutate(() => { p.collapsed = false; S.tasks.splice(blockEnd(i) , 0, nt); selectOnly([nt.id]); }, true); focusCell(nt.id, 'name');
   },
   indent() {
-    const f = keepFocus(), a = selIdx(); let done = -1, any = false;
-    mutate(() => { for (const i of a) { if (i < done) continue; const T = S.tasks; if (i > 0 && T[i].level <= T[i - 1].level && T[i].level < MAXL) { const e = blockEnd(i); if (Math.max(...T.slice(i, e).map(t => t.level)) < MAXL) { for (let k = i; k < e; k++) T[k].level++; any = true; } } done = blockEnd(i); } }, true);
-    if (f) focusCell(f.id, f.col);
+    adjustSelectedLevels(1);
   },
   outdent() {
-    const f = keepFocus(), a = selIdx(); let done = -1;
-    mutate(() => { for (const i of a) { if (i < done) continue; const T = S.tasks; if (T[i].level > 0) { const e = blockEnd(i); for (let k = i; k < e; k++) T[k].level--; } done = blockEnd(i); } }, true);
-    if (f) focusCell(f.id, f.col);
+    adjustSelectedLevels(-1);
   },
   up() { moveBlock(-1); },
   down() { moveBlock(1); },
@@ -775,6 +824,31 @@ function reorderTaskBlock(sourceId, targetId, before) {
 
 /* ---------- grid events ---------- */
 const tb = $('#tbody');
+const nativeDatePicker = $('#native-date-picker');
+let activeDateField = null;
+function openDatePicker(field) {
+  if (field.readOnly || field.disabled || typeof nativeDatePicker.showPicker !== 'function') return;
+  const bounds = field.getBoundingClientRect(), parsed = parseDate(field.value);
+  nativeDatePicker.style.left = Math.round(bounds.left) + 'px';
+  nativeDatePicker.style.top = Math.round(bounds.top) + 'px';
+  nativeDatePicker.value = parsed.v == null ? '' : new Date(parsed.v * DAY).toISOString().slice(0, 10);
+  activeDateField = field;
+  try { nativeDatePicker.showPicker(); }
+  catch (error) { activeDateField = null; }
+}
+nativeDatePicker.addEventListener('change', () => {
+  if (!activeDateField || !nativeDatePicker.value) return;
+  const parsed = parseDate(nativeDatePicker.value);
+  if (!parsed.err && parsed.v != null) {
+    activeDateField.value = fmt(parsed.v);
+    activeDateField.dispatchEvent(new Event('change', {bubbles: true}));
+  }
+  activeDateField = null;
+});
+tb.addEventListener('click', e => {
+  const field = e.target.closest('[data-col="start"], [data-col="end"]');
+  if (field) openDatePicker(field);
+});
 let pointerDrag = null;
 function clearDropTargets() {
   tb.querySelectorAll('.dragging, .drop-before, .drop-after').forEach(row => row.classList.remove('dragging', 'drop-before', 'drop-after'));
