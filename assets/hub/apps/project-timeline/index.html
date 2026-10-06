@@ -695,10 +695,22 @@ function render(focus) {
   if (focus) focusCell(focus.id, focus.col);
 }
 function refresh() { refreshCells(); renderGantt(); }
-function focusCell(id, col) {
+function focusCell(id, col, selectText = true) {
   const el = document.querySelector('#tbody tr[data-id="' + id + '"] [data-col="' + (col || 'name') + '"]');
-  if (el) { el.focus(); if (el.select && el.tagName === 'INPUT') el.select(); }
+  if (el) { el.focus(); if (selectText && el.select && el.tagName === 'INPUT') el.select(); }
   return el;
+}
+const GRID_COLUMNS = ['name', 'dur', 'start', 'end', 'pred', 'status', 'notes'];
+function moveCell(id, col, rowDelta, colDelta) {
+  const visible = visibleRows();
+  let row = visible.indexOf(idxOf(id)), column = GRID_COLUMNS.indexOf(col);
+  if (row < 0 || column < 0) return;
+  row += rowDelta;
+  column += colDelta;
+  while (column < 0) { row--; column = GRID_COLUMNS.length - 1; }
+  while (column >= GRID_COLUMNS.length) { row++; column = 0; }
+  if (row < 0 || row >= visible.length) return;
+  focusCell(S.tasks[visible[row]].id, GRID_COLUMNS[column]);
 }
 function scrollGanttToDate(d, frac) {
   const tp = $('#tpane'); tp.scrollLeft = Math.max(0, (d - G.t0) * G.px - tp.clientWidth * (frac == null ? .3 : frac));
@@ -958,8 +970,13 @@ tb.addEventListener('keydown', e => {
   };
   if (e.key === 'Enter' && el.tagName === 'INPUT') { e.preventDefault(); move(1); }
   else if (e.key === 'Escape') { el.value = el.dataset.orig || ''; el.blur(); }
-  else if (e.key === 'ArrowDown' && el.tagName === 'INPUT') { e.preventDefault(); move(1); }
-  else if (e.key === 'ArrowUp' && el.tagName === 'INPUT') { e.preventDefault(); move(-1); }
+  else if (e.key === 'ArrowDown' && (el.tagName === 'INPUT' || el.tagName === 'SELECT')) { e.preventDefault(); move(1); }
+  else if (e.key === 'ArrowUp' && (el.tagName === 'INPUT' || el.tagName === 'SELECT')) { e.preventDefault(); move(-1); }
+  else if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && (el.tagName === 'INPUT' || el.tagName === 'SELECT')) {
+    const selectedText = el.tagName === 'INPUT' && el.selectionStart !== el.selectionEnd;
+    const atEdge = el.tagName === 'SELECT' || selectedText || (e.key === 'ArrowLeft' ? el.selectionStart === 0 : el.selectionEnd === el.value.length);
+    if (atEdge) { e.preventDefault(); moveCell(id, col, 0, e.key === 'ArrowLeft' ? -1 : 1); }
+  }
 });
 document.addEventListener('keydown', e => {
   const k = e.key.toLowerCase(), mod = e.ctrlKey || e.metaKey;
