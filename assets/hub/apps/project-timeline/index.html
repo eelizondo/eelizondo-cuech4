@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Timeline — Cuech4 Hub</title>
+<link rel="icon" type="image/svg+xml" href="assets/project-timeline-icon.svg">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0d08; --panel: #131709; --panel-2: #0e1007; --line: #2a3018; --line-2: #1d2210;
+    --text: #eef1e4; --muted: #99a082;
+    --accent: #65a30d; --accent-2: #a3e635; --accent-text: #d9f99d;
+    --ok: #34d399; --err: #f87171; --warn: #fbbf24;
+    --row: 30px;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, -apple-system, sans-serif; line-height: 1.4; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; border-bottom: 1px solid var(--line); background: #0f1109; }
+  .title { font-size: 20px; font-weight: 700; background: linear-gradient(90deg, var(--accent-2), #d9f99d 55%, #fde68a); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0; }
+  .hub-breadcrumb { color: var(--muted); font-size: 13px; text-decoration: none; transition: color .15s; }
+  .hub-breadcrumb:hover { color: var(--accent-text); }
+  button { font-family: inherit; }
+  .btn-ghost { background: #151a0b; border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+  .btn-ghost:hover { border-color: var(--accent-2); }
+  .btn-main { background: linear-gradient(180deg, #a3e635, #84cc16); border: 0; color: #1a2300; font-weight: 600; font-size: 14px; padding: 9px 18px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 22px rgba(132,204,22,.2); }
+  .btn-main:hover { filter: brightness(1.07); }
+  svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  .wrap { padding: 14px 24px 0; }
+  .top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+  #pname { font: 700 20px/1.2 inherit; font-family: inherit; color: var(--text); background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 6px 10px; min-width: 240px; flex: 0 1 380px; }
+  #pname:hover { border-color: var(--line); }
+  #pname:focus { outline: none; border-color: var(--accent-2); background: #0a0c06; }
+  .chip { font-size: 12.5px; font-weight: 600; border-radius: 999px; padding: 4px 12px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+  .chip.dirty { color: var(--warn); border-color: rgba(251,191,36,.35); background: rgba(251,191,36,.08); }
+  .chip.clean { color: var(--ok); border-color: rgba(52,211,153,.3); background: rgba(52,211,153,.07); }
+  .spacer { flex: 1; }
+
+  .bar { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px 12px 0 0; border-bottom: 0; }
+  .tb { background: transparent; border: 1px solid transparent; color: var(--text); height: 32px; min-width: 32px; padding: 0 8px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; }
+  .tb:hover:not(:disabled) { background: #1c2210; border-color: var(--line); }
+  .tb:disabled { opacity: .35; cursor: default; }
+  .tb.on { background: rgba(163,230,53,.14); border-color: rgba(163,230,53,.35); color: var(--accent-text); }
+  .sep { width: 1px; height: 22px; background: var(--line); margin: 0 6px; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg .tb { border-radius: 0; border: 0; height: 30px; }
+  select.mini { background: #0a0c06; color: var(--text); border: 1px solid var(--line); border-radius: 8px; height: 32px; padding: 0 8px; font: 13px inherit; font-family: inherit; }
+
+  .empty { background: linear-gradient(180deg, #181d0c, #121509); border: 1px solid #323a1b; border-radius: 14px; padding: 16px 20px; margin: 0 0 12px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .empty p { margin: 0; color: var(--muted); font-size: 14px; flex: 1 1 380px; }
+  .empty p b { color: var(--accent-text); font-weight: 600; }
+
+  .vt { display: none; margin-bottom: 8px; }
+
+  .sheet { display: flex; height: calc(100vh - 235px); height: calc(100dvh - 235px); min-height: 420px; border: 1px solid var(--line); border-radius: 0 0 12px 12px; background: var(--panel-2); overflow: hidden; position: relative; }
+  .gpane { flex: none; width: var(--gw, min(852px, 60%)); overflow: scroll; scrollbar-width: thin; scrollbar-color: #3a4422 transparent; }
+  .tpane { flex: 1; min-width: 0; overflow: scroll; scrollbar-width: thin; scrollbar-color: #3a4422 transparent; position: relative; }
+  .split { flex: none; width: 7px; cursor: col-resize; background: var(--line); position: relative; touch-action: none; }
+  .split:hover, .split.drag { background: var(--accent); }
+
+  table { border-collapse: separate; border-spacing: 0; table-layout: fixed; width: 852px; }
+  th { position: sticky; top: 0; z-index: 3; height: 52px; background: #161b0c; text-align: left; font-size: 13px; font-weight: 600; padding: 0 10px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line-2); color: var(--text); white-space: nowrap; }
+  .col-resizer { position: absolute; top: 0; right: -4px; bottom: 0; z-index: 4; width: 9px; cursor: col-resize; touch-action: none; }
+  .col-resizer::after { position: absolute; top: 0; bottom: 0; left: 4px; width: 1px; background: transparent; content: ''; }
+  .col-resizer:hover::after, .col-resizer.drag::after { width: 2px; background: var(--accent-2); }
+  td { height: var(--row); padding: 0; border-bottom: 1px solid var(--line-2); border-right: 1px solid var(--line-2); font-size: 13.5px; }
+  td.n { text-align: center; color: var(--muted); font-size: 12px; cursor: pointer; user-select: none; background: #0b0d07; }
+  td.n.drag-handle { cursor: grab; touch-action: none; }
+  td.n.drag-handle:active { cursor: grabbing; }
+  tbody tr.dragging { opacity: .4; }
+  tbody tr.drop-before td { border-top: 2px solid var(--accent-2); }
+  tbody tr.drop-after td { border-bottom: 2px solid var(--accent-2); }
+  tr.sel td.n { background: var(--accent); color: #101700; font-weight: 700; }
+  tr.p td { font-weight: 600; }
+  tr.p.l0 td:not(.n) { background: rgba(163,230,53,.15); }
+  tr.p.l1 td:not(.n) { background: rgba(163,230,53,.08); }
+  tr.p.l2 td:not(.n) { background: rgba(163,230,53,.04); }
+  tr.sel td:not(.n) { box-shadow: inset 0 0 0 100px rgba(163,230,53,.06); }
+  td input, td select { width: 100%; height: calc(var(--row) - 1px); background: transparent; border: 0; color: inherit; font: inherit; padding: 0 10px; border-radius: 0; text-overflow: ellipsis; }
+  td select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 4px; }
+  td select option { background: #11150a; color: var(--text); font-weight: 400; }
+  td input:focus, td select:focus { outline: 2px solid var(--accent-2); outline-offset: -2px; background: #0a0c06; }
+  td input.num { text-align: right; padding-right: 12px; }
+  td input.lock { color: var(--muted); cursor: default; }
+  td input.lock:focus { background: transparent; outline-color: #3a4422; }
+  td input.bad { color: var(--err); }
+  .nm { display: flex; align-items: center; }
+  .nm input { padding-left: 4px; }
+  .tg { flex: none; width: 18px; height: 18px; border: 1px solid var(--line); background: #0a0c06; color: var(--text); border-radius: 4px; font-size: 13px; line-height: 1; padding: 0; cursor: pointer; margin-left: 2px; }
+  .tg:hover { border-color: var(--accent-2); }
+  .tg.sp { visibility: hidden; border: 0; }
+  tr.s-ns td { color: var(--text); }
+  tr.s-ns td:not(.n) { background: rgba(238,241,228,.025); }
+  tr.p.s-ns td:not(.n) { background: rgba(238,241,228,.025); }
+  tr.s-ip td { color: var(--accent-2); font-weight: 700; }
+  tr.s-ip td:not(.n) { background: rgba(163,230,53,.1); }
+  tr.p.s-ip td:not(.n) { background: rgba(163,230,53,.1); }
+  tr.s-hold td { color: var(--err); font-weight: 700; }
+  tr.s-hold td:not(.n) { background: rgba(248,113,113,.1); }
+  tr.p.s-hold td:not(.n) { background: rgba(248,113,113,.1); }
+  tr.s-complete td { color: var(--ok); font-weight: 600; }
+  tr.s-complete td:not(.n) { background: rgba(52,211,153,.08); }
+  tr.p.s-complete td:not(.n) { background: rgba(52,211,153,.08); }
+
+  .gh { position: sticky; top: 0; z-index: 3; height: 52px; background: #161b0c; border-bottom: 1px solid var(--line); }
+  .gh .seg1, .gh .seg2 { position: absolute; height: 26px; font-size: 11.5px; line-height: 26px; padding-left: 6px; border-left: 1px solid var(--line-2); color: var(--text); overflow: hidden; white-space: nowrap; font-weight: 600; }
+  .gh .seg1 { top: 0; }
+  .gh .seg2 { top: 26px; color: var(--muted); font-weight: 500; padding: 0; text-align: center; font-size: 11px; border-top: 1px solid var(--line-2); }
+  .gh .seg2.we { color: #6c7550; }
+  .gh .seg2.left { text-align: left; padding-left: 5px; }
+  .gb { position: relative; }
+  .grow { position: absolute; left: 0; right: 0; height: var(--row); border-bottom: 1px solid var(--line-2); }
+  .grow.p0 { background: rgba(163,230,53,.12); }
+  .grow.p1 { background: rgba(163,230,53,.06); }
+  .grow.sel { background: rgba(163,230,53,.1); }
+  .today { position: absolute; top: 0; bottom: 0; width: 2px; background: #f87171; opacity: .7; z-index: 1; pointer-events: none; }
+  svg.deps { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 1; width: auto; height: auto; stroke-width: 1.2; overflow: visible; }
+  svg.deps path { stroke: #8a9566; fill: none; }
+  svg.deps marker path { fill: #8a9566; stroke: none; }
+  .bar2 { position: absolute; height: 16px; border-radius: 4px; background: var(--accent); cursor: pointer; z-index: 2; min-width: 4px; }
+  .bar2:hover { filter: brightness(1.2); }
+  .b-0 { background: #4d7c0f; }
+  .b-ns { background: #64748b; }
+  .b-ip { background: #a3e635; }
+  .b-ok { background: #10b981; }
+  .b-hold { background: #f59e0b; }
+  .b-blk { background: #ef4444; }
+  .sum { height: 8px; border-radius: 1px; background: #bcc79a; }
+  .sum::before, .sum::after { content: ""; position: absolute; top: 8px; border: 4px solid transparent; border-top-color: #bcc79a; }
+  .sum::before { left: 0; border-left-color: #bcc79a; }
+  .sum::after { right: 0; border-right-color: #bcc79a; }
+  .ms { position: absolute; width: 14px; height: 14px; transform: rotate(45deg); border-radius: 2px; z-index: 2; cursor: pointer; }
+  .bl { position: absolute; font-size: 12px; color: var(--text); white-space: nowrap; line-height: 16px; z-index: 2; pointer-events: none; }
+
+  #toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: #1b2110; border: 1px solid var(--line); color: var(--text); padding: 10px 16px; border-radius: 12px; font-size: 14px; display: flex; gap: 14px; align-items: center; z-index: 50; box-shadow: 0 10px 40px rgba(0,0,0,.5); max-width: 92vw; }
+  #toast.err { border-color: rgba(248,113,113,.5); }
+  #toast button { background: transparent; border: 0; color: var(--accent-2); font-weight: 600; cursor: pointer; font-size: 14px; }
+
+  dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 16px; padding: 0; width: min(440px, 92vw); }
+  dialog::backdrop { background: rgba(0,0,0,.6); }
+  .dh { font-size: 17px; font-weight: 700; padding: 18px 22px 4px; }
+  .db { padding: 6px 22px 4px; font-size: 14px; color: var(--muted); }
+  .db p { margin: 6px 0 10px; }
+  .db label { display: block; font-size: 13px; color: var(--text); margin: 10px 0 0; }
+  .db input { display: block; width: 100%; margin-top: 6px; height: 42px; background: #0a0c06; border: 1px solid var(--line); border-radius: 10px; color: var(--text); padding: 0 12px; font: 15px inherit; font-family: inherit; }
+  .db input:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(163,230,53,.15); }
+  .derr { color: var(--err); min-height: 18px; font-size: 13px; }
+  .df { display: flex; justify-content: flex-end; gap: 10px; padding: 8px 22px 18px; flex-wrap: wrap; }
+
+  .foot { color: var(--muted); font-size: 12.5px; padding: 12px 24px 40px; }
+  .foot kbd { background: #151a0b; border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; font-size: 11.5px; color: var(--text); }
+
+  @media (max-width: 820px) {
+    header, .wrap, .foot { padding-left: 14px; padding-right: 14px; }
+    .vt { display: inline-flex; }
+    .split { display: none; }
+    .gpane { width: 100%; }
+    body[data-view="gantt"] .gpane { display: none; }
+    body[data-view="grid"] .tpane { display: none; }
+    .sheet { height: calc(100dvh - 290px); }
+    #pname { min-width: 0; flex: 1 1 100%; }
+    .top .btn-ghost, .top .btn-main { padding: 7px 10px; font-size: 13px; }
+    .top { gap: 8px; }
+  }
+</style>
+</head>
+<body data-view="grid">
+
+<header>
+  <div>
+    <h1 class="title">🗓️ Project Timeline</h1>
+    <a href="../../hub.html#latest-builds" class="hub-breadcrumb">← Cuech4 Hub</a>
+  </div>
+  <button class="btn-ghost" id="newBtn">＋ New</button>
+</header>
+
+<div class="wrap">
+  <div class="top">
+    <input id="pname" placeholder="Project name" maxlength="80" aria-label="Project name" spellcheck="false">
+    <span class="chip" id="chip"></span>
+    <span class="spacer"></span>
+    <button class="btn-ghost" id="btnOpen"><i data-i="upload"></i> Open file</button>
+    <button class="btn-ghost" id="btnPw"><i data-i="lock"></i> <span id="pwLbl">Set password</span></button>
+    <button class="btn-main" id="btnSave"><i data-i="download"></i> Download .txt</button>
+  </div>
+
+  <div class="empty" id="empty" hidden>
+    <p><b>Start with an empty timeline.</b> Type a task name in the grid, give it a duration and a start date, then type a row number in <b>Pred.</b> (like <b>3</b> or <b>5SS+2</b>) and the dates follow automatically. Everything autosaves in this browser — download the encrypted <b>.txt</b> whenever you want a copy, and open it again later to keep going.</p>
+    <button class="btn-ghost" id="btnExample">Load an example</button>
+  </div>
+
+  <div class="vt seg" role="tablist">
+    <button class="tb on" data-view="grid">Table</button>
+    <button class="tb" data-view="gantt">Timeline</button>
+  </div>
+
+  <div class="bar" role="toolbar" aria-label="Timeline tools">
+    <button class="tb" data-act="addRow" title="Add row below"><i data-i="plus"></i> Row</button>
+    <button class="tb" data-act="addChild" title="Add sub-task below"><i data-i="plus"></i> Sub-task</button>
+    <span class="sep"></span>
+    <button class="tb" data-act="outdent" title="Outdent (Alt+←)"><i data-i="outdent"></i></button>
+    <button class="tb" data-act="indent" title="Indent (Alt+→)"><i data-i="indent"></i></button>
+    <button class="tb" data-act="up" title="Move up (Alt+↑)"><i data-i="up"></i></button>
+    <button class="tb" data-act="down" title="Move down (Alt+↓)"><i data-i="down"></i></button>
+    <button class="tb" data-act="del" title="Delete selected rows"><i data-i="trash"></i></button>
+    <span class="sep"></span>
+    <button class="tb" data-act="undo" id="bUndo" title="Undo (Ctrl+Z)"><i data-i="undo"></i></button>
+    <button class="tb" data-act="redo" id="bRedo" title="Redo (Ctrl+Y)"><i data-i="redo"></i></button>
+    <span class="sep"></span>
+    <button class="tb" data-act="collapseAll" title="Collapse all"><i data-i="collapse"></i></button>
+    <button class="tb" data-act="expandAll" title="Expand all"><i data-i="expand"></i></button>
+    <span class="sep"></span>
+    <div class="seg" id="zoomSeg">
+      <button class="tb" data-zoom="day">Day</button>
+      <button class="tb" data-zoom="week">Week</button>
+      <button class="tb" data-zoom="month">Month</button>
+    </div>
+    <button class="tb" data-act="today" title="Scroll to today"><i data-i="today"></i> Today</button>
+    <span class="sep"></span>
+    <select class="mini" id="cal" title="Which days count as working days" aria-label="Working days">
+      <option value="work">Mon–Fri</option>
+      <option value="all">Every day</option>
+    </select>
+  </div>
+
+  <div class="sheet" id="sheet">
+    <div class="gpane" id="gpane">
+      <table id="grid">
+        <colgroup><col style="width:46px"><col style="width:250px"><col style="width:72px"><col style="width:96px"><col style="width:96px"><col style="width:92px"><col style="width:104px"><col style="width:96px"></colgroup>
+        <thead><tr><th style="text-align:center">#</th><th>Task</th><th>Duration</th><th>Start</th><th>End</th><th title="Predecessors: row numbers, e.g. 3, 5SS+2, 7FF-1">Pred.</th><th>Status</th><th>Notes</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="split" id="split" title="Drag to resize"></div>
+    <div class="tpane" id="tpane"><div id="tl"></div></div>
+  </div>
+</div>
+
+<div class="foot">
+  Your work autosaves in this browser (unencrypted, on this device only). The downloaded <b>.txt</b> is encrypted with your password — keep the password safe, it can't be recovered.<br>
+  Shortcuts: <kbd>Enter</kbd> next row · <kbd>↑</kbd><kbd>↓</kbd> move between rows · <kbd>Alt</kbd>+arrows indent / move · <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo · <kbd>Ctrl</kbd>+<kbd>S</kbd> download · dates accept <kbd>3/12</kbd>, <kbd>03/12/26</kbd>, <kbd>2026-03-12</kbd> or <kbd>t</kbd> for today.
+</div>
+
+<div id="toast" hidden></div>
+<dialog id="dlg"><div class="dh" id="dT"></div><div class="db" id="dB"></div><div class="df" id="dF"></div></dialog>
+<input type="file" id="file" accept=".txt,text/plain" hidden>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const DAY = 864e5, ROW = 30, MAXL = 4, MINROWS = 18, KEY = 'tl_state_v1', SKEY = 'tl_settings';
+const COL_DEFAULTS = [46, 250, 72, 96, 96, 92, 104, 96], COL_MIN = [38, 130, 56, 72, 72, 64, 82, 80], COL_MAX = 640;
+const STATUSES = ['Not Started', 'In Progress', 'On Hold', 'Completed'];
+const SCLS = {'Not Started': 'b-ns', 'In Progress': 'b-ip', 'On Hold': 'b-hold', 'Completed': 'b-ok'};
+const RCLS = {'Not Started': 's-ns', 'In Progress': 's-ip', 'On Hold': 's-hold', 'Completed': 's-complete'};
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const ZOOM = {day: 26, week: 10, month: 3.2};
+const ICONS = {
+  undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
+  redo: '<path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/>',
+  indent: '<path d="M3 6h18M11 12h10M11 18h10M3 9l3 3-3 3"/>',
+  outdent: '<path d="M3 6h18M11 12h10M11 18h10M6 9l-3 3 3 3"/>',
+  up: '<path d="m18 15-6-6-6 6"/>', down: '<path d="m6 9 6 6 6-6"/>',
+  trash: '<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  download: '<path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/>',
+  upload: '<path d="M12 15V3m-5 5 5-5 5 5M4 21h16"/>',
+  today: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  expand: '<path d="m7 15 5 5 5-5M7 9l5-5 5 5"/>', collapse: '<path d="m7 20 5-5 5 5M7 4l5 5 5-5"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'
+};
+document.querySelectorAll('[data-i]').forEach(el => { el.outerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICONS[el.dataset.i] + '</svg>'; });
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let uidc = 0;
+const uid = () => Date.now().toString(36) + (uidc++).toString(36) + Math.random().toString(36).slice(2, 5);
+const p2 = n => String(n).padStart(2, '0');
+const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } };
+
+/* ---------- dates ---------- */
+const today = () => { const t = new Date(); return Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()) / DAY; };
+const dow = n => new Date(n * DAY).getUTCDay();
+const weekStart = n => n - dow(n);
+const fmt = n => { if (n == null) return ''; const d = new Date(n * DAY); return p2(d.getUTCMonth() + 1) + '/' + p2(d.getUTCDate()) + '/' + p2(d.getUTCFullYear() % 100); };
+const fmtShort = n => { const d = new Date(n * DAY); return MON[d.getUTCMonth()] + ' ' + d.getUTCDate(); };
+function parseDate(s) {
+  s = s.trim().toLowerCase();
+  if (!s) return {v: null};
+  if (s === 't' || s === 'today') return {v: today()};
+  let m, y, mo, d;
+  if ((m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))) { y = +m[1]; mo = +m[2]; d = +m[3]; }
+  else if ((m = s.match(/^(\d{1,2})[\/.\-](\d{1,2})(?:[\/.\-](\d{2}|\d{4}))?$/))) { mo = +m[1]; d = +m[2]; y = m[3] ? (m[3].length === 2 ? 2000 + +m[3] : +m[3]) : new Date().getFullYear(); }
+  else return {err: true};
+  const t = Date.UTC(y, mo - 1, d), D = new Date(t);
+  if (D.getUTCMonth() !== mo - 1 || D.getUTCDate() !== d) return {err: true};
+  return {v: t / DAY};
+}
+const isWork = n => S.cal === 'all' || (dow(n) !== 0 && dow(n) !== 6);
+function snap(n, dir) { dir = dir || 1; while (!isWork(n)) n += dir; return n; }
+function addWork(n, k) {
+  if (S.cal === 'all') return n + k;
+  const s = k < 0 ? -1 : 1; n = snap(n, s);
+  for (let c = Math.abs(k); c > 0; c--) { n += s; n = snap(n, s); }
+  return n;
+}
+function workBetween(a, b) {
+  if (S.cal === 'all') return b - a + 1;
+  let c = 0; for (let d = a; d <= b; d++) if (isWork(d)) c++;
+  return Math.max(c, 1);
+}
+
+/* ---------- state ---------- */
+let S, C = {}, sel = new Set(), anchor = null, undoS = [], redoS = [], sessionPw = null, dirty = false, saveT = null;
+let set = {zoom: 'day', gw: null};
+try { Object.assign(set, JSON.parse(lsGet(SKEY) || '{}')); } catch (e) {}
+if (!ZOOM[set.zoom]) set.zoom = 'day';
+let colWidths = Array.isArray(set.cw) && set.cw.length === COL_DEFAULTS.length
+  ? set.cw.map((width, i) => Number.isFinite(width) ? Math.max(COL_MIN[i], Math.min(COL_MAX, Math.round(width))) : COL_DEFAULTS[i])
+  : COL_DEFAULTS.slice();
+set.cw = colWidths.slice();
+
+const blank = () => ({id: uid(), level: 0, name: '', dur: null, start: null, preds: [], status: 'Not Started', notes: '', collapsed: false});
+const blankState = () => ({name: '', cal: 'work', tasks: [], exp: {date: '', n: 0}});
+function sanitize(arr) {
+  const seen = new Set(), out = [];
+  for (const o of (Array.isArray(arr) ? arr : []).slice(0, 5000)) {
+    if (!o || typeof o !== 'object') continue;
+    let id = typeof o.id === 'string' && o.id && !seen.has(o.id) ? o.id.slice(0, 40) : uid();
+    seen.add(id);
+    const int = v => Number.isFinite(v) ? Math.round(v) : null;
+    const savedStatus = o.status === 'Complete' ? 'Completed' : o.status === 'Blocked' ? 'On Hold' : o.status;
+    out.push({
+      id, level: Math.max(0, Math.min(MAXL, int(o.level) || 0)),
+      name: String(o.name || '').slice(0, 500), notes: String(o.notes || '').slice(0, 2000),
+      dur: o.dur == null ? null : Math.max(0, Math.min(3650, int(o.dur) || 0)),
+      start: o.start == null ? null : int(o.start),
+      status: STATUSES.includes(savedStatus) ? savedStatus : 'Not Started',
+      collapsed: !!o.collapsed,
+      preds: (Array.isArray(o.preds) ? o.preds : []).filter(p => p && typeof p.id === 'string').slice(0, 20)
+        .map(p => ({id: p.id, t: ['FS','SS','FF','SF'].includes(p.t) ? p.t : 'FS', lag: Math.max(-999, Math.min(999, int(p.lag) || 0))}))
+    });
+  }
+  return out;
+}
+function ensureRows() { while (S.tasks.length < MINROWS) S.tasks.push(blank()); }
+function normalize() {
+  const T = S.tasks;
+  T.forEach((t, i) => { t.level = i === 0 ? 0 : Math.max(0, Math.min(t.level, T[i - 1].level + 1, MAXL)); });
+  const ids = new Set(T.map(t => t.id));
+  T.forEach(t => { t.preds = t.preds.filter(p => ids.has(p.id) && p.id !== t.id); });
+}
+const idxOf = id => S.tasks.findIndex(t => t.id === id);
+const byId = id => S.tasks.find(t => t.id === id);
+const isParent = i => i + 1 < S.tasks.length && S.tasks[i + 1].level > S.tasks[i].level;
+const blockEnd = i => { const T = S.tasks; let j = i + 1; while (j < T.length && T[j].level > T[i].level) j++; return j; };
+function visibleRows() {
+  const out = []; let hide = null;
+  S.tasks.forEach((t, i) => {
+    if (hide !== null) { if (t.level > hide) return; hide = null; }
+    out.push(i);
+    if (t.collapsed && isParent(i)) hide = t.level;
+  });
+  return out;
+}
+const hasContent = () => S.tasks.some(t => t.name || t.start != null || t.dur != null);
+
+/* ---------- scheduling ---------- */
+function compute() {
+  const T = S.tasks, n = T.length, idx = new Map(T.map((t, i) => [t.id, i]));
+  C = {};
+  const st = new Array(n).fill(0);
+  const kids = i => { const r = []; let j = i + 1; while (j < n && T[j].level > T[i].level) { if (T[j].level === T[i].level + 1) r.push(j); j++; } return r; };
+  function ev(i) {
+    const t = T[i];
+    if (st[i] === 2) return C[t.id];
+    if (st[i] === 1) return null;
+    st[i] = 1;
+    let res;
+    if (isParent(i)) {
+      let mn = null, mx = null;
+      for (const k of kids(i)) { const c = ev(k); if (c && c.start != null) { mn = mn == null ? c.start : Math.min(mn, c.start); mx = mx == null ? c.end : Math.max(mx, c.end); } }
+      res = mn == null ? {start: null, end: null, dur: null, parent: true} : {start: mn, end: mx, dur: workBetween(mn, mx), parent: true};
+    } else {
+      let dur = t.dur, start = t.start, locked = false, err = null;
+      const pr = [];
+      for (const p of t.preds) {
+        const j = idx.get(p.id); if (j == null || j === i) continue;
+        const c = ev(j);
+        if (c === null) { err = 'Circular dependency'; continue; }
+        if (c.start == null) continue;
+        pr.push({p, c});
+      }
+      if (pr.length) {
+        locked = true; const d = dur == null ? 1 : dur; let best = null;
+        for (const {p, c} of pr) {
+          let s;
+          if (p.t === 'FS') s = addWork(c.end, 1 + p.lag);
+          else if (p.t === 'SS') s = addWork(c.start, p.lag);
+          else { const e = addWork(p.t === 'FF' ? c.end : c.start, p.lag); s = d > 0 ? addWork(e, -(d - 1)) : e; }
+          best = best == null ? s : Math.max(best, s);
+        }
+        start = best; dur = d;
+      }
+      let end = null;
+      if (start != null) { start = snap(start); if (dur == null) dur = 1; end = dur > 0 ? addWork(start, dur - 1) : start; }
+      res = {start, end, dur, locked, err};
+    }
+    st[i] = 2; C[t.id] = res; return res;
+  }
+  for (let i = 0; i < n; i++) ev(i);
+}
+function predStr(t) {
+  return t.preds.map(p => { const j = idxOf(p.id); if (j < 0) return null; return (j + 1) + (p.t !== 'FS' ? p.t : '') + (p.lag ? (p.lag > 0 ? '+' : '') + p.lag + 'd' : ''); }).filter(Boolean).join(', ');
+}
+function parsePreds(str, selfIdx) {
+  const out = [];
+  for (let raw of str.split(/[,;]/)) {
+    raw = raw.trim(); if (!raw) continue;
+    const m = raw.match(/^(\d+)\s*(FS|SS|FF|SF)?\s*(?:([+-])\s*(\d+)\s*d?)?$/i);
+    if (!m) return {error: 'Can’t read “' + raw + '”. Try 3, 5SS+2 or 7FF-1.'};
+    const j = +m[1] - 1;
+    if (j < 0 || j >= S.tasks.length) return {error: 'Row ' + m[1] + ' doesn’t exist.'};
+    if (j === selfIdx) return {error: 'A task can’t depend on itself.'};
+    out.push({id: S.tasks[j].id, t: (m[2] || 'FS').toUpperCase(), lag: m[3] ? (m[3] === '-' ? -1 : 1) * +m[4] : 0});
+  }
+  return {list: out};
+}
+const durStr = c => (c && c.dur != null) ? c.dur + 'd' : '';
+
+/* ---------- history / persistence ---------- */
+const snapshot = () => JSON.stringify({name: S.name, cal: S.cal, tasks: S.tasks});
+function pushUndo() { undoS.push(snapshot()); if (undoS.length > 150) undoS.shift(); redoS = []; }
+function restore(json) { const o = JSON.parse(json); S.name = o.name; S.cal = o.cal; S.tasks = o.tasks; }
+function afterChange(rebuild) {
+  normalize(); compute(); setDirty(true); queueSave();
+  rebuild ? render() : refresh();
+  uiState();
+}
+function mutate(fn, rebuild) { pushUndo(); fn(); afterChange(rebuild); }
+function undo() { if (!undoS.length) return; redoS.push(snapshot()); restore(undoS.pop()); afterChange(true); }
+function redo() { if (!redoS.length) return; undoS.push(snapshot()); restore(redoS.pop()); afterChange(true); }
+function revertLast() { if (!undoS.length) return; restore(undoS.pop()); normalize(); compute(); render(); uiState(); }
+function setDirty(v) { dirty = v; updateChip(); }
+function queueSave() { clearTimeout(saveT); saveT = setTimeout(saveNow, 250); }
+function saveNow() {
+  clearTimeout(saveT);
+  const ok = lsSet(KEY, JSON.stringify({v: 1, name: S.name, cal: S.cal, tasks: S.tasks, exp: S.exp, dirty}));
+  if (!ok && !saveNow.warned) { saveNow.warned = true; toast('Your browser blocked local saving — download a copy to keep your work.', null, null, true); }
+}
+function loadState() {
+  try {
+    const o = JSON.parse(lsGet(KEY) || 'null');
+    if (o && Array.isArray(o.tasks)) { dirty = !!o.dirty; return {name: String(o.name || '').slice(0, 80), cal: o.cal === 'all' ? 'all' : 'work', tasks: sanitize(o.tasks), exp: o.exp && typeof o.exp.n === 'number' ? {date: String(o.exp.date || ''), n: o.exp.n} : {date: '', n: 0}}; }
+  } catch (e) {}
+  return blankState();
+}
+window.addEventListener('pagehide', saveNow);
+document.addEventListener('visibilitychange', () => { if (document.hidden) saveNow(); });
+
+/* ---------- toast / modal ---------- */
+let toastT;
+function toast(msg, label, fn, isErr) {
+  const t = $('#toast'); t.className = isErr ? 'err' : '';
+  t.innerHTML = '<span>' + esc(msg) + '</span>' + (label ? '<button>' + esc(label) + '</button>' : '');
+  t.hidden = false;
+  if (label) t.querySelector('button').onclick = () => { t.hidden = true; fn(); };
+  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, label ? 7000 : 3800);
+}
+function modal(o) {
+  return new Promise(res => {
+    const dlg = $('#dlg');
+    $('#dT').textContent = o.title;
+    $('#dB').innerHTML = (o.text ? '<p>' + esc(o.text) + '</p>' : '') + (o.fields || []).map(f =>
+      '<label>' + esc(f.label) + '<input id="f_' + f.id + '" type="' + (f.type || 'text') + '" autocomplete="' + (f.ac || 'off') + '" value="' + esc(f.value || '') + '"></label>').join('') +
+      '<p class="derr" id="dE">' + esc(o.error || '') + '</p>';
+    $('#dF').innerHTML = o.buttons.map(b => '<button class="' + (b.primary ? 'btn-main' : 'btn-ghost') + '" data-v="' + b.value + '">' + esc(b.label) + '</button>').join('');
+    const vals = () => { const v = {}; (o.fields || []).forEach(f => v[f.id] = $('#f_' + f.id).value); return v; };
+    const finish = v => {
+      const b = o.buttons.find(x => x.value === v), vv = vals();
+      if (b && b.primary && o.validate) { const e = o.validate(vv); if (e) { $('#dE').textContent = e; return; } }
+      dlg.close(); res({value: v, vals: vv});
+    };
+    $('#dF').onclick = e => { const b = e.target.closest('button'); if (b) finish(b.dataset.v); };
+    dlg.onkeydown = e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); const pb = o.buttons.find(b => b.primary); if (pb) finish(pb.value); } };
+    dlg.oncancel = e => { e.preventDefault(); finish('cancel'); };
+    dlg.showModal();
+    const f = dlg.querySelector('input'); if (f) f.focus(); else dlg.querySelector('.btn-main') && dlg.querySelector('.btn-main').focus();
+  });
+}
+
+/* ---------- grid render ---------- */
+function rowHtml(i) {
+  const t = S.tasks[i], c = C[t.id] || {}, par = isParent(i);
+  const lockStart = par || c.locked;
+  return '<tr data-id="' + t.id + '" class="l' + t.level + (par ? ' p' : '') + (sel.has(t.id) ? ' sel' : '') + (RCLS[t.status] ? ' ' + RCLS[t.status] : '') + '">' +
+    '<td class="n drag-handle" title="Drag to reorder this task and its sub-tasks" aria-label="Drag row ' + (i + 1) + ' to reorder">' + (i + 1) + '</td>' +
+    '<td><div class="nm" style="padding-left:' + (6 + t.level * 16) + 'px">' +
+      (par ? '<button class="tg" data-tg aria-label="Collapse or expand" aria-expanded="' + !t.collapsed + '">' + (t.collapsed ? '+' : '−') + '</button>' : '<span class="tg sp"></span>') +
+      '<input data-col="name" value="' + esc(t.name) + '" spellcheck="false" aria-label="Task name"></div></td>' +
+    '<td><input data-col="dur" class="num' + (par ? ' lock' : '') + '"' + (par ? ' readonly' : '') + ' value="' + durStr(c) + '" aria-label="Duration"></td>' +
+    '<td><input data-col="start" class="num' + (lockStart ? ' lock' : '') + '"' + (lockStart ? ' readonly' : '') + ' value="' + fmt(c.start) + '" aria-label="Start date"></td>' +
+    '<td><input data-col="end" class="num' + (par ? ' lock' : '') + '"' + (par ? ' readonly' : '') + ' value="' + fmt(c.end) + '" aria-label="End date"></td>' +
+    '<td><input data-col="pred" class="num' + (par ? ' lock' : '') + (c.err ? ' bad' : '') + '"' + (par ? ' readonly' : '') + ' title="' + esc(c.err || '') + '" value="' + esc(predStr(t)) + '" aria-label="Predecessors"></td>' +
+    '<td><select data-col="status" aria-label="Status">' + STATUSES.map(s => '<option value="' + s + '"' + (s === t.status ? ' selected' : '') + '>' + s + '</option>').join('') + '</select></td>' +
+    '<td><input data-col="notes" value="' + esc(t.notes) + '" spellcheck="false" aria-label="Notes"></td></tr>';
+}
+function renderGrid() { $('#tbody').innerHTML = visibleRows().map(rowHtml).join(''); }
+function applyColumnWidths() {
+  const cols = document.querySelectorAll('#grid colgroup col');
+  colWidths.forEach((width, i) => { if (cols[i]) cols[i].style.width = width + 'px'; });
+  $('#grid').style.width = colWidths.reduce((sum, width) => sum + width, 0) + 'px';
+  document.querySelectorAll('.col-resizer').forEach((handle, i) => handle.setAttribute('aria-valuenow', colWidths[i]));
+}
+function saveColumnWidths() {
+  set.cw = colWidths.slice();
+  lsSet(SKEY, JSON.stringify(set));
+}
+function resizeColumn(index, width) {
+  colWidths[index] = Math.max(COL_MIN[index], Math.min(COL_MAX, Math.round(width)));
+  applyColumnWidths();
+}
+function initColumnResizers() {
+  const headers = document.querySelectorAll('#grid thead th');
+  headers.forEach((header, index) => {
+    const handle = document.createElement('span');
+    handle.className = 'col-resizer';
+    handle.tabIndex = 0;
+    handle.setAttribute('role', 'separator');
+    handle.setAttribute('aria-orientation', 'vertical');
+    handle.setAttribute('aria-label', `Resize ${header.textContent.trim()} column`);
+    handle.setAttribute('aria-valuemin', COL_MIN[index]);
+    handle.setAttribute('aria-valuemax', COL_MAX);
+    header.appendChild(handle);
+
+    handle.addEventListener('pointerdown', event => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      event.preventDefault();
+      const startX = event.clientX, startWidth = colWidths[index], pointerId = event.pointerId;
+      handle.classList.add('drag');
+      handle.setPointerCapture(pointerId);
+      const move = moveEvent => {
+        if (moveEvent.pointerId === pointerId) resizeColumn(index, startWidth + moveEvent.clientX - startX);
+      };
+      const finish = finishEvent => {
+        if (finishEvent.pointerId !== pointerId) return;
+        handle.classList.remove('drag');
+        handle.removeEventListener('pointermove', move);
+        handle.removeEventListener('pointerup', finish);
+        handle.removeEventListener('pointercancel', finish);
+        saveColumnWidths();
+      };
+      handle.addEventListener('pointermove', move);
+      handle.addEventListener('pointerup', finish);
+      handle.addEventListener('pointercancel', finish);
+    });
+
+    handle.addEventListener('keydown', event => {
+      const step = event.shiftKey ? 32 : 8;
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        event.preventDefault();
+        resizeColumn(index, colWidths[index] + (event.key === 'ArrowRight' ? step : -step));
+        saveColumnWidths();
+      }
+    });
+  });
+  applyColumnWidths();
+}
+initColumnResizers();
+function refreshCells() {
+  document.querySelectorAll('#tbody tr').forEach(tr => {
+    const t = byId(tr.dataset.id); if (!t) return;
+    const c = C[t.id] || {}, par = isParent(idxOf(t.id));
+    const set_ = (col, v) => { const el = tr.querySelector('[data-col="' + col + '"]'); if (el && el.value !== v) el.value = v; return el; };
+    set_('dur', durStr(c)); set_('end', fmt(c.end));
+    const s = set_('start', fmt(c.start)); const lock = par || c.locked;
+    s.readOnly = lock; s.classList.toggle('lock', lock);
+    const p = set_('pred', predStr(t)); p.classList.toggle('bad', !!c.err); p.title = c.err || '';
+    const st = tr.querySelector('[data-col="status"]'); st.value = t.status;
+    tr.classList.remove('s-ns', 's-ip', 's-hold', 's-complete'); if (RCLS[t.status]) tr.classList.add(RCLS[t.status]);
+  });
+}
+function paintSel() {
+  document.querySelectorAll('#tbody tr').forEach(tr => tr.classList.toggle('sel', sel.has(tr.dataset.id)));
+  document.querySelectorAll('.grow').forEach(r => r.classList.toggle('sel', sel.has(r.dataset.id)));
+  uiState();
+}
+
+/* ---------- gantt render ---------- */
+let G = {t0: 0, t1: 0, px: 26};
+function monthSegs(t0, t1) {
+  const out = []; const d0 = new Date(t0 * DAY); let y = d0.getUTCFullYear(), m = d0.getUTCMonth();
+  for (;;) {
+    const s = Math.max(t0, Date.UTC(y, m, 1) / DAY); if (s > t1) break;
+    const e = Math.min(Date.UTC(y, m + 1, 1) / DAY, t1 + 1);
+    out.push({from: s, to: e, y, m}); m++; if (m > 11) { m = 0; y++; }
+  }
+  return out;
+}
+function renderGantt() {
+  const T = S.tasks, vis = visibleRows(), px = ZOOM[set.zoom], td = today();
+  let mn = null, mx = null;
+  for (const t of T) { const c = C[t.id]; if (c && c.start != null) { mn = mn == null ? c.start : Math.min(mn, c.start); mx = mx == null ? c.end : Math.max(mx, c.end); } }
+  if (mn == null) { mn = td; mx = td + 90; }
+  let t0 = weekStart(mn - 7), t1 = mx + 45;
+  if (td >= mn - 365 && td <= mx + 365) { t0 = Math.min(t0, weekStart(td - 14)); t1 = Math.max(t1, td + 60); }
+  t1 = Math.max(t1, t0 + (set.zoom === 'month' ? 720 : set.zoom === 'week' ? 300 : 120));
+  t1 = weekStart(t1) + 6;
+  G = {t0, t1, px};
+  const W = Math.ceil((t1 - t0 + 1) * px), H = vis.length * ROW + 60;
+  let h = '<div class="gh" style="width:' + W + 'px">';
+  const X = d => (d - t0) * px;
+  if (set.zoom === 'day') {
+    for (let d = t0; d <= t1; d += 7) h += '<div class="seg1" style="left:' + X(d) + 'px;width:' + 7 * px + 'px">' + fmtShort(d) + '</div>';
+    for (let d = t0; d <= t1; d++) { const w = dow(d); h += '<div class="seg2' + (w === 0 || w === 6 ? ' we' : '') + '" style="left:' + X(d) + 'px;width:' + px + 'px" title="' + fmt(d) + '">' + 'SMTWTFS'[w] + '</div>'; }
+  } else if (set.zoom === 'week') {
+    for (const s of monthSegs(t0, t1)) h += '<div class="seg1" style="left:' + X(s.from) + 'px;width:' + (s.to - s.from) * px + 'px">' + MON[s.m] + ' ' + s.y + '</div>';
+    for (let d = t0; d <= t1; d += 7) h += '<div class="seg2 left" style="left:' + X(d) + 'px;width:' + 7 * px + 'px" title="Week of ' + fmt(d) + '">' + new Date(d * DAY).getUTCDate() + '</div>';
+  } else {
+    const ms = monthSegs(t0, t1);
+    for (let y = ms[0].y; y <= ms[ms.length - 1].y; y++) { const a = ms.filter(s => s.y === y); h += '<div class="seg1" style="left:' + X(a[0].from) + 'px;width:' + (a[a.length - 1].to - a[0].from) * px + 'px">' + y + '</div>'; }
+    for (const s of ms) h += '<div class="seg2 left" style="left:' + X(s.from) + 'px;width:' + (s.to - s.from) * px + 'px">' + MON[s.m] + '</div>';
+  }
+  h += '</div>';
+  const wk = 'rgba(255,255,255,.028)';
+  let bg = '';
+  if (set.zoom !== 'month') {
+    const imgs = [], sizes = [];
+    if (S.cal === 'work' && px >= 5) { imgs.push('linear-gradient(to right,' + wk + ' 0,' + wk + ' ' + px + 'px,transparent ' + px + 'px,transparent ' + 6 * px + 'px,' + wk + ' ' + 6 * px + 'px,' + wk + ' ' + 7 * px + 'px)'); sizes.push(7 * px + 'px 100%'); }
+    imgs.push('linear-gradient(to right,#1d2210 1px,transparent 1px)'); sizes.push(7 * px + 'px 100%');
+    bg = 'background-image:' + imgs.join(',') + ';background-size:' + sizes.join(',') + ';';
+  }
+  h += '<div class="gb" id="gb" style="width:' + W + 'px;height:' + H + 'px;' + bg + '">';
+  const pos = {}; let bars = '', labels = '';
+  vis.forEach((i, v) => {
+    const t = T[i], c = C[t.id] || {}, par = isParent(i), top = v * ROW;
+    h += '<div class="grow' + (par && t.level < 2 ? ' p' + t.level : '') + (sel.has(t.id) ? ' sel' : '') + '" data-id="' + t.id + '" style="top:' + top + 'px"></div>';
+    if (c.start == null) return;
+    const x = X(c.start), w = Math.max((c.end - c.start + 1) * px - 2, 4), tip = esc((t.name || 'Untitled') + ' — ' + fmt(c.start) + (c.end !== c.start ? ' → ' + fmt(c.end) : '') + ' (' + c.dur + 'd)' + (t.status ? ' · ' + t.status : ''));
+    if (par) { bars += '<div class="bar2 sum" data-id="' + t.id + '" title="' + tip + '" style="left:' + x + 'px;top:' + (top + 8) + 'px;width:' + w + 'px"></div>'; pos[t.id] = {l: x, r: x + w, y: top + 12}; }
+    else if (c.dur === 0) { const cx = x + px / 2; bars += '<div class="ms ' + SCLS[t.status] + '" data-id="' + t.id + '" title="' + tip + '" style="left:' + (cx - 7) + 'px;top:' + (top + 8) + 'px"></div>'; pos[t.id] = {l: cx - 9, r: cx + 9, y: top + 15}; }
+    else { bars += '<div class="bar2 ' + SCLS[t.status] + '" data-id="' + t.id + '" title="' + tip + '" style="left:' + x + 'px;top:' + (top + 7) + 'px;width:' + w + 'px"></div>'; pos[t.id] = {l: x, r: x + w, y: top + 15}; }
+    if (px >= 8 && t.name) labels += '<span class="bl" style="left:' + (pos[t.id].r + 8) + 'px;top:' + (top + (par ? 5 : 7)) + 'px">' + esc(t.name) + '</span>';
+  });
+  if (td >= t0 && td <= t1) h += '<div class="today" style="left:' + (X(td) + px / 2 - 1) + 'px" title="Today"></div>';
+  // dependency arrows
+  let paths = '';
+  for (const i of vis) {
+    const t = T[i], b = pos[t.id]; if (!b) continue;
+    for (const p of t.preds) {
+      const a = pos[p.id]; if (!a) continue;
+      const fx = (p.t === 'FS' || p.t === 'FF') ? a.r : a.l, tgtEnd = (p.t === 'FF' || p.t === 'SF'), tx = tgtEnd ? b.r : b.l, y1 = a.y, y2 = b.y;
+      const ym = y2 > y1 ? y1 + ROW / 2 : y1 - ROW / 2; let d;
+      if (p.t === 'FS' && fx + 8 <= tx - 6) d = 'M' + fx + ' ' + y1 + 'H' + (fx + 8) + 'V' + y2 + 'H' + tx;
+      else if (p.t === 'SS') { const xm = Math.min(fx, tx) - 8; d = 'M' + fx + ' ' + y1 + 'H' + xm + 'V' + y2 + 'H' + tx; }
+      else if (p.t === 'FF') { const xm = Math.max(fx, tx) + 8; d = 'M' + fx + ' ' + y1 + 'H' + xm + 'V' + y2 + 'H' + tx; }
+      else { const ds = (p.t === 'FS') ? 1 : -1, dt = tgtEnd ? 1 : -1; d = 'M' + fx + ' ' + y1 + 'H' + (fx + ds * 8) + 'V' + ym + 'H' + (tx + dt * 8) + 'V' + y2 + 'H' + tx; }
+      paths += '<path d="' + d + '" marker-end="url(#ar)"/>';
+    }
+  }
+  h += '<svg class="deps"><defs><marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z"/></marker></defs>' + paths + '</svg>';
+  h += bars + labels + '</div>';
+  $('#tl').innerHTML = h;
+  $('#grid').style.marginBottom = '60px';
+}
+function render(focus) {
+  renderGrid(); renderGantt(); $('#pname').value = S.name; $('#cal').value = S.cal; paintSel(); uiState();
+  if (focus) focusCell(focus.id, focus.col);
+}
+function refresh() { refreshCells(); renderGantt(); }
+function focusCell(id, col) {
+  const el = document.querySelector('#tbody tr[data-id="' + id + '"] [data-col="' + (col || 'name') + '"]');
+  if (el) { el.focus(); if (el.select && el.tagName === 'INPUT') el.select(); }
+  return el;
+}
+function scrollGanttToDate(d, frac) {
+  const tp = $('#tpane'); tp.scrollLeft = Math.max(0, (d - G.t0) * G.px - tp.clientWidth * (frac == null ? .3 : frac));
+}
+function uiState() {
+  $('#empty').hidden = hasContent();
+  $('#bUndo').disabled = !undoS.length; $('#bRedo').disabled = !redoS.length;
+  document.querySelectorAll('[data-zoom]').forEach(b => b.classList.toggle('on', b.dataset.zoom === set.zoom));
+  $('#pwLbl').textContent = sessionPw ? 'Change password' : 'Set password';
+  updateChip();
+}
+function updateChip() {
+  const c = $('#chip');
+  if (dirty && hasContent()) { c.className = 'chip dirty'; c.textContent = '● Changes not downloaded yet'; }
+  else if (hasContent()) { c.className = 'chip clean'; c.textContent = '✓ Matches your last download'; }
+  else { c.className = 'chip'; c.textContent = 'Empty · autosaves in this browser'; }
+}
+
+/* ---------- row actions ---------- */
+function selIdx() {
+  let a = S.tasks.map((t, i) => sel.has(t.id) ? i : -1).filter(i => i >= 0);
+  if (!a.length) { const f = document.activeElement && document.activeElement.closest && document.activeElement.closest('tr[data-id]'); if (f) a = [idxOf(f.dataset.id)]; }
+  return a;
+}
+function keepFocus() { const ae = document.activeElement; const tr = ae && ae.closest && ae.closest('tr[data-id]'); return tr && ae.dataset.col ? {id: tr.dataset.id, col: ae.dataset.col} : null; }
+function selectOnly(ids) { sel = new Set(ids); }
+const actions = {
+  addRow() {
+    const a = selIdx(), T = S.tasks; let at = T.length, lvl = 0;
+    if (a.length) { const i = a[a.length - 1]; at = blockEnd(i); lvl = T[i].level; }
+    const nt = blank(); nt.level = lvl;
+    mutate(() => { S.tasks.splice(at, 0, nt); selectOnly([nt.id]); }, true); focusCell(nt.id, 'name');
+  },
+  addChild() {
+    const a = selIdx(); if (!a.length) return actions.addRow();
+    const i = a[a.length - 1], p = S.tasks[i]; if (p.level >= MAXL) return toast('That’s as deep as sub-tasks go.', null, null, true);
+    const nt = blank(); nt.level = p.level + 1;
+    mutate(() => { p.collapsed = false; S.tasks.splice(blockEnd(i) , 0, nt); selectOnly([nt.id]); }, true); focusCell(nt.id, 'name');
+  },
+  indent() {
+    const f = keepFocus(), a = selIdx(); let done = -1, any = false;
+    mutate(() => { for (const i of a) { if (i < done) continue; const T = S.tasks; if (i > 0 && T[i].level <= T[i - 1].level && T[i].level < MAXL) { const e = blockEnd(i); if (Math.max(...T.slice(i, e).map(t => t.level)) < MAXL) { for (let k = i; k < e; k++) T[k].level++; any = true; } } done = blockEnd(i); } }, true);
+    if (f) focusCell(f.id, f.col);
+  },
+  outdent() {
+    const f = keepFocus(), a = selIdx(); let done = -1;
+    mutate(() => { for (const i of a) { if (i < done) continue; const T = S.tasks; if (T[i].level > 0) { const e = blockEnd(i); for (let k = i; k < e; k++) T[k].level--; } done = blockEnd(i); } }, true);
+    if (f) focusCell(f.id, f.col);
+  },
+  up() { moveBlock(-1); },
+  down() { moveBlock(1); },
+  del() {
+    const a = selIdx(); if (!a.length) return toast('Click a row number (or a cell) first.', null, null, true);
+    const drop = new Set(); a.forEach(i => { for (let k = i; k < blockEnd(i); k++) drop.add(S.tasks[k].id); });
+    const before = snapshot();
+    mutate(() => { S.tasks = S.tasks.filter(t => !drop.has(t.id)); S.tasks.forEach(t => { t.preds = t.preds.filter(p => !drop.has(p.id)); }); ensureRows(); sel = new Set(); }, true);
+    toast(drop.size + (drop.size === 1 ? ' row' : ' rows') + ' deleted', 'Undo', () => undo());
+  },
+  undo, redo,
+  collapseAll() { S.tasks.forEach((t, i) => { if (isParent(i)) t.collapsed = true; }); queueSave(); render(); },
+  expandAll() { S.tasks.forEach(t => { t.collapsed = false; }); queueSave(); render(); },
+  today() { scrollGanttToDate(today(), .4); if (document.body.dataset.view === 'grid' && innerWidth <= 820) setView('gantt'); }
+};
+function moveBlock(dir) {
+  const a = selIdx(); if (!a.length) return; const f = keepFocus(), T = S.tasks, i = a[0], e = blockEnd(i), L = T[i].level;
+  let s2, e2;
+  if (dir < 0) { let k = i - 1; while (k >= 0 && T[k].level > L) k--; if (k < 0 || T[k].level < L) return; s2 = k; e2 = i; }
+  else { if (e >= T.length || T[e].level !== L) return; s2 = e; e2 = blockEnd(e); }
+  mutate(() => { if (dir < 0) { const blk = T.splice(i, e - i); T.splice(s2, 0, ...blk); } else { const nxt = T.splice(e, e2 - e); T.splice(i, 0, ...nxt); } }, true);
+  if (f) focusCell(f.id, f.col);
+}
+
+function reorderTaskBlock(sourceId, targetId, before) {
+  const start = idxOf(sourceId), target = idxOf(targetId);
+  if (start < 0 || target < 0) return;
+  const end = blockEnd(start);
+  if (target >= start && target < end) return;
+  const moving = S.tasks.slice(start, end);
+  const remaining = S.tasks.slice();
+  remaining.splice(start, end - start);
+  const targetIndex = remaining.findIndex(task => task.id === targetId);
+  if (targetIndex < 0) return;
+  let targetEnd = targetIndex + 1;
+  while (targetEnd < remaining.length && remaining[targetEnd].level > remaining[targetIndex].level) targetEnd++;
+  const insertAt = before ? targetIndex : targetEnd;
+  if (insertAt === start) return;
+
+  const maxDepth = Math.max(...moving.map(task => task.level - moving[0].level));
+  const newLevel = Math.min(remaining[targetIndex].level, MAXL - maxDepth);
+  const levelChange = newLevel - moving[0].level;
+  mutate(() => {
+    moving.forEach(task => { task.level += levelChange; });
+    remaining.splice(insertAt, 0, ...moving);
+    S.tasks = remaining;
+    selectOnly(moving.map(task => task.id));
+  }, true);
+}
+
+/* ---------- grid events ---------- */
+const tb = $('#tbody');
+let pointerDrag = null;
+function clearDropTargets() {
+  tb.querySelectorAll('.dragging, .drop-before, .drop-after').forEach(row => row.classList.remove('dragging', 'drop-before', 'drop-after'));
+}
+function updateDragTarget(e) {
+  const row = document.elementFromPoint(e.clientX, e.clientY)?.closest('#tbody tr[data-id]');
+  const from = pointerDrag && idxOf(pointerDrag.id), target = row && idxOf(row.dataset.id);
+  if (!row || (target >= from && target < blockEnd(from))) {
+    tb.querySelectorAll('.drop-before, .drop-after').forEach(item => item.classList.remove('drop-before', 'drop-after'));
+    if (pointerDrag) pointerDrag.targetId = null;
+    return;
+  }
+  tb.querySelectorAll('.drop-before, .drop-after').forEach(item => item.classList.remove('drop-before', 'drop-after'));
+  pointerDrag.targetId = row.dataset.id;
+  pointerDrag.before = e.clientY < row.getBoundingClientRect().top + row.getBoundingClientRect().height / 2;
+  row.classList.add(pointerDrag.before ? 'drop-before' : 'drop-after');
+}
+tb.addEventListener('pointerdown', e => {
+  const handle = e.target.closest('td.drag-handle');
+  const row = handle && handle.closest('tr[data-id]');
+  if (!row || (e.pointerType === 'mouse' && e.button !== 0)) return;
+  pointerDrag = {id: row.dataset.id, pointerId: e.pointerId, x: e.clientX, y: e.clientY, active: false, targetId: null, before: true};
+});
+tb.addEventListener('pointermove', e => {
+  if (!pointerDrag || e.pointerId !== pointerDrag.pointerId) return;
+  if (!pointerDrag.active && Math.hypot(e.clientX - pointerDrag.x, e.clientY - pointerDrag.y) < 5) return;
+  if (!pointerDrag.active) {
+    pointerDrag.active = true;
+    tb.querySelector(`tr[data-id="${pointerDrag.id}"]`)?.classList.add('dragging');
+  }
+  e.preventDefault();
+  updateDragTarget(e);
+});
+function finishPointerDrag(e) {
+  if (!pointerDrag || e.pointerId !== pointerDrag.pointerId) return;
+  const drag = pointerDrag;
+  if (drag.active && drag.targetId) {
+    e.preventDefault();
+    reorderTaskBlock(drag.id, drag.targetId, drag.before);
+  }
+  pointerDrag = null;
+  clearDropTargets();
+}
+tb.addEventListener('pointerup', finishPointerDrag);
+tb.addEventListener('pointercancel', e => {
+  if (pointerDrag && e.pointerId === pointerDrag.pointerId) {
+    pointerDrag = null;
+    clearDropTargets();
+  }
+});
+tb.addEventListener('focusin', e => {
+  const el = e.target; if (!el.dataset || !el.dataset.col) return;
+  el.dataset.orig = el.value;
+  const tr = el.closest('tr'); if (!sel.has(tr.dataset.id) || sel.size > 1) { selectOnly([tr.dataset.id]); anchor = tr.dataset.id; paintSel(); }
+});
+tb.addEventListener('change', e => {
+  const el = e.target, col = el.dataset && el.dataset.col; if (!col) return;
+  const tr = el.closest('tr'), t = byId(tr.dataset.id), i = idxOf(t.id), c = C[t.id] || {};
+  const bad = m => { toast(m, null, null, true); el.value = el.dataset.orig || ''; refreshCells(); };
+  const v = el.value;
+  if (col === 'name') mutate(() => { t.name = v.trimEnd(); });
+  else if (col === 'notes') mutate(() => { t.notes = v.trimEnd(); });
+  else if (col === 'status') mutate(() => { t.status = v; });
+  else if (col === 'dur') {
+    const s = v.trim(); if (!s) return mutate(() => { t.dur = null; });
+    const m = s.match(/^(\d+)\s*([dw])?$/i); if (!m) return bad('Duration should be whole days, like 3 or 2w.');
+    const n = Math.min(3650, +m[1] * (m[2] && m[2].toLowerCase() === 'w' ? (S.cal === 'all' ? 7 : 5) : 1));
+    mutate(() => { t.dur = n; });
+  } else if (col === 'start') {
+    const r = parseDate(v); if (r.err) return bad('Couldn’t read that date. Try 3/12/26 or 2026-03-12.');
+    mutate(() => { t.start = r.v; if (r.v != null && t.dur == null) t.dur = 1; });
+  } else if (col === 'end') {
+    const r = parseDate(v); if (r.err) return bad('Couldn’t read that date. Try 3/12/26 or 2026-03-12.');
+    if (r.v == null) return bad('An end date can’t be empty — clear the duration instead.');
+    if (c.start != null && r.v < c.start) return bad('The end date can’t be before the start date.');
+    mutate(() => { if (c.start == null) { t.start = r.v; t.dur = t.dur == null ? 1 : t.dur; } else t.dur = workBetween(c.start, r.v); });
+  } else if (col === 'pred') {
+    const r = parsePreds(v, i); if (r.error) return bad(r.error);
+    const prev = c.start;
+    mutate(() => { t.preds = r.list; if (r.list.length) { if (t.dur == null) t.dur = 1; } else if (prev != null) t.start = prev; });
+    if (Object.values(C).some(x => x.err)) { revertLast(); toast('That would create a circular dependency, so it was undone.', null, null, true); }
+  }
+});
+tb.addEventListener('click', e => {
+  const tr = e.target.closest('tr'); if (!tr) return;
+  const id = tr.dataset.id;
+  if (e.target.closest('[data-tg]')) { const t = byId(id); t.collapsed = !t.collapsed; queueSave(); render({id, col: 'name'}); return; }
+  if (e.target.closest('td.n')) {
+    if (e.shiftKey && anchor) { const a = idxOf(anchor), b = idxOf(id), vis = visibleRows().filter(i => i >= Math.min(a, b) && i <= Math.max(a, b)); selectOnly(vis.map(i => S.tasks[i].id)); }
+    else if (e.metaKey || e.ctrlKey) { sel.has(id) ? sel.delete(id) : sel.add(id); anchor = id; }
+    else { selectOnly([id]); anchor = id; }
+    paintSel();
+  }
+});
+tb.addEventListener('keydown', e => {
+  const el = e.target, col = el.dataset && el.dataset.col; if (!col) return;
+  const tr = el.closest('tr'), id = tr.dataset.id;
+  if (e.altKey && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    e.preventDefault(); el.blur(); // commits any pending edit first
+    selectOnly([id]); actions[{ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'outdent', ArrowRight: 'indent'}[e.key]](); focusCell(id, col); return;
+  }
+  const move = d => {
+    const vis = visibleRows(), p = vis.indexOf(idxOf(id)) + d;
+    if (p >= vis.length) { const nt = blank(); mutate(() => { for (let k = 0; k < 5; k++) S.tasks.push(k ? blank() : nt); }, true); focusCell(nt.id, col); return; }
+    if (p < 0) return;
+    focusCell(S.tasks[vis[p]].id, col);
+  };
+  if (e.key === 'Enter' && el.tagName === 'INPUT') { e.preventDefault(); move(1); }
+  else if (e.key === 'Escape') { el.value = el.dataset.orig || ''; el.blur(); }
+  else if (e.key === 'ArrowDown' && el.tagName === 'INPUT') { e.preventDefault(); move(1); }
+  else if (e.key === 'ArrowUp' && el.tagName === 'INPUT') { e.preventDefault(); move(-1); }
+});
+document.addEventListener('keydown', e => {
+  const k = e.key.toLowerCase(), mod = e.ctrlKey || e.metaKey;
+  if (mod && k === 's') { e.preventDefault(); doSave(); return; }
+  if (mod && (k === 'z' || k === 'y')) {
+    const el = document.activeElement;
+    if (el && el.tagName === 'INPUT' && el.dataset.orig !== undefined && el.value !== el.dataset.orig) return; // native text undo
+    if (el && (el.id === 'pname') && el.value !== S.name) return;
+    e.preventDefault(); (k === 'y' || e.shiftKey) ? redo() : undo();
+  }
+});
+
+/* gantt events */
+$('#tl').addEventListener('click', e => {
+  const r = e.target.closest('[data-id]'); if (!r) return;
+  selectOnly([r.dataset.id]); anchor = r.dataset.id; paintSel();
+  if (innerWidth > 820) focusCell(r.dataset.id, 'name');
+});
+$('#tl').addEventListener('dblclick', e => { const r = e.target.closest('[data-id]'); if (r && innerWidth <= 820) { setView('grid'); focusCell(r.dataset.id, 'name'); } });
+
+/* toolbar */
+document.querySelector('.bar').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.act) actions[b.dataset.act]();
+  if (b.dataset.zoom) {
+    const tp = $('#tpane'), center = G.t0 + (tp.scrollLeft + tp.clientWidth / 2) / G.px;
+    set.zoom = b.dataset.zoom; lsSet(SKEY, JSON.stringify(set)); renderGantt(); paintSel(); scrollGanttToDate(center, .5); uiState();
+  }
+});
+$('#cal').addEventListener('change', e => mutate(() => { S.cal = e.target.value; }, true));
+$('#pname').addEventListener('change', e => { const v = e.target.value.trim().slice(0, 80); if (v !== S.name) mutate(() => { S.name = v; }); });
+$('#pname').addEventListener('keydown', e => { if (e.key === 'Enter') e.target.blur(); });
+function setView(v) { document.body.dataset.view = v; document.querySelectorAll('.vt .tb').forEach(b => b.classList.toggle('on', b.dataset.view === v)); }
+document.querySelector('.vt').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setView(b.dataset.view); });
+
+/* scroll sync + splitter */
+(() => {
+  const g = $('#gpane'), t = $('#tpane'); let lock = false;
+  const sync = (a, b) => () => { if (lock) return; lock = true; b.scrollTop = a.scrollTop; requestAnimationFrame(() => { lock = false; }); };
+  g.addEventListener('scroll', sync(g, t)); t.addEventListener('scroll', sync(t, g));
+  const sp = $('#split'), sheet = $('#sheet');
+  if (set.gw) sheet.style.setProperty('--gw', set.gw + 'px');
+  sp.addEventListener('pointerdown', e => {
+    sp.setPointerCapture(e.pointerId); sp.classList.add('drag');
+    const mv = ev => { const r = sheet.getBoundingClientRect(); const w = Math.max(260, Math.min(r.width - 220, ev.clientX - r.left)); sheet.style.setProperty('--gw', w + 'px'); set.gw = Math.round(w); };
+    const up = () => { sp.classList.remove('drag'); sp.removeEventListener('pointermove', mv); sp.removeEventListener('pointerup', up); lsSet(SKEY, JSON.stringify(set)); };
+    sp.addEventListener('pointermove', mv); sp.addEventListener('pointerup', up);
+  });
+})();
+
+/* ---------- encryption / files ---------- */
+const b64 = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const ITER = 250000;
+const MAX_FILE_BYTES = 20 * 1024 * 1024;
+async function deriveKey(pw, salt, iter) {
+  const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256'}, km, {name: 'AES-GCM', length: 256}, false, ['encrypt', 'decrypt']);
+}
+async function encrypt(obj, pw) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(pw, salt, ITER);
+  const ct = new Uint8Array(await crypto.subtle.encrypt({name: 'AES-GCM', iv}, key, new TextEncoder().encode(JSON.stringify(obj))));
+  return JSON.stringify({app: 'cuech4-timeline', format: 1, enc: 'AES-GCM-256', kdf: 'PBKDF2-SHA256', iter: ITER, salt: b64(salt), iv: b64(iv), data: b64(ct)});
+}
+async function decrypt(file, pw) {
+  const key = await deriveKey(pw, unb64(file.salt), file.iter);
+  const pt = await crypto.subtle.decrypt({name: 'AES-GCM', iv: unb64(file.iv)}, key, unb64(file.data));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+const localDate = () => { const d = new Date(); return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); };
+const safeName = s => (s || 'Untitled project').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '').replace(/\s+/g, ' ').trim().replace(/ /g, '_').slice(0, 60) || 'Untitled_project';
+function needCrypto() { if (window.crypto && crypto.subtle) return true; toast('Encryption needs a secure page (https or a local file). Open this page from your site or as a file.', null, null, true); return false; }
+async function askPassword(confirm, error) {
+  const r = await modal({
+    title: confirm ? 'Protect your download' : 'Enter your password',
+    text: confirm ? 'Your file is encrypted with this password. There’s no reset — if you lose it, the file can’t be opened.' : 'This file is encrypted. Enter the password you used when you downloaded it.',
+    fields: confirm ? [{id: 'p1', label: 'Password', type: 'password', ac: 'new-password'}, {id: 'p2', label: 'Confirm password', type: 'password', ac: 'new-password'}] : [{id: 'p1', label: 'Password', type: 'password', ac: 'current-password'}],
+    error, validate: v => confirm ? (v.p1.length < 6 ? 'Use at least 6 characters.' : v.p1 !== v.p2 ? 'The passwords don’t match.' : '') : (v.p1 ? '' : 'Enter the password.'),
+    buttons: [{label: 'Cancel', value: 'cancel'}, {label: confirm ? 'Encrypt & continue' : 'Open', value: 'ok', primary: true}]
+  });
+  return r.value === 'ok' ? r.vals.p1 : null;
+}
+async function doSave() {
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  if (!needCrypto()) return;
+  if (!sessionPw) { const pw = await askPassword(true); if (!pw) return; sessionPw = pw; }
+  const date = localDate(), n = S.exp.date === date ? S.exp.n + 1 : 1;
+  const payload = {app: 'cuech4-timeline', v: 1, name: S.name, cal: S.cal, tasks: S.tasks, exportedAt: new Date().toISOString(), date, version: n};
+  let text; try { text = await encrypt(payload, sessionPw); } catch (e) { return toast('Couldn’t encrypt the file in this browser.', null, null, true); }
+  const fname = safeName(S.name) + '_' + date + (n > 1 ? '_v' + n : '') + '.txt';
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type: 'text/plain'})); a.download = fname;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  S.exp = {date, n}; setDirty(false); saveNow(); uiState();
+  toast('Downloaded ' + fname);
+}
+async function openFile(file) {
+  if (!file) return; if (!needCrypto()) return;
+  if (file.size > MAX_FILE_BYTES) return toast('That timeline file is too large to open.', null, null, true);
+  let obj; try { obj = JSON.parse(await file.text()); } catch (e) {}
+  if (!obj || obj.app !== 'cuech4-timeline' || obj.format !== 1 || obj.enc !== 'AES-GCM-256' || obj.kdf !== 'PBKDF2-SHA256' || obj.iter !== ITER || !obj.data || !obj.salt || !obj.iv) return toast('That doesn’t look like a supported Project Timeline file.', null, null, true);
+  try {
+    if (unb64(obj.salt).length !== 16 || unb64(obj.iv).length !== 12 || unb64(obj.data).length < 16) throw new Error();
+  } catch (e) { return toast('That timeline file is damaged or incomplete.', null, null, true); }
+  let err = '', data = null, pw = null;
+  while (!data) {
+    pw = await askPassword(false, err); if (!pw) return;
+    try { data = await decrypt(obj, pw); } catch (e) { err = 'Wrong password, or the file was changed.'; }
+  }
+  if (!data || !Array.isArray(data.tasks)) return toast('The file opened but has no timeline in it.', null, null, true);
+  if (dirty && hasContent()) { const r = await modal({title: 'Replace the current timeline?', text: 'You have changes that haven’t been downloaded. Opening this file replaces them.', buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Replace', value: 'ok', primary: true}]}); if (r.value !== 'ok') return; }
+  S = {name: String(data.name || '').slice(0, 80), cal: data.cal === 'all' ? 'all' : 'work', tasks: sanitize(data.tasks), exp: {date: String(data.date || ''), n: Number.isFinite(data.version) ? data.version : 0}};
+  sessionPw = pw; undoS = []; redoS = []; sel = new Set();
+  ensureRows(); normalize(); compute(); setDirty(false); saveNow(); render(); afterLoadScroll();
+  toast('Opened ' + (S.name || 'timeline') + (data.date ? ' (saved ' + data.date + ')' : ''));
+}
+$('#btnSave').onclick = doSave;
+$('#btnOpen').onclick = () => $('#file').click();
+$('#file').onchange = e => { const f = e.target.files[0]; e.target.value = ''; openFile(f); };
+$('#btnPw').onclick = async () => { if (!needCrypto()) return; const pw = await askPassword(true); if (pw) { sessionPw = pw; uiState(); toast('Password set. Your next download will use it.'); } };
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => { e.preventDefault(); const f = e.dataTransfer && e.dataTransfer.files[0]; if (f) openFile(f); });
+
+/* ---------- new / example ---------- */
+$('#newBtn').onclick = async () => {
+  if (hasContent()) {
+    const btns = dirty ? [{label: 'Cancel', value: 'cancel'}, {label: 'Discard & start new', value: 'discard'}, {label: 'Download first', value: 'save', primary: true}] : [{label: 'Cancel', value: 'cancel'}, {label: 'Start new', value: 'discard', primary: true}];
+    const r = await modal({title: 'Start a new timeline?', text: dirty ? 'You have changes that haven’t been downloaded yet.' : 'Your last download has everything in this timeline.', buttons: btns});
+    if (r.value === 'cancel') return;
+    if (r.value === 'save') { await doSave(); if (dirty) return; }
+  }
+  S = blankState(); undoS = []; redoS = []; sel = new Set(); sessionPw = null;
+  ensureRows(); compute(); setDirty(false); saveNow(); render(); afterLoadScroll();
+};
+function loadExample() {
+  const rows = [
+    [0, 'Project: Website Launch', '', '', ''],
+    [1, 'Phase 1: Planning', '', '', ''],
+    [2, 'Kickoff meeting', 1, '', 'Completed'],
+    [2, 'Gather requirements', 3, '3', 'Completed'],
+    [2, 'Scope approved', 0, '4', 'Completed'],
+    [1, 'Phase 2: Design', '', '', ''],
+    [2, 'Wireframes', 4, '5', 'In Progress'],
+    [2, 'Visual design', 6, '7', ''],
+    [2, 'Client review', 2, '8', ''],
+    [1, 'Phase 3: Build', '', '', ''],
+    [2, 'Develop pages', 10, '9', ''],
+    [2, 'Content entry', 5, '11SS+3', ''],
+    [2, 'QA & fixes', 3, '11, 12', ''],
+    [1, 'Phase 4: Launch', '', '', ''],
+    [2, 'Go live', 1, '13', ''],
+    [2, 'Wrap-up email', 1, '15', '']
+  ];
+  pushUndo();
+  const ts = rows.map(r => Object.assign(blank(), {level: r[0], name: r[1], dur: r[2] === '' ? null : r[2], status: r[4] || 'Not Started'}));
+  const mon = (() => { let d = today(); while (dow(d) !== 1) d++; return d; })();
+  ts[2].start = mon;
+  S.tasks = ts; S.name = S.name || 'Website Launch'; S.cal = 'work';
+  rows.forEach((r, i) => { if (r[3]) { const p = parsePreds(String(r[3]), i); ts[i].preds = p.list; } });
+  afterChange(true); afterLoadScroll();
+}
+$('#btnExample').onclick = loadExample;
+function afterLoadScroll() { const first = Object.values(C).filter(c => c.start != null).map(c => c.start); scrollGanttToDate(first.length ? Math.min(...first) : today(), .08); $('#gpane').scrollTop = 0; $('#tpane').scrollTop = 0; }
+
+/* ---------- boot ---------- */
+S = loadState(); ensureRows(); normalize(); compute(); render(); afterLoadScroll(); uiState();
+window.__tl = {get S() { return S; }, get C() { return C; }, compute, fmt, parseDate, addWork, loadExample, doSave, snapshot};
+})();
+</script>
+</body>
+</html>

@@ -556,12 +556,14 @@ const CATEGORY_LABELS = {
   design: 'Color & Design',
   files: 'Files & Documents',
   security: 'Security & Network',
-  health: 'Health & Time'
+  health: 'Health & Time',
+  planning: 'Projects & Planning'
 };
-const CATEGORY_ORDER = ['text', 'design', 'files', 'security', 'health'];
+const CATEGORY_ORDER = ['text', 'design', 'files', 'security', 'health', 'planning'];
 const TOOLS = [
+  { id: 'project-timeline', title: 'Project Timeline', description: 'Plan tasks, manage dependencies, and track schedules with an interactive Gantt chart.', href: 'apps/project-timeline/index.html', category: 'planning', status: 'live', isNew: true, icon: 'apps/project-timeline/assets/project-timeline-icon.svg' },
   { id: 'pixel-art-converter', title: 'Pixel Art Converter', description: 'Turn images into retro pixel art with adjustable block sizes and color quantization.', href: 'apps/pixel-art-converter/index.html', category: 'design', status: 'live', isNew: true, icon: 'apps/pixel-art-converter/assets/pixel-art-converter-icon.svg' },
-  { id: 'image-to-pdf', title: 'Image to PDF', description: 'Combine, reorder, and convert images into a PDF right in your browser.', href: 'apps/image-to-pdf/index.html', category: 'files', status: 'live', isNew: true, icon: 'apps/image-to-pdf/assets/image-to-pdf-icon.svg' },
+  { id: 'image-to-pdf', title: 'Image to PDF', description: 'Combine, reorder, and convert images into a PDF right in your browser.', href: 'apps/image-to-pdf/index.html', category: 'files', status: 'live', isNew: false, icon: 'apps/image-to-pdf/assets/image-to-pdf-icon.svg' },
   { id: 'pdf-to-image', title: 'PDF to Image', description: 'Turn PDF pages into downloadable PNG or JPG images in your browser.', href: 'apps/pdf-to-image/index.html', category: 'files', status: 'live', isNew: false, icon: 'apps/pdf-to-image/assets/pdf-to-image-icon.svg' },
   { id: 'age-calculator', title: 'Age Calculator', description: 'Calculate exact age, total days lived, and days until the next birthday.', href: 'apps/age-calculator/index.html', category: 'health', status: 'live', isNew: false, icon: 'apps/age-calculator/assets/age-calculator-icon.svg' },
   { id: 'text-diff', title: 'Text Diff Checker', description: 'Compare two versions of text and inspect their differences.', href: 'apps/text-diff/index.html', category: 'text', status: 'live', isNew: false, icon: 'apps/text-diff/assets/text-diff-icon.svg' },
