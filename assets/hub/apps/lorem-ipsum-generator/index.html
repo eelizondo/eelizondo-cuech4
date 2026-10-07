@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lorem Ipsum Generator — Cuech4 Hub</title>
+<link rel="icon" type="image/svg+xml" href="assets/lorem-ipsum-generator-icon.svg">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #080d10; --panel: #0f171b; --panel-2: #0a1114; --line: #1e3038;
+    --text: #e8f1f4; --muted: #8aa1aa;
+    --accent: #0891b2; --accent-2: #22d3ee; --accent-text: #a5f3fc;
+    --ok: #34d399; --err: #f87171;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, -apple-system, sans-serif; line-height: 1.45; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid var(--line); background: #0b1215; }
+  .title { font-size: 20px; font-weight: 700; background: linear-gradient(90deg, var(--accent-2), #67e8f9 55%, #c4b5fd); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0; }
+  .hub-breadcrumb { color: var(--muted); font-size: 13px; text-decoration: none; transition: color .15s; }
+  .hub-breadcrumb:hover { color: var(--accent-text); }
+  .btn-ghost { background: #101b20; border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 8px; }
+  .btn-ghost:hover { border-color: var(--accent-2); }
+  .btn-ghost.sm { padding: 6px 10px; font-size: 13px; }
+  .btn-main { background: linear-gradient(180deg, #22d3ee, #06b6d4); border: 0; color: #00262e; font-weight: 700; font-size: 15px; padding: 13px 22px; border-radius: 12px; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 9px; box-shadow: 0 6px 22px rgba(6,182,212,.25); width: 100%; }
+  .btn-main:hover { filter: brightness(1.07); }
+  svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  main { max-width: 1180px; margin: 0 auto; padding: 28px 16px 70px; }
+  .intro { color: var(--muted); font-size: 15px; max-width: 700px; margin: 0 0 14px; }
+  .tag { display: inline-block; font-size: 13px; font-weight: 600; color: var(--accent-text); border: 1px solid rgba(34,211,238,.28); background: rgba(34,211,238,.08); border-radius: 999px; padding: 4px 14px; margin-bottom: 22px; }
+  .layout { display: grid; grid-template-columns: 400px 1fr; gap: 26px; align-items: start; }
+  h2 { font-size: 17px; margin: 0 0 14px; display: flex; align-items: center; gap: 8px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
+
+  .lab { font-size: 13.5px; color: var(--muted); margin: 0 0 8px; }
+  .radios { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-bottom: 18px; }
+  .radios label { display: flex; align-items: center; gap: 10px; padding: 14px 14px; font-size: 14px; cursor: pointer; background: var(--panel-2); position: relative; }
+  .radios label + label { border-left: 1px solid var(--line); }
+  .radios input { position: absolute; opacity: 0; pointer-events: none; }
+  .radios .dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid #3c5560; flex: none; display: grid; place-items: center; }
+  .radios input:checked + .dot { border-color: var(--accent-2); }
+  .radios input:checked + .dot::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-2); }
+  .radios label:has(input:checked) { background: rgba(34,211,238,.1); box-shadow: inset 0 0 0 1px rgba(34,211,238,.45); }
+  .radios label:has(input:focus-visible) { outline: 2px solid var(--accent-2); outline-offset: -2px; }
+
+  .row { margin-bottom: 16px; }
+  .row .hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .row .hd span { font-size: 15px; }
+  .row .hint { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; }
+  .num { width: 76px; height: 34px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; color: var(--text); padding: 0 10px; font: 14px inherit; font-family: inherit; }
+  .num:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(34,211,238,.15); }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 99px; background: linear-gradient(90deg, var(--accent-2) var(--p, 0%), #1d2b31 var(--p, 0%)); outline: none; margin: 8px 0; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #0b1215; border: 2px solid var(--accent-2); }
+  input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #0b1215; border: 2px solid var(--accent-2); }
+  input[type=range]:focus-visible { box-shadow: 0 0 0 3px rgba(34,211,238,.25); }
+
+  .switch { display: flex; align-items: center; gap: 12px; margin: 4px 0 14px; cursor: pointer; font-size: 15px; }
+  .switch input { position: absolute; opacity: 0; pointer-events: none; }
+  .switch .tr { width: 44px; height: 24px; border-radius: 99px; background: #1d2b31; position: relative; transition: background .15s; flex: none; }
+  .switch .tr::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #cfe3ea; transition: transform .15s; }
+  .switch input:checked + .tr { background: var(--accent); }
+  .switch input:checked + .tr::after { transform: translateX(20px); background: #fff; }
+  .switch input:focus-visible + .tr { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+
+  .res-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: #0d161a; border-radius: 18px 18px 0 0; flex-wrap: wrap; }
+  .res-head .t { font-size: 15px; }
+  .res-head .r { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .badge { font-size: 12px; border: 1px solid var(--line); border-radius: 99px; padding: 2px 10px; color: var(--muted); }
+  .res { padding: 0; overflow: hidden; }
+  textarea#out { display: block; width: 100%; min-height: 420px; height: 52vh; resize: vertical; background: #070c0f; color: var(--text); border: 0; padding: 18px 20px; font: 15.5px/1.7 Georgia, 'Times New Roman', serif; outline: none; border-radius: 0 0 18px 18px; }
+  textarea#out.ja { font-family: 'Hiragino Sans', 'Yu Gothic', 'Noto Sans JP', system-ui, sans-serif; }
+  textarea#out.code { font: 13.5px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .stats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .chip { font-size: 13px; color: var(--accent-text); border: 1px solid rgba(34,211,238,.25); background: rgba(34,211,238,.07); border-radius: 999px; padding: 4px 12px; }
+  .ok { color: var(--ok); font-size: 12.5px; }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    header { padding: 12px 16px; }
+    textarea#out { min-height: 320px; height: 45vh; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1 class="title">📝 Lorem Ipsum Generator</h1>
+    <a href="../../hub.html#latest-builds" class="hub-breadcrumb">← Cuech4 Hub</a>
+  </div>
+  <button class="btn-ghost" id="newBtn">＋ New</button>
+</header>
+
+<main>
+  <p class="intro">Generate placeholder text for layouts and mockups, in English or Japanese. Choose how many paragraphs you need — or an exact character count — and shape the sentence and word lengths. It regenerates as you change a setting.</p>
+  <span class="tag">Text &amp; Writing</span>
+
+  <div class="layout">
+    <section>
+      <h2><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg> Settings</h2>
+      <div class="card">
+        <p class="lab" id="lLang">Language</p>
+        <div class="radios" role="radiogroup" aria-labelledby="lLang">
+          <label><input type="radio" name="lang" value="en"><span class="dot"></span>English</label>
+          <label><input type="radio" name="lang" value="ja"><span class="dot"></span>Japanese (日本語)</label>
+        </div>
+
+        <p class="lab" id="lMode">Length</p>
+        <div class="radios" role="radiogroup" aria-labelledby="lMode">
+          <label><input type="radio" name="mode" value="par"><span class="dot"></span>By paragraphs</label>
+          <label><input type="radio" name="mode" value="chr"><span class="dot"></span>By character count</label>
+        </div>
+
+        <div class="row" data-for="par">
+          <div class="hd"><span>Paragraphs</span><input class="num" type="number" id="n_par" aria-label="Paragraphs"></div>
+          <input type="range" id="r_par" aria-label="Paragraphs slider">
+        </div>
+        <div class="row" data-for="chr" hidden>
+          <div class="hd"><span>Characters</span><input class="num" type="number" id="n_chr" aria-label="Characters"></div>
+          <input type="range" id="r_chr" aria-label="Characters slider">
+          <p class="hint">Exact length, spaces and paragraph breaks included.</p>
+        </div>
+        <div class="row">
+          <div class="hd"><span>Sentences</span><input class="num" type="number" id="n_sen" aria-label="Sentences per paragraph"></div>
+          <input type="range" id="r_sen" aria-label="Sentences slider">
+        </div>
+        <div class="row">
+          <div class="hd"><span>Variance</span><input class="num" type="number" id="n_sv" aria-label="Sentence variance"></div>
+          <input type="range" id="r_sv" aria-label="Sentence variance slider">
+          <p class="hint">Higher values add variety; 0 = uniform</p>
+        </div>
+        <div class="row">
+          <div class="hd"><span id="wLbl">Words</span><input class="num" type="number" id="n_wor" aria-label="Words per sentence"></div>
+          <input type="range" id="r_wor" aria-label="Words slider">
+        </div>
+        <div class="row">
+          <div class="hd"><span>Variance</span><input class="num" type="number" id="n_wv" aria-label="Word variance"></div>
+          <input type="range" id="r_wv" aria-label="Word variance slider">
+          <p class="hint">Higher values add variety; 0 = uniform</p>
+        </div>
+
+        <label class="switch"><input type="checkbox" id="start"><span class="tr"></span><span id="startLbl">Start with Lorem ipsum</span></label>
+
+        <p class="lab" id="lFmt">Output</p>
+        <div class="radios" role="radiogroup" aria-labelledby="lFmt">
+          <label><input type="radio" name="fmt" value="txt"><span class="dot"></span>Plain text</label>
+          <label><input type="radio" name="fmt" value="html"><span class="dot"></span>HTML &lt;p&gt;</label>
+        </div>
+
+        <button class="btn-main" id="gen"><svg viewBox="0 0 24 24"><path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8 19 13M17.8 6.2 19 5M3 21l9-9M12.2 6.2 11 5"/></svg> Generate</button>
+      </div>
+    </section>
+
+    <section>
+      <h2><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h12M3 18h16"/></svg> Result</h2>
+      <div class="card res">
+        <div class="res-head">
+          <span class="t">Generated Text</span>
+          <span class="r">
+            <span class="ok" id="ok" role="status"></span>
+            <span class="badge">Read-only</span>
+            <button class="btn-ghost sm" id="copy"><svg viewBox="0 0 24 24" style="width:16px;height:16px"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg> Copy</button>
+            <button class="btn-ghost sm" id="dl"><svg viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg> Save</button>
+          </span>
+        </div>
+        <textarea id="out" readonly placeholder="Configure the settings and press &quot;Generate&quot;" aria-label="Generated text"></textarea>
+      </div>
+      <div class="stats" id="stats"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const KEY = 'lorem_settings';
+const DEF = {lang: 'en', mode: 'par', par: 3, chr: 600, sen: 5, sv: 2, wor: 8, wv: 4, start: true, fmt: 'txt'};
+const LIM = {par: [1, 50], chr: [20, 20000], sen: [1, 30], sv: [0, 10], wor: [2, 40], wv: [0, 20]};
+const STEP = {chr: 1};
+let st = {...DEF};
+try { Object.assign(st, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+const clamp = (v, k) => Math.min(LIM[k][1], Math.max(LIM[k][0], Math.round(Number(v)) || LIM[k][0]));
+Object.keys(LIM).forEach(k => st[k] = clamp(st[k], k));
+if (!['en', 'ja'].includes(st.lang)) st.lang = 'en';
+if (!['par', 'chr'].includes(st.mode)) st.mode = 'par';
+if (!['txt', 'html'].includes(st.fmt)) st.fmt = 'txt';
+st.start = !!st.start;
+
+const EN = ('lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua enim ad minim veniam quis nostrud exercitation ullamco laboris nisi aliquip ex ea commodo consequat duis aute irure in reprehenderit voluptate velit esse cillum eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt culpa qui officia deserunt mollit anim id est laborum curabitur pretium tincidunt lacus nulla gravida orci a odio nullam varius turpis et commodo pharetra eros bibendum nisl vitae mauris ornare facilisis integer feugiat scelerisque varius morbi enim nunc faucibus vitae aliquet nec ullamcorper sit amet risus nullam eget felis eget nunc lobortis mattis aliquam faucibus purus in massa tempor nec feugiat nisl pretium fusce id velit ut tortor pretium viverra suspendisse potenti nullam ac tortor vitae purus faucibus ornare suspendisse').split(' ');
+const JA_SEG = ['この文章は', 'ダミーテキストとして', '実際の内容とは関係なく', 'デザインの確認のために', 'レイアウトを整える際に', '文字の量やバランスを', 'ページ全体の見た目を', '読みやすさを確かめる', '余白や行間の調整に', 'フォントの選択にも', '様々な場面で', '制作の途中段階で', '画面の雰囲気を', 'サンプルとして', '自由に入れ替えられる', '仮の文章として', '誰にでも分かりやすい', '落ち着いた印象の', '色や形との相性を', '見出しと本文の', '全体の流れを', '少しずつ変化する', '穏やかな調子の', 'いくつかの段落で', '意味を持たない', 'あくまでも練習用の', 'とても便利な', '細かな部分まで', '見比べながら', '自然な長さに'];
+const JA_END = ['使用されています。', '用意されています。', '役立ちます。', '確認できます。', '利用できます。', 'お使いください。', '整えられます。', '試すことができます。', '入れ替えて構いません。', '十分に参考になります。'];
+const EN_START = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
+const JA_START = 'これはダミーテキストです。';
+
+const rnd = n => Math.floor(Math.random() * n);
+const pick = a => a[rnd(a.length)];
+const vary = (base, v, min) => Math.max(min, base + (v ? rnd(2 * v + 1) - v : 0));
+
+function enSentence(n) {
+  const w = []; let prev = '';
+  for (let i = 0; i < n; i++) { let x; do { x = pick(EN); } while (x === prev && EN.length > 1); w.push(x); prev = x; }
+  const commas = new Set(); const want = n >= 14 ? 2 : n >= 7 ? 1 : 0;
+  for (let t = 0; t < 12 && commas.size < want; t++) { const p = 2 + rnd(Math.max(1, n - 4)); if (p < n - 1 && !commas.has(p - 1) && !commas.has(p + 1)) commas.add(p); }
+  let s = w.map((x, i) => x + (commas.has(i) ? ',' : '')).join(' ');
+  return s.charAt(0).toUpperCase() + s.slice(1) + '.';
+}
+function jaSentence(n) {
+  const parts = []; let prev = -1;
+  for (let i = 0; i < n; i++) { let k; do { k = rnd(JA_SEG.length); } while (k === prev); parts.push(JA_SEG[k]); prev = k; }
+  let s = parts.map((p, i) => p + (i < n - 1 && i > 0 && i % 3 === 2 ? '、' : '')).join('');
+  return s + pick(JA_END);
+}
+const sentence = n => st.lang === 'ja' ? jaSentence(n) : enSentence(n);
+function paragraph(first) {
+  const ns = vary(st.sen, st.sv, 1), out = [];
+  for (let i = 0; i < ns; i++) {
+    if (first && i === 0 && st.start) out.push(st.lang === 'ja' ? JA_START : EN_START);
+    else out.push(sentence(vary(st.wor, st.wv, 1)));
+  }
+  return out.join(st.lang === 'ja' ? '' : ' ');
+}
+function build() {
+  const ja = st.lang === 'ja', paras = [];
+  if (st.mode === 'par') { for (let i = 0; i < st.par; i++) paras.push(paragraph(i === 0)); return paras; }
+  // exact character count: generate past the target, then cut cleanly
+  const N = st.chr; let len = 0;
+  while (len < N + 80) { const p = paragraph(paras.length === 0); paras.push(p); len += p.length + 2; }
+  const text = paras.join('\n\n'), end = ja ? '。' : '.';
+  let head = text.slice(0, N - 1);
+  const m = head.match(/[\s,、;:.。]+$/);
+  if (m) { head = head.slice(0, -m[0].length); head += text.slice(N - 1).replace(/[\s,、.。;:]/g, '').slice(0, m[0].length); }
+  return (head + end).split('\n\n');
+}
+const escHtml = s => s.replace(/[&<>]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;'}[c]));
+let current = [];
+function generate() {
+  current = build();
+  show();
+}
+function show() {
+  const out = $('#out');
+  out.value = st.fmt === 'html' ? current.map(p => '<p>' + escHtml(p) + '</p>').join('\n') : current.join('\n\n');
+  out.classList.toggle('ja', st.lang === 'ja'); out.classList.toggle('code', st.fmt === 'html');
+  const plain = current.join('\n\n'), words = st.lang === 'ja' ? 0 : (plain.match(/\S+/g) || []).length;
+  $('#stats').innerHTML = [current.length + (current.length === 1 ? ' paragraph' : ' paragraphs'), current.reduce((a, p) => a + (p.match(/[^.。!?]+[.。!?]/g) || [p]).length, 0) + ' sentences'].concat(st.lang === 'ja' ? [] : [words + ' words']).concat([plain.length + ' characters']).map(t => '<span class="chip">' + t + '</span>').join('');
+}
+
+/* ---- controls ---- */
+const KEYS = ['par', 'chr', 'sen', 'sv', 'wor', 'wv'];
+function paint(k) {
+  const r = $('#r_' + k), n = $('#n_' + k), [lo, hi] = LIM[k];
+  r.min = lo; r.max = hi; r.step = STEP[k] || 1; r.value = st[k]; n.min = lo; n.max = hi; n.value = st[k];
+  r.style.setProperty('--p', ((st[k] - lo) / (hi - lo) * 100) + '%');
+}
+function sync() {
+  KEYS.forEach(paint);
+  document.querySelectorAll('input[name=lang]').forEach(i => i.checked = i.value === st.lang);
+  document.querySelectorAll('input[name=mode]').forEach(i => i.checked = i.value === st.mode);
+  document.querySelectorAll('input[name=fmt]').forEach(i => i.checked = i.value === st.fmt);
+  document.querySelectorAll('[data-for]').forEach(e => e.hidden = e.dataset.for !== st.mode);
+  $('#start').checked = st.start;
+  $('#wLbl').textContent = st.lang === 'ja' ? 'Phrases' : 'Words';
+  $('#startLbl').textContent = st.lang === 'ja' ? 'Start with “' + JA_START.slice(0, -1) + '”' : 'Start with Lorem ipsum';
+  document.documentElement.lang = st.lang;
+}
+function persist() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+KEYS.forEach(k => {
+  $('#r_' + k).addEventListener('input', e => { st[k] = clamp(e.target.value, k); paint(k); persist(); generate(); });
+  $('#n_' + k).addEventListener('change', e => { st[k] = clamp(e.target.value, k); paint(k); persist(); generate(); });
+});
+document.querySelectorAll('input[name=lang],input[name=mode],input[name=fmt]').forEach(i => i.addEventListener('change', () => { if (!i.checked) return; st[i.name === 'lang' ? 'lang' : i.name === 'mode' ? 'mode' : 'fmt'] = i.value; sync(); persist(); (i.name === 'fmt' ? show : generate)(); }));
+$('#start').addEventListener('change', e => { st.start = e.target.checked; persist(); generate(); });
+$('#gen').onclick = generate;
+$('#newBtn').onclick = () => { st = {...DEF}; sync(); persist(); generate(); flash('Settings reset'); };
+
+let fl;
+function flash(m) { const o = $('#ok'); o.textContent = m; clearTimeout(fl); fl = setTimeout(() => o.textContent = '', 2200); }
+$('#copy').onclick = async () => {
+  const t = $('#out').value; if (!t) return;
+  try { await navigator.clipboard.writeText(t); flash('Copied'); }
+  catch (e) { const o = $('#out'); o.select(); try { document.execCommand('copy'); flash('Copied'); } catch (_) { flash('Press Ctrl+C to copy'); } }
+};
+$('#dl').onclick = () => {
+  const t = $('#out').value; if (!t) return;
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([t], {type: 'text/plain;charset=utf-8'}));
+  a.download = 'lorem-ipsum' + (st.fmt === 'html' ? '.html' : '.txt'); document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+};
+
+sync(); generate();
+window.__lorem = {get st() { return st; }, get current() { return current; }};
+})();
+</script>
+</body>
+</html>
