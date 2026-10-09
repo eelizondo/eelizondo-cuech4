@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Deck Builder — Cuech4 Hub</title>
+<link rel="icon" type="image/svg+xml" href="assets/study-icon.svg">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #090d13; --panel: #111823; --panel-2: #0c121a; --line: #243044;
+    --text: #e8eef6; --muted: #8fa1b8;
+    --accent: #38bdf8; --accent-2: #7dd3fc; --accent-text: #bae6fd;
+    --good: #34d399; --warn: #fbbf24; --bad: #f87171;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: radial-gradient(1100px 520px at 70% -10%, #0f2a3d 0%, var(--bg) 60%); color: var(--text); font-family: Inter, system-ui, -apple-system, sans-serif; line-height: 1.45; min-height: 100vh; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid var(--line); background: rgba(10,15,22,.85); }
+  .title { font-size: 20px; font-weight: 700; background: linear-gradient(90deg, var(--accent-2), #a5f3fc 55%, #c4b5fd); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0; }
+  .hub-breadcrumb { color: var(--muted); font-size: 13px; text-decoration: none; }
+  .hub-breadcrumb:hover { color: var(--accent-text); }
+  button { font-family: inherit; }
+  .btn-ghost { background: #101925; border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+  .btn-ghost:hover { border-color: var(--accent-2); }
+  .btn-main { background: linear-gradient(180deg, #7dd3fc, #0ea5e9); border: 0; color: #04202e; font-weight: 700; font-size: 14px; padding: 9px 18px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 22px rgba(56,189,248,.25); }
+  .btn-main:hover { filter: brightness(1.07); }
+  .btn-main:disabled, .btn-ghost:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+  .btn-ghost.dg { color: #fca5a5; border-color: rgba(248,113,113,.35); }
+  .db textarea { display: block; width: 100%; margin-top: 6px; background: #0a1018; border: 1px solid var(--line); border-radius: 10px; color: var(--text); padding: 10px 12px; font: 14px/1.4 inherit; font-family: inherit; resize: vertical; }
+  .sec { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid #1a2536; font-size: 14.5px; }
+  .sec label { flex: 1; display: flex; gap: 10px; align-items: center; cursor: pointer; min-width: 0; }
+  .sec.done span { color: var(--muted); text-decoration: line-through; }
+  .sec .x { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 15px; width: 28px; height: 28px; border-radius: 8px; } .sec .x:hover { color: #fca5a5; background: #1b2a3c; }
+  .sm { padding: 6px 12px !important; font-size: 13px !important; }
+  .lk { background: none; border: 0; color: var(--accent-2); cursor: pointer; font-size: 13px; padding: 0; }
+  .lk:hover { text-decoration: underline; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 14px 24px 60px; }
+  .top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .top .sp { flex: 1; }
+  #hname { font: 700 18px/1.2 inherit; font-family: inherit; color: var(--text); background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 6px 10px; min-width: 200px; }
+  #hname:hover { border-color: var(--line); } #hname:focus { outline: none; border-color: var(--accent-2); background: #0a1018; }
+  .chip { font-size: 12.5px; font-weight: 600; border-radius: 999px; padding: 4px 12px; border: 1px solid rgba(52,211,153,.3); color: var(--good); background: rgba(52,211,153,.07); white-space: nowrap; }
+  .chip.dirty { color: #fbbf24; border-color: rgba(251,191,36,.35); background: rgba(251,191,36,.08); }
+  .chip.idle { color: var(--muted); border-color: var(--line); background: transparent; }
+  .fld, select.mini { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; height: 36px; padding: 0 10px; font: 14px inherit; font-family: inherit; }
+  textarea.fld { height: auto; padding: 10px 12px; line-height: 1.4; resize: vertical; width: 100%; }
+  .fld:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(56,189,248,.18); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin-bottom: 16px; }
+  .card h3 { margin: 0 0 12px; font-size: 15px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .card h3 small { color: var(--muted); font-weight: 400; font-size: 13px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+  .kpi, .kpis > * { min-width: 0; }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
+  .kpi small { color: var(--muted); font-size: 13px; display: block; }
+  .kpi b { display: block; font-size: 28px; letter-spacing: -.02em; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .kpi i { font-style: normal; font-size: 12.5px; color: var(--muted); }
+  .kpi.hero { background: linear-gradient(180deg, #0f2535, var(--panel)); border-color: #1e4a66; }
+  .g2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; align-items: start; }
+  .empty { background: linear-gradient(180deg, #0f2232, #0e1824); border: 1px solid #1e4a66; border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .empty p { margin: 0; flex: 1 1 360px; color: var(--muted); font-size: 14px; }
+  .empty p b { color: var(--accent-text); }
+  .nodata { color: var(--muted); font-size: 14px; padding: 18px 6px; text-align: center; }
+  .decks { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .deck { background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; cursor: pointer; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .deck:hover { border-color: var(--accent-2); }
+  .deck b { font-size: 15.5px; overflow: hidden; text-overflow: ellipsis; display: block; }
+  .deck small { color: var(--muted); font-size: 12.5px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mbar { height: 8px; background: #1a2536; border-radius: 99px; display: flex; overflow: hidden; gap: 2px; }
+  .mbar i { display: block; height: 100%; }
+  .mbar .m { background: var(--accent); } .mbar .l { background: rgba(56,189,248,.42); }
+  .mleg { font-size: 12px; color: var(--muted); }
+  .dfoot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 2px; }
+  .due { font-size: 13px; font-weight: 600; color: var(--warn); } .due.ok { color: var(--good); }
+  .chartbar { width: 100%; height: auto; display: block; }
+  .chartbar text { fill: var(--muted); font-size: 11px; } .chartbar .grid { stroke: #1b2638; stroke-width: 1; }
+  .crumb { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .crumb .sp { flex: 1; }
+  #dtitle { font: 700 22px/1.2 inherit; font-family: inherit; color: var(--text); background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 4px 10px; min-width: 160px; flex: 0 1 460px; }
+  #dtitle:hover { border-color: var(--line); } #dtitle:focus { outline: none; border-color: var(--accent-2); background: #0a1018; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; text-align: left; color: var(--text); cursor: pointer; display: flex; flex-direction: column; gap: 4px; position: relative; min-width: 0; }
+  .tile:hover:not(:disabled) { border-color: var(--accent-2); background: #12202e; }
+  .tile:disabled { opacity: .5; cursor: not-allowed; }
+  .tile .ti { font-size: 26px; } .tile b { font-size: 15.5px; } .tile small { color: var(--muted); font-size: 12.5px; }
+  .tile .cog { position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; color: var(--muted); }
+  .tile .cog:hover { background: #1b2a3c; color: var(--text); }
+  .tools2 { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 0 0 14px; }
+  .tools2 .fld { height: 36px; } .tools2 input.fld { flex: 1 1 180px; }
+  table.t { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.t th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12.5px; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  table.t td { padding: 9px 8px; border-bottom: 1px solid #1a2536; vertical-align: middle; }
+  table.t tr.row { cursor: pointer; } table.t tr.row:hover td { background: #101a27; }
+  .abar { display: inline-block; vertical-align: middle; width: 120px; height: 8px; background: #1a2536; border-radius: 99px; overflow: hidden; margin-right: 8px; }
+  .abar i { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+  .st { font-size: 12.5px; font-weight: 600; white-space: nowrap; } .st.w { color: var(--warn); } .st.g { color: var(--good); } .st.n { color: var(--muted); font-weight: 400; } .st.m { color: var(--accent-2); }
+  .tag { display: inline-block; font-size: 12px; padding: 1px 9px; border-radius: 99px; background: #15233a; color: var(--accent-text); border: 1px solid #1f3a5c; white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+  .fl { color: var(--bad); font-size: 12px; font-weight: 600; margin-left: 6px; }
+  .ml { white-space: pre-line; }
+  .clip { display: block; max-width: 560px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* make view */
+  .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .steps h3 .n { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #04202e; font-size: 13px; margin-right: 8px; }
+  .form2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; margin-bottom: 12px; }
+  .form2 label, .mk label { font-size: 13px; color: var(--muted); display: block; }
+  .form2 .fld, .mk .fld { width: 100%; margin-top: 4px; }
+  .full { grid-column: 1 / -1; }
+  .checks { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13.5px; color: var(--text); }
+  .checks label { display: inline-flex; gap: 6px; align-items: center; color: var(--text); cursor: pointer; }
+  .hint { color: var(--muted); font-size: 13px; margin: 8px 0; }
+  .status { border-radius: 12px; padding: 10px 14px; font-size: 14px; margin: 10px 0; border: 1px solid var(--line); background: var(--panel-2); }
+  .status.ok { border-color: rgba(52,211,153,.4); } .status.bad { border-color: rgba(248,113,113,.4); }
+  .status ul { margin: 6px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; max-height: 120px; overflow: auto; }
+  .row2 { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+
+  /* session */
+  .sess { max-width: 820px; margin: 0 auto; }
+  .stop { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .prog { flex: 1; height: 8px; background: #1a2536; border-radius: 99px; overflow: hidden; } .prog i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .25s; }
+  .stop .cnt { font-size: 13.5px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .qcard { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 24px 26px; }
+  .qcard .tag { margin-bottom: 12px; }
+  .qtext { font-size: 20px; font-weight: 600; line-height: 1.35; margin: 0 0 18px; }
+  .flip { cursor: pointer; min-height: 200px; display: flex; flex-direction: column; justify-content: center; }
+  .back { border-top: 1px dashed var(--line); margin-top: 16px; padding-top: 16px; }
+  .ans { font-size: 18px; color: var(--accent-text); font-weight: 600; }
+  .choices { display: grid; gap: 10px; }
+  .ch { text-align: left; display: flex; gap: 12px; align-items: center; line-height: 1.35; background: var(--panel-2); border: 1px solid var(--line); color: var(--text); padding: 12px 14px; border-radius: 12px; font-size: 15.5px; cursor: pointer; width: 100%; }
+  .ch:hover:not(:disabled) { border-color: var(--accent-2); }
+  .ch .L { flex: none; width: 26px; height: 26px; border-radius: 8px; background: #172438; display: grid; place-items: center; font-size: 13px; font-weight: 700; color: var(--accent-text); }
+  .ch.sel { border-color: var(--accent); background: #10283a; }
+  .ch.right { border-color: var(--good); background: rgba(52,211,153,.1); } .ch.right .L { background: var(--good); color: #05261b; }
+  .ch.wrong { border-color: var(--bad); background: rgba(248,113,113,.1); } .ch.wrong .L { background: var(--bad); color: #2a0707; }
+  .ch:disabled { cursor: default; }
+  .fb { margin-top: 16px; border-radius: 14px; padding: 14px 16px; border: 1px solid var(--line); background: var(--panel-2); font-size: 14.5px; }
+  .fb.ok { border-color: rgba(52,211,153,.45); } .fb.no { border-color: rgba(248,113,113,.45); }
+  .fb h4 { margin: 0 0 6px; font-size: 15.5px; } .fb.ok h4 { color: var(--good); } .fb.no h4 { color: var(--bad); }
+  .fb p { margin: 6px 0; } .fb .src { color: var(--muted); font-size: 12.5px; }
+  .actions { display: flex; gap: 10px; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+  .rate { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+  .rate button { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; color: var(--text); padding: 10px 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
+  .rate button small { display: block; color: var(--muted); font-weight: 400; font-size: 12px; margin-top: 2px; }
+  .rate button:hover { border-color: var(--accent-2); }
+  .nav { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 0; }
+  .nav button { width: 34px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--muted); cursor: pointer; font-size: 12.5px; }
+  .nav button.a { background: #10283a; border-color: #1e5a80; color: var(--accent-text); } .nav button.cur { outline: 2px solid var(--accent); }
+  .timer { font-variant-numeric: tabular-nums; font-size: 14px; color: var(--accent-text); font-weight: 600; }
+  .timer.low { color: var(--warn); }
+  .ring { width: 150px; height: 150px; flex: none; }
+  .ring text { fill: var(--text); font-weight: 700; }
+  .resh { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+  .badge { display: inline-block; font-weight: 700; font-size: 14px; border-radius: 99px; padding: 5px 14px; border: 1px solid; }
+  .badge.p { color: var(--good); border-color: rgba(52,211,153,.5); background: rgba(52,211,153,.08); } .badge.f { color: var(--warn); border-color: rgba(251,191,36,.5); background: rgba(251,191,36,.08); }
+  details.miss { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; background: var(--panel-2); font-size: 14px; }
+  details.miss summary { cursor: pointer; font-weight: 600; }
+  details.miss p { margin: 6px 0; color: var(--muted); } details.miss p b { color: var(--text); }
+  textarea#mkOut { font: 12.5px/1.45 ui-monospace, Menlo, monospace; min-height: 280px; }
+  textarea#mkIn { font: 12.5px/1.45 ui-monospace, Menlo, monospace; min-height: 220px; }
+
+  #tip { position: fixed; z-index: 50; background: #14202f; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: 13px; pointer-events: none; box-shadow: 0 10px 30px rgba(0,0,0,.5); transform: translate(12px, 12px); white-space: nowrap; }
+  #tip b { display: block; margin-bottom: 2px; }
+  #toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: #14202f; border: 1px solid var(--line); color: var(--text); padding: 10px 16px; border-radius: 12px; font-size: 14px; display: flex; gap: 14px; align-items: center; z-index: 60; box-shadow: 0 10px 40px rgba(0,0,0,.5); max-width: 92vw; }
+  #toast.err { border-color: rgba(248,113,113,.5); }
+  #toast button { background: transparent; border: 0; color: var(--accent-2); font-weight: 600; cursor: pointer; font-size: 14px; }
+  dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 16px; padding: 0; width: min(460px, 94vw); max-height: 92vh; }
+  dialog.wide { width: min(760px, 96vw); }
+  dialog::backdrop { background: rgba(0,0,0,.65); }
+  .dh { font-size: 17px; font-weight: 700; padding: 18px 22px 4px; }
+  .db { padding: 6px 22px 4px; font-size: 14px; color: var(--muted); max-height: 62vh; overflow: auto; }
+  .db p { margin: 6px 0 10px; }
+  .db label { display: block; font-size: 13px; color: var(--text); margin: 10px 0 0; }
+  .db input, .db select { display: block; width: 100%; margin-top: 6px; height: 40px; background: #0a1018; border: 1px solid var(--line); border-radius: 10px; color: var(--text); padding: 0 12px; font: 15px inherit; font-family: inherit; }
+  .db input:focus, .db select:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(56,189,248,.18); }
+  .derr { color: #f87171; min-height: 18px; font-size: 13px; }
+  .df { display: flex; justify-content: flex-end; gap: 10px; padding: 8px 22px 18px; flex-wrap: wrap; }
+  .df .btn-main { padding: 9px 18px; }
+  .df .danger { color: #fca5a5; border-color: rgba(248,113,113,.4); margin-right: auto; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  .note { color: var(--muted); font-size: 12.5px; text-align: center; margin-top: 18px; }
+  @media (max-width: 1000px) {
+    .kpis, .tiles { grid-template-columns: 1fr 1fr; } .g2, .steps { grid-template-columns: 1fr; } .grid2 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .wrap { padding: 12px 16px 50px; } header { padding: 12px 16px; }
+    .kpi b { font-size: 22px; } .kpi { padding: 14px; } .qtext { font-size: 18px; } .qcard { padding: 18px; }
+    .form2 { grid-template-columns: 1fr; } .rate { grid-template-columns: 1fr 1fr; } #hname { flex: 1 1 100%; }
+    table.t .hide-s { display: none; } .abar { width: 70px; } .tile { padding: 14px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div><h1 class="title">🎓 Study Deck Builder</h1><a class="hub-breadcrumb" href="../../hub.html#latest-builds">← Cuech4 Hub</a></div>
+  <button class="btn-ghost" id="newBtn">＋ New</button>
+</header>
+<main class="wrap">
+  <div class="top">
+    <input id="hname" maxlength="60" aria-label="Study space name">
+    <span class="chip" id="chip"></span>
+    <span class="sp"></span>
+    <button class="btn-ghost" id="btnOpen">⬆ Open backup</button>
+    <button class="btn-ghost" id="btnPw">🔑 <span id="pwLbl">Set password</span></button>
+    <button class="btn-main" id="btnSave">⬇ Download backup</button>
+  </div>
+
+  <!-- HOME -->
+  <section id="vHome">
+    <div class="empty" id="empty">
+      <p><b>Turn any study material into practice questions.</b> Build a prompt, give it to any AI (ChatGPT, Claude, Gemini…) along with your handbook or notes, then paste the answer back here. No account, nothing uploaded to us.</p>
+      <button class="btn-main" data-go="make">✨ Create a deck with AI</button>
+      <button class="btn-ghost" id="btnSample">Try a sample deck</button>
+    </div>
+    <div class="kpis" id="hk"></div>
+    <div class="g2">
+      <section class="card"><h3>Your decks <span><button class="lk" id="btnImportDeck">⬆ Open deck file</button> &nbsp; <button class="lk" data-go="make">＋ New deck</button></span></h3><div class="decks" id="decks"></div></section>
+      <section class="card"><h3>Last 14 days <small>cards answered</small></h3><div id="act"></div></section>
+    </div>
+  </section>
+
+  <!-- MAKE -->
+  <section id="vMake" hidden>
+    <div class="crumb"><button class="btn-ghost sm" id="mkBack">‹ Back</button><b style="font-size:18px" id="mkTitle">Create a deck with AI</b></div>
+    <div class="steps">
+      <section class="card mk">
+        <h3><span><span class="n">1</span>Build your prompt</span></h3>
+        <div class="form2">
+          <label class="full">What are you studying?<input class="fld" id="mkSub" maxlength="90" placeholder="e.g. Driver knowledge test"></label>
+          <label class="full">Place / audience (optional)<input class="fld" id="mkWhere" maxlength="90" placeholder="e.g. New Jersey, first-time drivers"></label>
+          <label>Section of the material (optional)<input class="fld" id="mkSec" maxlength="90" placeholder="e.g. Chapter 3 — Right of way"></label>
+          <label>Number of cards<select class="fld" id="mkN"><option>10</option><option selected>20</option><option>30</option><option>40</option><option>50</option><option>60</option></select></label>
+          <label>Language<select class="fld" id="mkLang"><option>English</option><option>Spanish</option><option>Portuguese</option><option>French</option><option value="bi-es">English + Spanish (both)</option></select></label>
+          <label>Difficulty<select class="fld" id="mkDiff"><option value="std">Standard</option><option value="tricky" selected>Tricky, like the real exam</option><option value="mix">Mix of easy and tricky</option></select></label>
+          <div class="full checks" id="mkOpts">
+            <label><input type="checkbox" value="scen" checked> Real-life scenarios</label>
+            <label><input type="checkbox" value="num" checked> Numbers &amp; limits</label>
+            <label><input type="checkbox" value="tf"> True / false</label>
+            <label><input type="checkbox" value="flash"> Some flashcards</label>
+          </div>
+        </div>
+        <textarea class="fld" id="mkOut" readonly aria-label="Generated prompt"></textarea>
+        <div class="row2"><button class="btn-main" id="mkCopy">📋 Copy prompt</button><span class="hint" style="margin:0">Then open your AI, paste it, and <b>attach or paste your material</b> right after.</span></div>
+      </section>
+      <section class="card mk">
+        <h3><span><span class="n">2</span>Paste the AI’s answer</span><button class="lk" id="mkFile">⬆ Load a .json / .txt file</button></h3>
+        <textarea class="fld" id="mkIn" placeholder='Paste the whole reply here. It should start with { "deck": … }' spellcheck="false" aria-label="AI answer"></textarea>
+        <div class="status" id="mkStat">Waiting for the AI’s answer…</div>
+        <div class="form2"><label class="full">Save into<select class="fld" id="mkTarget"></select></label></div>
+        <div class="row2"><button class="btn-main" id="mkImport" disabled>Add to my decks</button><button class="btn-ghost" id="mkFix" hidden>Copy a “please fix” message for the AI</button></div>
+        <p class="hint">Long handbook? Ask for one chapter at a time. Cards that repeat a question already in the deck are skipped automatically.</p>
+      </section>
+    </div>
+  </section>
+
+  <!-- DECK -->
+  <section id="vDeck" hidden></section>
+
+  <!-- SESSION -->
+  <section id="vSess" hidden></section>
+
+  <p class="note">Everything stays in this browser (unencrypted, this device only). The downloaded backup is one <b>.txt</b> encrypted with your password — it can’t be recovered if you lose it. AI-made questions can contain mistakes: always check against your official material.</p>
+</main>
+<div id="tip" hidden></div>
+<div id="toast" hidden></div>
+<dialog id="dlg"><div class="dh" id="dT"></div><div class="db" id="dB"></div><div class="df" id="dF"></div></dialog>
+<input type="file" id="file" accept=".txt,.json,text/plain,application/json" hidden>
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const p2 = n => String(n).padStart(2, '0');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const norm = s => String(s == null ? '' : s).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+const dstr = d => d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+const todayS = () => dstr(new Date());
+const addDays = (s, k) => { const d = new Date(s + 'T00:00:00'); d.setDate(d.getDate() + k); return dstr(d); };
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const shortD = s => { const d = new Date(s + 'T00:00:00'); return MON[d.getMonth()] + ' ' + d.getDate(); };
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const LET = 'ABCDEF', INT = [0, 1, 2, 4, 8, 16];
+const str = (v, n) => String(v == null ? '' : v).replace(/\r\n?/g, '\n').trim().slice(0, n);
+const int = (v, d = 0) => Number.isFinite(+v) && v !== '' && v !== null ? Math.round(+v) : d;
+const fmtT = s => Math.floor(s / 60) + ':' + p2(s % 60);
+
+/* ---------- storage ---------- */
+const store = {
+  db: null,
+  async open() { if (this.db) return this.db; this.db = await new Promise((res, rej) => { const r = indexedDB.open('cuech4-study', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); return this.db; },
+  async load() { try { const db = await this.open(); return await new Promise((res, rej) => { const q = db.transaction('kv').objectStore('kv').get('state'); q.onsuccess = () => res(q.result || null); q.onerror = () => rej(q.error); }); } catch (e) { try { return JSON.parse(localStorage.getItem('study_state') || 'null'); } catch (_) { return null; } } },
+  async save(obj) { try { const db = await this.open(); await new Promise((res, rej) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(obj, 'state'); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); return true; } catch (e) { try { localStorage.setItem('study_state', JSON.stringify(obj)); return true; } catch (_) { return false; } } }
+};
+
+/* ---------- state ---------- */
+const fresh = () => ({name: 'My Study Space', decks: [], prog: {}, hist: [], days: {}, set: {examN: 30, passPct: 80, mins: 0, sessN: 20, shuffle: true, mk: {}}, exp: {date: '', n: 0}, dirty: false, lastBackup: ''});
+let S = fresh(), view = 'home', curDeck = null, sess = null, sessionPw = null, saveT = null, makeTarget = '', dFilter = {topic: 'all', n: 10, q: '', f: 'all', all: false};
+
+function cleanCard(c) {
+  if (!c || typeof c !== 'object') return null;
+  const q = str(c.q, 700); if (!q) return null;
+  const ch = Array.isArray(c.ch) ? c.ch.slice(0, 6).map(x => str(x, 300)) : [];
+  const out = {id: str(c.id, 40) || uid(), q, ch: [], a: 0, ans: '', ex: str(c.ex, 900), wr: [], topic: str(c.topic, 60) || 'General', ref: str(c.ref, 240), diff: Math.max(1, Math.min(3, int(c.diff, 2))), fl: !!c.fl, tf: !!c.tf};
+  if (ch.length >= 2 && ch.every(x => x)) {
+    out.ch = ch; out.a = int(c.a); if (out.a < 0 || out.a >= ch.length) return null;
+    out.wr = ch.map((_, i) => str((c.wr || [])[i], 400)); out.wr[out.a] = ''; out.ans = ch[out.a];
+  } else { out.ans = str(c.ans, 500); if (!out.ans) return null; }
+  return out;
+}
+function clean(o) {
+  if (!o || typeof o !== 'object') return null;
+  const out = fresh(), arr = (v, n) => Array.isArray(v) ? v.slice(0, n) : [];
+  out.name = str(o.name, 60) || out.name;
+  const seen = new Set();
+  out.decks = arr(o.decks, 200).filter(d => d && typeof d === 'object').map(d => ({id: str(d.id, 40) || uid(), title: str(d.title, 80) || 'Untitled deck', subject: str(d.subject, 90), lang: str(d.lang, 30), added: DATE_RE.test(d.added) ? d.added : todayS(), covered: str(d.covered, 200), sections: arr(d.sections, 100).filter(x => x && x.n).map(x => ({id: str(x.id, 40) || uid(), n: str(x.n, 90), done: !!x.done})), cards: arr(d.cards, 3000).map(cleanCard).filter(Boolean).filter(c => !seen.has(c.id) && seen.add(c.id))}));
+  const ids = seen;
+  if (o.prog && typeof o.prog === 'object') for (const [k, p] of Object.entries(o.prog)) { if (!ids.has(k) || !p || typeof p !== 'object') continue; out.prog[k] = {box: Math.max(0, Math.min(5, int(p.box))), due: DATE_RE.test(p.due) ? p.due : todayS(), seen: Math.max(0, int(p.seen)), ok: Math.max(0, int(p.ok)), bad: Math.max(0, int(p.bad)), last: Math.max(0, int(p.last)), lw: !!p.lw}; }
+  if (o.days && typeof o.days === 'object') for (const [k, v] of Object.entries(o.days)) if (DATE_RE.test(k) && Number.isFinite(v)) out.days[k] = Math.max(0, Math.round(v));
+  out.hist = arr(o.hist, 300).filter(h => h && Number.isFinite(h.t)).map(h => ({t: h.t, deck: str(h.deck, 40), title: str(h.title, 80), mode: ['flash', 'quiz', 'exam'].includes(h.mode) ? h.mode : 'quiz', n: Math.max(0, int(h.n)), ok: Math.max(0, int(h.ok)), secs: Math.max(0, int(h.secs))}));
+  const s = o.set || {};
+  out.set = {examN: Math.max(5, Math.min(200, int(s.examN, 30))), passPct: Math.max(10, Math.min(100, int(s.passPct, 80))), mins: Math.max(0, Math.min(300, int(s.mins, 0))), sessN: Math.max(5, Math.min(100, int(s.sessN, 20))), shuffle: s.shuffle !== false, mk: s.mk && typeof s.mk === 'object' ? {sub: str(s.mk.sub, 90), where: str(s.mk.where, 90), n: str(s.mk.n, 3), lang: str(s.mk.lang, 20), diff: str(s.mk.diff, 8), opts: arr(s.mk.opts, 6).map(x => str(x, 10))} : {}};
+  out.exp = o.exp && typeof o.exp.n === 'number' ? {date: str(o.exp.date, 10), n: int(o.exp.n)} : {date: '', n: 0};
+  out.dirty = !!o.dirty; out.lastBackup = DATE_RE.test(o.lastBackup) ? o.lastBackup : '';
+  return out;
+}
+function queueSave() { clearTimeout(saveT); saveT = setTimeout(saveNow, 350); }
+let warned = false;
+async function saveNow() { clearTimeout(saveT); const ok = await store.save(S); if (!ok && !warned) { warned = true; toast('Your browser couldn’t save locally. Download a backup to keep your work.', null, null, true); } }
+window.addEventListener('pagehide', () => { store.save(S); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) store.save(S); });
+const touch = () => { S.dirty = true; queueSave(); };
+function commit() { touch(); render(); }
+
+/* ---------- progress ---------- */
+const P = id => S.prog[id];
+const isDue = c => { const p = P(c.id); return !p || p.due <= todayS(); };
+const isMastered = c => (P(c.id) || {}).box >= 4;
+const isMiss = c => !!(P(c.id) || {}).lw;
+function deckStats(d) { let nw = 0, ma = 0, due = 0; d.cards.forEach(c => { if (!P(c.id)) nw++; else if (isMastered(c)) ma++; if (isDue(c)) due++; }); return {n: d.cards.length, nw, ma, le: d.cards.length - nw - ma, due}; }
+function streak() { let n = 0; const d = new Date(); if (!(S.days[todayS()] > 0)) d.setDate(d.getDate() - 1); while (S.days[dstr(d)] > 0) { n++; d.setDate(d.getDate() - 1); } return n; }
+function topicStats(d) {
+  const m = new Map(); d.cards.forEach(c => { const t = m.get(c.topic) || {topic: c.topic, n: 0, ok: 0, bad: 0}; t.n++; const p = P(c.id); if (p) { t.ok += p.ok; t.bad += p.bad; } m.set(c.topic, t); });
+  return [...m.values()].sort((a, b) => a.topic.localeCompare(b.topic));
+}
+function grade(c, ok, rating) {
+  const t = todayS(), p = S.prog[c.id] || (S.prog[c.id] = {box: 0, due: t, seen: 0, ok: 0, bad: 0, last: 0, lw: false});
+  let box = p.box;
+  if (rating) box = rating === 1 ? 0 : rating === 2 ? Math.max(1, box) : rating === 3 ? Math.min(5, box + 1) : Math.min(5, box + 2);
+  else box = ok ? Math.min(5, box + 1) : 0;
+  p.box = box; p.due = addDays(t, rating === 2 ? Math.max(1, INT[box]) : INT[box]);
+  p.seen++; if (ok) p.ok++; else p.bad++; p.last = Date.now(); p.lw = !ok;
+  S.days[t] = (S.days[t] || 0) + 1; touch();
+}
+const nextHint = (c, r) => { const b = (P(c.id) || {}).box || 0; const nb = r === 1 ? 0 : r === 2 ? Math.max(1, b) : r === 3 ? Math.min(5, b + 1) : Math.min(5, b + 2); const d = r === 2 ? Math.max(1, INT[nb]) : INT[nb]; return d === 0 ? 'soon' : d + 'd'; };
+
+/* ---------- import / parse ---------- */
+function extractJSON(text) {
+  let t = String(text || '').replace(/^﻿/, '').trim(); if (!t) return {err: 'empty'};
+  const tryP = s => { try { return JSON.parse(s); } catch (e) { return undefined; } };
+  const attempt = s => {
+    let v = tryP(s); if (v !== undefined) return v;
+    s = s.replace(/```(?:json|JSON)?/g, '').trim(); v = tryP(s); if (v !== undefined) return v;
+    const a = s.indexOf('{'), b = s.lastIndexOf('}'), a2 = s.indexOf('['), b2 = s.lastIndexOf(']');
+    const spans = (a >= 0 && (a2 < 0 || a < a2)) ? [[a, b], [a2, b2]] : [[a2, b2], [a, b]];
+    for (const [i, j] of spans) if (i >= 0 && j > i) { v = tryP(s.slice(i, j + 1)); if (v !== undefined) return v; }
+    return undefined;
+  };
+  let v = attempt(t); if (v === undefined) v = attempt(t.replace(/[“”]/g, '"').replace(/[‘’]/g, "'"));
+  return v === undefined ? {err: 'parse'} : {v};
+}
+function ansIdx(a, ch) {
+  if (typeof a === 'number') return Number.isInteger(a) && a >= 0 && a < ch.length ? a : -1;
+  const s = String(a == null ? '' : a).trim(); let m;
+  if ((m = s.match(/^(?:option|choice|answer)?\s*\(?([A-Fa-f])\)?[.):]?$/i))) { const i = LET.indexOf(m[1].toUpperCase()); return i < ch.length ? i : -1; }
+  if (/^\d+$/.test(s)) { const i = +s; return i < ch.length ? i : -1; }
+  const n = norm(s); return n ? ch.findIndex(x => norm(x) === n) : -1;
+}
+function parseDeck(text, existing) {
+  const ex = extractJSON(text);
+  if (ex.err === 'empty') return {empty: true, cards: [], issues: []};
+  if (ex.err) return {fatal: 'I couldn’t read that as JSON. Make sure you pasted the AI’s whole answer (it should start with { and end with }).', cards: [], issues: []};
+  let v = ex.v;
+  if (v && v.app === 'cuech4-study' && v.salt) return {backup: true, cards: [], issues: []};
+  if (Array.isArray(v)) v = {cards: v};
+  const list = v && (v.cards || v.questions || v.flashcards || v.items);
+  if (!v || !Array.isArray(list)) return {fatal: 'The JSON doesn’t have a "cards" list. Ask the AI to follow the format exactly.', cards: [], issues: []};
+  const issues = [], cards = [], seen = new Set(existing || []); let dups = 0;
+  list.slice(0, 2000).forEach((c, i) => {
+    const N = 'Card ' + (i + 1) + ': ';
+    if (!c || typeof c !== 'object') return issues.push(N + 'not a card');
+    const q = str(c.question || c.q || c.front || c.prompt, 700); if (!q) return issues.push(N + 'no question');
+    const type = String(c.type || '').toLowerCase(), raw = c.choices || c.options || c.answers;
+    const o = {q, ex: str(c.explanation || c.rationale || c.why || c.ex, 900), topic: str(c.topic || c.category || c.section, 60), ref: str(c.source || c.reference || c.ref, 240), diff: int(c.difficulty, 2), wr: []};
+    if (Array.isArray(raw) && raw.length >= 2) {
+      let ch = raw.slice(0, 6).map(x => typeof x === 'string' ? x.trim() : str(x && (x.text || x.choice || x.label), 300));
+      if (ch.some(x => !x)) return issues.push(N + 'a choice is empty');
+      if (ch.every(x => /^\(?[A-Fa-f][.):]\s+/.test(x))) ch = ch.map(x => x.replace(/^\(?[A-Fa-f][.):]\s+/, ''));
+      const a = ansIdx(c.answer !== undefined ? c.answer : (c.correct !== undefined ? c.correct : c.correct_answer), ch);
+      if (a < 0) return issues.push(N + 'couldn’t tell which choice is correct');
+      o.ch = ch; o.a = a; o.wr = Array.isArray(c.why_wrong) ? c.why_wrong : (Array.isArray(c.wrong_explanations) ? c.wrong_explanations : []);
+    } else if (type === 'tf' || type === 'true_false' || typeof c.answer === 'boolean' || /^(true|false)$/i.test(String(c.answer))) {
+      const t = typeof c.answer === 'boolean' ? c.answer : /^true$/i.test(String(c.answer)); o.ch = ['True', 'False']; o.a = t ? 0 : 1; o.tf = true;
+    } else {
+      o.ans = str(c.answer || c.back, 500); if (!o.ans) return issues.push(N + 'no answer');
+    }
+    const cc = cleanCard(o); if (!cc) return issues.push(N + 'invalid');
+    const k = norm(cc.q); if (seen.has(k)) { dups++; return; } seen.add(k); cards.push(cc);
+  });
+  if (dups) issues.push(dups + ' repeated question' + (dups > 1 ? 's' : '') + ' skipped');
+  const counts = {mc: cards.filter(c => c.ch.length && !c.tf).length, tf: cards.filter(c => c.tf).length, fc: cards.filter(c => !c.ch.length).length};
+  return {title: str(v.deck || v.title || v.name, 80), subject: str(v.subject, 90), lang: str(v.language, 30), covered: str(v.covered_until, 200), cards, issues, counts, topics: new Set(cards.map(c => c.topic)).size};
+}
+function exportDeck(d) {
+  return JSON.stringify({deck: d.title, subject: d.subject, language: d.lang, cards: d.cards.map(c => c.ch.length ? (c.tf ? {type: 'tf', topic: c.topic, question: c.q, answer: c.a === 0, explanation: c.ex, source: c.ref, difficulty: c.diff} : {type: 'mc', topic: c.topic, question: c.q, choices: c.ch, answer: LET[c.a], explanation: c.ex, why_wrong: c.wr, source: c.ref, difficulty: c.diff}) : {type: 'flash', topic: c.topic, question: c.q, answer: c.ans, explanation: c.ex, source: c.ref, difficulty: c.diff})}, null, 1);
+}
+
+/* ---------- prompt ---------- */
+function genPrompt(o) {
+  const bi = o.lang === 'bi-es', lang = bi ? 'English and Spanish' : o.lang;
+  const style = [];
+  if (o.diff === 'tricky') style.push('Write them like a real, tricky exam: wrong choices that are very close to the right one, rules with exceptions, similar-looking numbers, and wording that tests careful reading.');
+  else if (o.diff === 'mix') style.push('Mix about half straightforward questions with half tricky ones (close wrong choices, exceptions, careful wording).');
+  else style.push('Keep questions clear and direct.');
+  if (o.opts.includes('scen')) style.push('Include several short real-life scenario questions ("You are… what should you do?") that test judgment and responsible behavior, not just memory.');
+  if (o.opts.includes('num')) style.push('Include the numbers, distances, time limits, ages, fines and other values that people commonly mix up.');
+  if (o.opts.includes('tf')) style.push('Include a few "tf" (true/false) cards.');
+  if (o.opts.includes('flash')) style.push('Include a few "flash" cards for definitions or key terms.');
+  const place = o.where ? ' (' + o.where + ')' : '';
+  return `You are helping me study for: ${o.sub || '[what I am studying]'}${place}.
+Use ONLY the study material I give you right after this message (attached or pasted). Do not invent rules or facts from outside it; if the material does not say it, do not ask about it.
+
+Create ${o.n} study cards${o.sec ? ' from this part of the material: ' + o.sec : ' covering the whole material'}. ${style.join(' ')}
+Write everything in ${lang}.${bi ? ' For every text field write the English first, then a line break (\\n), then the Spanish translation. For each choice write "English / Español" on one line.' : ''}
+
+Return ONLY one JSON object — no introduction, no notes, no markdown code fences — in exactly this shape:
+{
+  "deck": "short deck title",
+  "subject": "${(o.sub || 'subject').replace(/"/g, "'")}",
+  "language": "${lang}",
+  "covered_until": "where in the material you stopped, or 'all'",
+  "cards": [
+    {
+      "type": "mc",
+      "topic": "short topic name taken from the material's headings",
+      "question": "…",
+      "choices": ["…", "…", "…", "…"],
+      "answer": "B",
+      "explanation": "1–2 sentences: the rule and why it matters for safe, responsible behavior",
+      "why_wrong": ["why A is wrong", "", "why C is wrong", "why D is wrong"],
+      "source": "page/section or a short exact quote (max 20 words) this card is based on",
+      "difficulty": 2
+    },
+    { "type": "tf", "topic": "…", "question": "…", "answer": true, "explanation": "…", "source": "…", "difficulty": 1 },
+    { "type": "flash", "topic": "…", "question": "…", "answer": "…", "explanation": "…", "source": "…", "difficulty": 1 }
+  ]
+}
+
+Rules:
+- "mc" cards have exactly 4 choices and "answer" is the LETTER of the correct one. "why_wrong" has one entry per choice, with "" for the correct choice. Vary which letter is correct.
+- Wrong choices must be plausible (common mix-ups), never silly.
+- One fact per card, no duplicates, and spread the cards across the whole material. Reuse the same topic names (at most 12 topics).
+- "source" is required for every card so I can check it against the material.
+- "difficulty" is 1 (easy), 2 (medium) or 3 (hard).
+- If the material is too long for ${o.n} cards, cover the first part and say where you stopped in "covered_until".
+- Output must be valid JSON (double quotes, no trailing commas).`;
+}
+
+const SAMPLE = {deck: 'Sample: Safe driving basics', subject: 'Driving knowledge test (practice only)', language: 'English', cards: [
+  {type: 'mc', topic: 'Signs & signals', question: 'A red, eight-sided sign means you must:', choices: ['Slow down and continue if the road looks clear', 'Come to a complete stop', 'Yield only to cross traffic', 'Stop only if other vehicles are nearby'], answer: 'B', explanation: 'An octagon is used only for stop signs. Stop completely behind the line, look, then go when it is safe.', why_wrong: ['Slowing down is not stopping — rolling through is a violation.', '', 'A stop sign means stop even when it is your turn to go; yielding is a different sign.', 'You must stop every time, even when the road is empty.'], source: 'General rules of the road', difficulty: 1},
+  {type: 'mc', topic: 'Signs & signals', question: 'A yellow, diamond-shaped sign usually warns you about:', choices: ['A rule you must obey, such as a speed limit', 'A hazard or change in road conditions ahead', 'A place where you must stop for inspection', 'A road that is closed'], answer: 'B', explanation: 'Yellow diamonds are warning signs: curves, intersections, slippery roads and similar. Slow down and be ready.', why_wrong: ['Rules are usually shown on white or red signs.', '', 'Inspection stops use different signs.', 'Closed roads use barricades and specific closure signs.'], source: 'General rules of the road', difficulty: 1},
+  {type: 'flash', topic: 'Signs & signals', question: 'What does a flashing yellow traffic light mean?', answer: 'Proceed with caution: slow down and be ready to stop.', explanation: 'Do not confuse it with a flashing red light, which you treat like a stop sign.', source: 'General rules of the road', difficulty: 1},
+  {type: 'mc', topic: 'Right of way', question: 'Two vehicles reach an intersection with no signs or signals at the same time. Who goes first?', choices: ['The faster vehicle', 'The vehicle on the left', 'The vehicle on the right', 'The larger vehicle'], answer: 'C', explanation: 'The usual rule is to yield to the vehicle on your right. When in doubt, let the other driver go — being right is not worth a crash.', why_wrong: ['Speed never gives right of way.', 'You yield to the one on your right, not the left.', '', 'Size does not change who has the right of way.'], source: 'General rules of the road', difficulty: 2},
+  {type: 'mc', topic: 'Right of way', question: 'A pedestrian is crossing in the crosswalk in front of you. You should:', choices: ['Honk so they hurry', 'Stop and wait until they have fully crossed', 'Go around them quickly', 'Speed up to pass before they reach your lane'], answer: 'B', explanation: 'Pedestrians in a crosswalk have the right of way. Stop well back and watch for other pedestrians before you move.', why_wrong: ['Honking can startle people and does not give you the right of way.', '', 'Driving around is dangerous and illegal.', 'Speeding up toward a pedestrian is how people get hurt.'], source: 'General rules of the road', difficulty: 1},
+  {type: 'tf', topic: 'Right of way', question: 'When an emergency vehicle with lights and siren approaches, you should pull over to the right edge of the road and stop.', answer: true, explanation: 'Move over safely, stop, and stay stopped until it has passed. Do not stop in an intersection.', source: 'General rules of the road', difficulty: 1},
+  {type: 'mc', topic: 'Safe driving', question: 'In good conditions, a common rule for a safe following distance is at least:', choices: ['1 second', '3 seconds', '10 seconds', 'As close as traffic allows'], answer: 'B', explanation: 'Three seconds gives you time to react. Add more time in rain, fog, at night, or when towing.', why_wrong: ['One second is too short to react and stop.', '', 'That would be very safe but is far more than the usual rule.', 'Tailgating is a leading cause of rear-end crashes.'], source: 'General rules of the road', difficulty: 2},
+  {type: 'mc', topic: 'Safe driving', question: 'When merging onto a highway from an on-ramp, you should:', choices: ['Stop at the end of the ramp and wait for a gap', 'Match the speed of traffic and merge into a safe gap', 'Merge at ramp speed whatever the traffic is doing', 'Wait for other drivers to let you in'], answer: 'B', explanation: 'Use the ramp to get up to the speed of traffic, signal, check your blind spot, and merge into a gap.', why_wrong: ['Stopping on a ramp surprises drivers behind you.', '', 'Merging much slower than traffic forces others to brake hard.', 'Never count on others to make space for you.'], source: 'General rules of the road', difficulty: 2},
+  {type: 'flash', topic: 'Safe driving', question: 'What is a blind spot and how do you check it?', answer: 'The area beside and behind your car that mirrors do not show. Turn your head and look over your shoulder before changing lanes.', explanation: 'Mirrors help, but only a head check covers the blind spot.', source: 'General rules of the road', difficulty: 1},
+  {type: 'mc', topic: 'Weather', question: 'Your car starts to hydroplane on a wet road. You should:', choices: ['Brake hard', 'Ease off the gas and steer gently where you want to go', 'Accelerate to drive through it', 'Turn the wheel sharply'], answer: 'B', explanation: 'Do not slam the brakes or jerk the wheel — that can cause a skid. Let the car slow down until the tires grip again.', why_wrong: ['Hard braking can lock the wheels and cause a skid.', '', 'Speeding up makes hydroplaning worse.', 'Sharp steering can send the car into a spin.'], source: 'General rules of the road', difficulty: 2},
+  {type: 'mc', topic: 'Alcohol & distractions', question: 'Which of these will sober you up and make it safe to drive?', choices: ['Strong coffee', 'A cold shower', 'Time', 'Fresh air'], answer: 'C', explanation: 'Only time lowers your blood alcohol. If you have been drinking, do not drive — choose a sober driver or another way home.', why_wrong: ['Coffee may make you feel more awake but does not lower alcohol in your body.', 'It does not change your blood alcohol.', '', 'Fresh air does not remove alcohol from your system.'], source: 'General rules of the road', difficulty: 1},
+  {type: 'tf', topic: 'Alcohol & distractions', question: 'Hands-free phone calls are completely safe because your hands stay on the wheel.', answer: false, explanation: 'Distraction is also mental. Talking on the phone, even hands-free, takes your attention off the road.', source: 'General rules of the road', difficulty: 2}
+]};
+
+
+/* ---------- toast / modals ---------- */
+let toastT;
+function toast(msg, label, fn, isErr) {
+  const t = $('#toast'); t.className = isErr ? 'err' : '';
+  t.innerHTML = '<span>' + esc(msg) + '</span>' + (label ? '<button>' + esc(label) + '</button>' : ''); t.hidden = false;
+  if (label) t.querySelector('button').onclick = () => { t.hidden = true; fn(); };
+  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, label ? 8000 : 3800);
+}
+const dlg = $('#dlg');
+function open(title, bodyHtml, buttons, onKey) {
+  return new Promise(res => {
+    $('#dT').textContent = title; $('#dB').innerHTML = bodyHtml;
+    $('#dF').innerHTML = buttons.map(b => `<button class="${b.primary ? 'btn-main' : 'btn-ghost'} ${b.cls || ''}" data-v="${b.value}">${esc(b.label)}</button>`).join('');
+    const finish = v => { const b = buttons.find(x => x.value === v); if (b && b.check) { const e = b.check(); if (e) { const el = $('#dE'); if (el) el.textContent = e; return; } } dlg.close(); dlg.classList.remove('wide'); res(v); };
+    $('#dF').onclick = e => { const b = e.target.closest('button'); if (b) finish(b.dataset.v); };
+    dlg.onkeydown = e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); const pb = buttons.find(b => b.primary); if (pb) finish(pb.value); } };
+    dlg.oncancel = e => { e.preventDefault(); finish('cancel'); };
+    dlg.showModal(); const f = dlg.querySelector('input,select'); if (f) f.focus();
+  });
+}
+function fieldHtml(f) {
+  const v = f.value == null ? '' : f.value;
+  if (f.type === 'select') return `<label>${esc(f.label)}<select id="f_${f.id}">${f.options.map(([val, lab]) => `<option value="${esc(val)}"${String(val) === String(v) ? ' selected' : ''}>${esc(lab)}</option>`).join('')}</select></label>`;
+  return `<label>${esc(f.label)}<input id="f_${f.id}" type="${f.type || 'text'}" ${f.step ? `step="${f.step}"` : ''} ${f.min != null ? `min="${f.min}"` : ''} maxlength="${f.max || 120}" autocomplete="${f.ac || 'off'}" value="${esc(v)}"></label>`;
+}
+async function modal(o) {
+  const fields = o.fields || [], vals = () => { const r = {}; fields.forEach(f => r[f.id] = $('#f_' + f.id).value); return r; };
+  const btns = o.buttons.map(b => b.primary && o.validate ? {...b, check: () => o.validate(vals())} : b);
+  const v = await open(o.title, (o.text ? `<p>${esc(o.text)}</p>` : '') + `<div class="${fields.length > 3 ? 'grid2' : ''}">` + fields.map(fieldHtml).join('') + '</div><p class="derr" id="dE">' + esc(o.error || '') + '</p>', btns);
+  return {value: v, vals: v === 'cancel' ? {} : vals()};
+}
+
+const b64 = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const ITER = 250000;
+async function deriveKey(pw, salt, iter) { const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']); return crypto.subtle.deriveKey({name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256'}, km, {name: 'AES-GCM', length: 256}, false, ['encrypt', 'decrypt']); }
+async function encrypt(obj, pw) { const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), key = await deriveKey(pw, salt, ITER); const ct = new Uint8Array(await crypto.subtle.encrypt({name: 'AES-GCM', iv}, key, new TextEncoder().encode(JSON.stringify(obj)))); return JSON.stringify({app: 'cuech4-study', format: 1, enc: 'AES-GCM-256', kdf: 'PBKDF2-SHA256', iter: ITER, salt: b64(salt), iv: b64(iv), data: b64(ct)}); }
+async function decrypt(file, pw) { const key = await deriveKey(pw, unb64(file.salt), file.iter); return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name: 'AES-GCM', iv: unb64(file.iv)}, key, unb64(file.data)))); }
+const safeName = s => (s || 'Study').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '').replace(/\s+/g, ' ').trim().replace(/ /g, '_').slice(0, 60) || 'Study';
+function needCrypto() { if (window.crypto && crypto.subtle) return true; toast('Encryption needs a secure page (https or a local file).', null, null, true); return false; }
+async function askPassword(confirm, error) {
+  const r = await modal({title: confirm ? 'Protect your backup' : 'Enter your password', text: confirm ? 'Your backup is encrypted with this password. There’s no reset — if you lose it, the file can’t be opened.' : 'This backup is encrypted. Enter the password you used when you downloaded it.',
+    fields: confirm ? [{id: 'p1', label: 'Password', type: 'password', ac: 'new-password'}, {id: 'p2', label: 'Confirm password', type: 'password', ac: 'new-password'}] : [{id: 'p1', label: 'Password', type: 'password', ac: 'current-password'}], error,
+    validate: v => confirm ? (v.p1.length < 6 ? 'Use at least 6 characters.' : v.p1 !== v.p2 ? 'The passwords don’t match.' : '') : (v.p1 ? '' : 'Enter the password.'),
+    buttons: [{label: 'Cancel', value: 'cancel'}, {label: confirm ? 'Encrypt & continue' : 'Open', value: 'ok', primary: true}]});
+  return r.value === 'ok' ? r.vals.p1 : null;
+}
+
+/* ---------- render ---------- */
+const deckOf = id => S.decks.find(d => d.id === id);
+function setView(v) { view = v; render(); window.scrollTo(0, 0); }
+function render() {
+  $('#hname').value = S.name;
+  ['home', 'make', 'deck', 'sess'].forEach(k => { $('#v' + k[0].toUpperCase() + k.slice(1)).hidden = view !== k; });
+  if (view === 'deck' && !deckOf(curDeck)) view = 'home', $('#vHome').hidden = false, $('#vDeck').hidden = true;
+  if (view === 'home') home(); else if (view === 'deck') deckView();
+  $('.top').hidden = view === 'sess'; chip();
+}
+function chip() {
+  const c = $('#chip'), lb = S.lastBackup ? shortD(S.lastBackup) : '';
+  if (!S.decks.length) { c.className = 'chip idle'; c.textContent = 'Empty · autosaves in this browser'; }
+  else if (S.dirty) { c.className = 'chip dirty'; c.textContent = '● Changes not backed up' + (lb ? ' · last backup ' + lb : ' yet'); }
+  else { c.className = 'chip'; c.textContent = '🔒 Backup up to date · ' + lb; }
+  $('#pwLbl').textContent = sessionPw ? 'Change password' : 'Set password';
+}
+function home() {
+  const ds = S.decks, tot = ds.reduce((a, d) => a + d.cards.length, 0), due = ds.reduce((a, d) => a + d.cards.filter(isDue).length, 0), mas = ds.reduce((a, d) => a + d.cards.filter(isMastered).length, 0), st = streak();
+  $('#empty').hidden = ds.length > 0;
+  $('#hk').innerHTML = [['Day streak', st, st === 1 ? 'day in a row' : 'days in a row', 'hero'], ['Answered today', S.days[todayS()] || 0, 'cards', ''], ['Due now', due, 'cards to review', ''], ['Mastered', mas, 'of ' + tot + ' cards', '']]
+    .map(([k, v, s, h]) => `<div class="kpi ${h}"><small>${k}${k === 'Day streak' ? ' 🔥' : ''}</small><b>${v}</b><i>${s}</i></div>`).join('');
+  $('#decks').innerHTML = ds.map(d => {
+    const s = deckStats(d), pm = s.n ? s.ma / s.n * 100 : 0, pl = s.n ? s.le / s.n * 100 : 0;
+    return `<div class="deck" data-d="${esc(d.id)}" tabindex="0" role="button" aria-label="Open deck ${esc(d.title)}"><div><b>${esc(d.title)}</b><small>${esc(d.subject || '—')} · ${s.n} cards</small></div>
+      <div class="mbar" role="img" aria-label="${s.ma} mastered, ${s.le} learning, ${s.nw} new"><i class="m" style="width:${pm}%"></i><i class="l" style="width:${pl}%"></i></div>
+      <div class="mleg">${s.ma} mastered · ${s.le} learning · ${s.nw} new</div>
+      <div class="dfoot">${s.due ? `<span class="due">⏰ ${s.due} due</span>` : '<span class="due ok">✓ All caught up</span>'}<button class="btn-main sm" data-study="${esc(d.id)}">Study</button></div></div>`;
+  }).join('') || '<p class="nodata">No decks yet — create one with AI or try the sample.</p>';
+  const days = [...Array(14)].map((_, i) => addDays(todayS(), i - 13)), vals = days.map(d => S.days[d] || 0), mx = Math.max(5, ...vals), W = 460, H = 160, L = 28, B = 22, T = 8, gw = (W - L) / 14, bw = 16, y = v => T + (H - B - T) * (1 - v / mx);
+  let h = `<svg class="chartbar" viewBox="0 0 ${W} ${H}" role="img" aria-label="Cards answered per day, last 14 days: ${vals.join(', ')}">`;
+  [0, 0.5, 1].forEach(f => { const v = Math.round(mx * f); h += `<line class="grid" x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`; });
+  days.forEach((d, i) => { const cx = L + gw * i + gw / 2, v = vals[i]; h += `<g data-tip="${shortD(d)}|${v} card${v === 1 ? '' : 's'}"><rect x="${cx - gw / 2}" y="${T}" width="${gw}" height="${H - B - T}" fill="transparent"/>${v ? `<rect x="${cx - bw / 2}" y="${y(v)}" width="${bw}" height="${H - B - y(v)}" rx="4" fill="var(--accent)"/>` : ''}</g>` + (i % 2 === 1 || i === 13 ? `<text x="${cx}" y="${H - 6}" text-anchor="middle"${i === 13 ? ' style="fill:var(--text);font-weight:700"' : ''}>${+d.slice(8)}</text>` : ''); });
+  $('#act').innerHTML = h + '</svg>';
+}
+$('#vHome').addEventListener('click', e => {
+  const g = e.target.closest('[data-go]'); if (g) { makeTarget = ''; return openMake(); }
+  const s = e.target.closest('[data-study]'); if (s) { e.stopPropagation(); curDeck = s.dataset.study; dFilter.topic = 'all'; return startMode('flash'); }
+  const d = e.target.closest('[data-d]'); if (d) openDeck(d.dataset.d);
+});
+$('#vHome').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.dataset.d) openDeck(e.target.dataset.d); });
+function openDeck(id) { curDeck = id; dFilter = {topic: 'all', n: 10, q: '', f: 'all', all: false}; setView('deck'); }
+$('#btnSample').onclick = () => { const r = parseDeck(JSON.stringify(SAMPLE), []); const d = {id: uid(), title: r.title, subject: r.subject, lang: r.lang, added: todayS(), covered: '', cards: r.cards}; S.decks.push(d); touch(); openDeck(d.id); toast('Sample deck added — it’s generic practice, not an official test.'); };
+$('#btnImportDeck').onclick = () => $('#file').click();
+
+/* ---------- make ---------- */
+let mkP = null;
+let makeSecId = '';
+function openMake(sec, secId) {
+  makeSecId = secId || ''; $('#mkSec').value = sec || '';
+  const m = S.set.mk || {};
+  $('#mkSub').value = m.sub || ''; $('#mkWhere').value = m.where || ''; if (m.n) $('#mkN').value = m.n; if (m.lang) $('#mkLang').value = m.lang; if (m.diff) $('#mkDiff').value = m.diff;
+  if (m.opts) $$('#mkOpts input').forEach(i => { i.checked = m.opts.includes(i.value); });
+  $('#mkTitle').textContent = makeTarget && deckOf(makeTarget) ? 'Add cards to “' + deckOf(makeTarget).title + '”' + (sec ? ' — ' + sec : '') : 'Create a deck with AI';
+  $('#mkTarget').innerHTML = '<option value="new">A new deck (named by the AI)</option>' + S.decks.map(d => `<option value="${esc(d.id)}">Add to: ${esc(d.title)}</option>`).join('');
+  $('#mkTarget').value = makeTarget && deckOf(makeTarget) ? makeTarget : 'new';
+  if (makeTarget && deckOf(makeTarget) && !$('#mkSub').value) $('#mkSub').value = deckOf(makeTarget).subject || '';
+  setView('make'); mkGen(); mkParse();
+}
+const mkOpts = () => ({sub: $('#mkSub').value.trim(), where: $('#mkWhere').value.trim(), sec: $('#mkSec').value.trim(), n: $('#mkN').value, lang: $('#mkLang').value, diff: $('#mkDiff').value, opts: $$('#mkOpts input:checked').map(i => i.value)});
+function mkGen() { const o = mkOpts(); $('#mkOut').value = genPrompt(o); S.set.mk = {sub: o.sub, where: o.where, n: o.n, lang: o.lang, diff: o.diff, opts: o.opts}; queueSave(); }
+['#mkSub', '#mkWhere', '#mkSec', '#mkN', '#mkLang', '#mkDiff'].forEach(s => $(s).addEventListener('input', mkGen)); $('#mkOpts').addEventListener('change', mkGen);
+function copyText(t, ta) {
+  const done = () => toast('Copied to clipboard.'), fb = () => { const x = ta || Object.assign(document.createElement('textarea'), {value: t}); if (!ta) document.body.appendChild(x); x.select(); try { document.execCommand('copy'); done(); } catch (e) { toast('Select the text and copy it manually.', null, null, true); } if (!ta) x.remove(); };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(done, fb); else fb();
+}
+$('#mkCopy').onclick = () => copyText($('#mkOut').value, $('#mkOut'));
+let mkT; $('#mkIn').addEventListener('input', () => { clearTimeout(mkT); mkT = setTimeout(mkParse, 250); });
+$('#mkTarget').addEventListener('change', mkParse);
+$('#mkFile').onclick = () => $('#file').click();
+$('#mkBack').onclick = () => { if (makeTarget && deckOf(makeTarget)) { curDeck = makeTarget; setView('deck'); } else setView('home'); };
+function mkParse() {
+  const tgt = $('#mkTarget').value, deck = tgt !== 'new' ? deckOf(tgt) : null;
+  mkP = parseDeck($('#mkIn').value, deck ? deck.cards.map(c => norm(c.q)) : []);
+  if (!deck && mkP.title && !mkP.fatal) { const same = S.decks.find(d => norm(d.title) === norm(mkP.title)); if (same) { $('#mkTarget').value = same.id; return mkParse(); } }
+  const st = $('#mkStat'), imp = $('#mkImport'), fix = $('#mkFix'); imp.disabled = true; fix.hidden = true; st.className = 'status';
+  const list = a => a.length ? '<ul>' + a.slice(0, 30).map(x => `<li>${esc(x)}</li>`).join('') + '</ul>' : '';
+  if (mkP.empty) st.textContent = 'Waiting for the AI’s answer…';
+  else if (mkP.backup) { st.classList.add('bad'); st.textContent = '✕ That’s an encrypted backup, not a deck. Use “Open backup” at the top instead.'; }
+  else if (mkP.fatal) { st.classList.add('bad'); st.textContent = '✕ ' + mkP.fatal; fix.hidden = false; }
+  else if (!mkP.cards.length) { st.classList.add('bad'); st.innerHTML = '✕ No usable cards found.' + list(mkP.issues); fix.hidden = false; }
+  else {
+    st.classList.add('ok');
+    st.innerHTML = `✓ <b>${mkP.cards.length} cards</b> ready${mkP.title ? ' — “' + esc(mkP.title) + '”' : ''}<br><span style="color:var(--muted);font-size:13px">${mkP.counts.mc} multiple choice · ${mkP.counts.tf} true/false · ${mkP.counts.fc} flashcards · ${mkP.topics} topics</span>`
+      + (mkP.covered && !/^all$/i.test(mkP.covered) ? `<br><span style="font-size:13px">ℹ The AI stopped at: ${esc(mkP.covered)} — run it again for the next part.</span>` : '')
+      + (mkP.issues.length ? `<br><span style="font-size:13px">⚠ ${mkP.issues.length} note${mkP.issues.length > 1 ? 's' : ''}:</span>` + list(mkP.issues) : '');
+    imp.disabled = false; imp.textContent = deck ? 'Add ' + mkP.cards.length + ' cards to “' + deck.title + '”' : 'Create deck “' + (mkP.title || 'Untitled deck') + '”'; if (mkP.issues.length) fix.hidden = false;
+  }
+}
+$('#mkFix').onclick = () => copyText(mkP && mkP.fatal ? 'Your last reply could not be read as JSON. Please send the COMPLETE deck again as one valid JSON object only (no commentary, no code fences), in the exact format I gave you.' : 'Some cards in your JSON had problems. Please send the COMPLETE corrected deck again as one valid JSON object only (no commentary, no code fences), same format as before. Problems found:\n' + ((mkP && mkP.issues) || []).map(x => '- ' + x).join('\n'));
+$('#mkImport').onclick = () => {
+  if (!mkP || !mkP.cards.length) return; const tgt = $('#mkTarget').value; let d = tgt !== 'new' ? deckOf(tgt) : null;
+  if (d) { d.cards.push(...mkP.cards); d.cards = d.cards.slice(0, 3000); d.covered = mkP.covered || ''; const sc = (d.sections || []).find(x => x.id === makeSecId); if (sc) sc.done = true; }
+  else { d = {id: uid(), title: mkP.title || $('#mkSub').value.trim() || 'Untitled deck', subject: mkP.subject || $('#mkSub').value.trim(), lang: mkP.lang, added: todayS(), covered: mkP.covered, cards: mkP.cards}; S.decks.push(d); }
+  makeSecId = ''; const n = mkP.cards.length; $('#mkIn').value = ''; mkP = null; touch(); curDeck = d.id; dFilter = {topic: 'all', n: 10, q: '', f: 'all', all: false}; setView('deck'); toast('Added ' + n + ' cards to “' + d.title + '”.');
+};
+
+/* ---------- deck view ---------- */
+const deck = () => deckOf(curDeck);
+function deckView() {
+  const d = deck(), s = deckStats(d), ts = topicStats(d), mcs = d.cards.filter(c => c.ch.length).length, miss = d.cards.filter(isMiss).length;
+  if (dFilter.topic !== 'all' && !ts.some(t => t.topic === dFilter.topic)) dFilter.topic = 'all';
+  const hist = S.hist.filter(h => h.deck === d.id).slice(0, 6), ML = {flash: '🃏 Flashcards', quiz: '✅ Quiz', exam: '🎯 Mock exam'};
+  $('#vDeck').innerHTML = `
+  <div class="crumb"><button class="btn-ghost sm" data-a="back">‹ All decks</button><input id="dtitle" maxlength="80" value="${esc(d.title)}" aria-label="Deck title"><span class="sp"></span>
+    <button class="btn-ghost sm" data-a="more">＋ Add cards with AI</button><button class="btn-ghost sm" data-a="share">⬇ Share deck (.json)</button><button class="btn-ghost sm dg" data-a="del">🗑 Delete</button></div>
+  <p class="hint" style="margin-top:-6px">${esc(d.subject || '')}${d.subject ? ' · ' : ''}${s.n} cards · ${s.ma} mastered · ${s.due} due${d.covered && !/^all$/i.test(d.covered) ? ' · AI stopped at: ' + esc(d.covered) + ' <button class="lk" data-a="next">Continue from there →</button>' : ''}</p>
+  <div class="tools2"><label style="color:var(--muted);font-size:13px">Practice
+    <select class="fld" id="dTopic"><option value="all">All topics</option>${ts.map(t => `<option value="${esc(t.topic)}"${t.topic === dFilter.topic ? ' selected' : ''}>${esc(t.topic)} (${t.n})</option>`).join('')}</select></label>
+    <label style="color:var(--muted);font-size:13px">Cards per session <select class="fld" id="dCount">${[[10, '10'], [20, '20'], [30, '30'], [0, 'All']].map(([v, l]) => `<option value="${v}"${v === dFilter.n ? ' selected' : ''}>${l}</option>`).join('')}</select></label></div>
+  <div class="tiles">
+    <button class="tile" data-m="flash" ${s.n ? '' : 'disabled'}><span class="ti">🃏</span><b>Flashcards</b><small>${s.due} due · spaced repetition</small></button>
+    <button class="tile" data-m="quiz" ${s.n ? '' : 'disabled'}><span class="ti">✅</span><b>Practice quiz</b><small>Smart mix of weak &amp; new cards</small></button>
+    <button class="tile" data-m="exam" ${mcs >= 4 ? '' : 'disabled'}><span class="ti">🎯</span><b>Mock exam</b><small>${Math.min(S.set.examN, mcs)} questions · pass at ${S.set.passPct}%${S.set.mins ? ' · ' + S.set.mins + ' min' : ''}</small><span class="cog" data-cfg title="Exam settings" role="button" aria-label="Exam settings">⚙</span></button>
+    <button class="tile" data-m="miss" ${miss ? '' : 'disabled'}><span class="ti">🔁</span><b>Review mistakes</b><small>${miss ? miss + ' to fix' : 'Nothing missed — nice'}</small></button>
+  </div>
+  <div class="g2">
+    <section class="card"><h3>Topics <small>accuracy so far</small></h3><div style="overflow-x:auto"><table class="t"><thead><tr><th>Topic</th><th class="hide-s">Cards</th><th>Accuracy</th><th></th></tr></thead><tbody>${ts.map(t => {
+      const tot = t.ok + t.bad, acc = tot ? Math.round(t.ok / tot * 100) : null, stt = acc === null ? '<span class="st n">not started</span>' : acc < 60 ? '<span class="st w">⚠ Needs work</span>' : acc < 85 ? '<span class="st m">◐ Getting there</span>' : '<span class="st g">✓ Strong</span>';
+      return `<tr><td>${esc(t.topic)}</td><td class="hide-s">${t.n}</td><td>${acc === null ? '—' : `<span class="abar"><i style="width:${acc}%"></i></span>${acc}%`} ${stt}</td><td><button class="lk" data-drill="${esc(t.topic)}">Drill</button></td></tr>`; }).join('')}</tbody></table></div></section>
+    <section class="card"><h3>Recent sessions</h3>${hist.length ? hist.map(h => `<div style="display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid #1a2536;font-size:14px"><span>${ML[h.mode]} <small style="color:var(--muted)">${shortD(dstr(new Date(h.t)))}</small></span><b>${h.ok}/${h.n} · ${h.n ? Math.round(h.ok / h.n * 100) : 0}%</b></div>`).join('') : '<p class="nodata">No sessions yet.</p>'}</section>
+  </div>
+  <section class="card"><h3>Chapter checklist <small>${(d.sections || []).filter(x => x.done).length} of ${(d.sections || []).length} covered</small></h3>
+    ${(d.sections || []).map(x => `<div class="sec ${x.done ? 'done' : ''}"><label><input type="checkbox" data-sec="${esc(x.id)}" ${x.done ? 'checked' : ''}><span>${esc(x.n)}</span></label><button class="lk" data-make="${esc(x.id)}">Make cards</button><button class="x" data-secdel="${esc(x.id)}" aria-label="Remove ${esc(x.n)}">✕</button></div>`).join('') || '<p class="hint" style="margin-top:0">List the chapters or sections of your material, then tick them off as you generate cards. “Make cards” pre-fills the prompt for that section.</p>'}
+    <div class="tools2" style="margin-top:12px"><input class="fld" id="secNew" maxlength="90" placeholder="Add a chapter or section name" aria-label="New section"><button class="btn-ghost sm" data-a="secAdd">＋ Add</button><button class="btn-ghost sm" data-a="secPaste">Paste a list</button><button class="btn-ghost sm" data-a="gaps">📋 Copy “find the gaps” prompt</button></div></section>
+  <section class="card"><h3>All cards <small id="dcount"></small></h3>
+    <div class="tools2"><input class="fld" id="dq" placeholder="🔍  Search cards" aria-label="Search cards" value="${esc(dFilter.q)}"><select class="fld" id="df" aria-label="Filter cards"><option value="all">All cards</option><option value="miss"${dFilter.f === 'miss' ? ' selected' : ''}>Missed last time</option><option value="fl"${dFilter.f === 'fl' ? ' selected' : ''}>🚩 Flagged</option><option value="new"${dFilter.f === 'new' ? ' selected' : ''}>Not started</option></select></div>
+    <div style="overflow-x:auto"><table class="t"><thead><tr><th>Question</th><th class="hide-s">Topic</th><th class="hide-s">Level</th></tr></thead><tbody id="dlist"></tbody></table></div><div style="text-align:center;margin-top:10px"><button class="btn-ghost sm" id="dmore" hidden></button></div></section>`;
+  deckList();
+}
+function deckList() {
+  const d = deck(), q = dFilter.q.toLowerCase();
+  let f = d.cards.filter(c => (dFilter.f === 'all' || (dFilter.f === 'miss' ? isMiss(c) : dFilter.f === 'fl' ? c.fl : !P(c.id))) && (!q || (c.q + ' ' + c.topic + ' ' + c.ans).toLowerCase().includes(q)));
+  $('#dcount').textContent = f.length + ' of ' + d.cards.length;
+  const lim = dFilter.all ? f.length : 80;
+  $('#dlist').innerHTML = f.slice(0, lim).map(c => { const p = P(c.id), lv = !p ? '<span class="st n">new</span>' : p.box >= 4 ? '<span class="st g">✓ mastered</span>' : p.lw ? '<span class="st w">⚠ missed</span>' : '<span class="st m">learning</span>'; return `<tr class="row" data-c="${c.id}" tabindex="0"><td><span class="clip ml">${esc(c.q.split('\n')[0])}</span>${c.fl ? '<span class="fl">🚩 flagged</span>' : ''}</td><td class="hide-s"><span class="tag">${esc(c.topic)}</span></td><td class="hide-s">${lv}</td></tr>`; }).join('') || '<tr><td colspan="3" class="nodata">No cards match.</td></tr>';
+  const mb = $('#dmore'); mb.hidden = f.length <= lim; mb.textContent = 'Show all ' + f.length;
+}
+$('#vDeck').addEventListener('input', e => { if (e.target.id === 'dq') { dFilter.q = e.target.value; dFilter.all = false; deckList(); } });
+$('#vDeck').addEventListener('change', e => {
+  if (e.target.dataset.sec) { const sc = deck().sections.find(x => x.id === e.target.dataset.sec); if (sc) { sc.done = e.target.checked; commit(); } return; }
+  if (e.target.id === 'dTopic') dFilter.topic = e.target.value; else if (e.target.id === 'dCount') dFilter.n = +e.target.value;
+  else if (e.target.id === 'df') { dFilter.f = e.target.value; dFilter.all = false; deckList(); } else if (e.target.id === 'dtitle') { const d = deck(); d.title = e.target.value.trim().slice(0, 80) || d.title; commit(); }
+});
+$('#vDeck').addEventListener('click', async e => {
+  const t = e.target;
+  if (t.id === 'dmore') { dFilter.all = true; return deckList(); }
+  const a = t.closest('[data-a]'); if (a) {
+    const d = deck();
+    if (a.dataset.a === 'back') return setView('home');
+    if (a.dataset.a === 'more') { makeTarget = d.id; return openMake(); }
+    if (a.dataset.a === 'next') { makeTarget = d.id; return openMake('Continue right after: ' + d.covered); }
+    if (a.dataset.a === 'secAdd') return addSections([$('#secNew').value]);
+    if (a.dataset.a === 'secPaste') { const v = await open('Paste your chapter list', '<p>One chapter or section per line (numbers and bullets are removed).</p><textarea id="secTa" rows="9" placeholder="Chapter 1 — Getting a license\nChapter 2 — Signs and signals\n…"></textarea>', [{label: 'Cancel', value: 'cancel'}, {label: 'Add to checklist', value: 'ok', primary: true}]); if (v === 'ok') addSections($('#secTa').value.split('\n')); return; }
+    if (a.dataset.a === 'gaps') return copyText(gapsPrompt(d));
+    if (a.dataset.a === 'share') { const x = document.createElement('a'); x.href = URL.createObjectURL(new Blob([exportDeck(d)], {type: 'application/json'})); x.download = safeName(d.title) + '.json'; document.body.appendChild(x); x.click(); x.remove(); setTimeout(() => URL.revokeObjectURL(x.href), 4000); return toast('Deck file downloaded — anyone can import it here.'); }
+    if (a.dataset.a === 'del') { const r = await modal({title: 'Delete this deck?', text: '“' + d.title + '” and your progress on its ' + d.cards.length + ' cards will be removed from this browser.', buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Delete deck', value: 'ok', primary: true}]}); if (r.value === 'ok') { d.cards.forEach(c => delete S.prog[c.id]); S.decks = S.decks.filter(x => x !== d); touch(); setView('home'); } return; }
+  }
+  if (t.closest('[data-cfg]')) { e.stopPropagation(); return examSettings(); }
+  const m = t.closest('[data-m]'); if (m && !m.disabled) return startMode(m.dataset.m);
+  const mk = t.closest('[data-make]'); if (mk) { const sc = deck().sections.find(x => x.id === mk.dataset.make); if (sc) { makeTarget = curDeck; return openMake(sc.name || sc.n, sc.id); } }
+  const sd = t.closest('[data-secdel]'); if (sd) { const d = deck(); d.sections = d.sections.filter(x => x.id !== sd.dataset.secdel); return commit(); }
+  const dr = t.closest('[data-drill]'); if (dr) { dFilter.topic = dr.dataset.drill; return startMode('quiz'); }
+  const c = t.closest('tr[data-c]'); if (c) editCard(c.dataset.c);
+});
+$('#vDeck').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'secNew') { e.preventDefault(); return addSections([e.target.value]); } if (e.key === 'Enter') { const r = e.target.closest('tr[data-c]'); if (r) editCard(r.dataset.c); } });
+function addSections(lines) {
+  const d = deck(); d.sections = d.sections || []; const have = new Set(d.sections.map(x => norm(x.n))); let n = 0;
+  lines.map(x => String(x).replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').trim().slice(0, 90)).filter(Boolean).forEach(x => { if (d.sections.length < 100 && !have.has(norm(x))) { have.add(norm(x)); d.sections.push({id: uid(), n: x, done: false}); n++; } });
+  if (n) commit(); else toast('Nothing new to add.');
+}
+function gapsPrompt(d) {
+  const ts = topicStats(d), m = S.set.mk || {};
+  const ctx = `I already have ${d.cards.length} study cards for "${d.subject || d.title}". Cards per topic so far: ${ts.map(t => t.topic + ' (' + t.n + ')').join('; ')}.\nNow find the GAPS: write cards only for facts in the material that are NOT covered yet or only thinly covered — especially exceptions, numbers and look-alike rules. Do not repeat the obvious.\n\n`;
+  return ctx + genPrompt({sub: d.subject || d.title, where: m.where || '', sec: 'anything not yet covered or only thinly covered (see the list above)', n: '15', lang: m.lang || 'English', diff: m.diff || 'tricky', opts: m.opts || ['scen', 'num']});
+}
+async function examSettings() {
+  const r = await modal({title: 'Mock exam settings', text: 'Match these to the real test you’re preparing for.', fields: [
+    {id: 'n', label: 'Number of questions', type: 'number', value: S.set.examN, min: 5, max: 5}, {id: 'p', label: 'Passing score (%)', type: 'number', value: S.set.passPct, min: 10, max: 5},
+    {id: 'm', label: 'Time limit in minutes (0 = no timer)', type: 'number', value: S.set.mins, min: 0, max: 5}, {id: 's', label: 'Shuffle answer order', type: 'select', options: [['1', 'Yes'], ['0', 'No']], value: S.set.shuffle ? '1' : '0'}],
+    validate: v => !(+v.n >= 5 && +v.n <= 200) ? 'Questions: 5 to 200.' : !(+v.p >= 10 && +v.p <= 100) ? 'Passing score: 10 to 100.' : !(+v.m >= 0 && +v.m <= 300) ? 'Minutes: 0 to 300.' : '',
+    buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Save', value: 'ok', primary: true}]});
+  if (r.value === 'ok') { S.set.examN = Math.round(+r.vals.n); S.set.passPct = Math.round(+r.vals.p); S.set.mins = Math.round(+r.vals.m); S.set.shuffle = r.vals.s === '1'; commit(); }
+}
+async function editCard(id) {
+  const d = deck(), c = d.cards.find(x => x.id === id); if (!c) return; const mc = c.ch.length > 0;
+  const fields = [{id: 'q', label: 'Question', value: c.q, max: 700}].concat(mc ? [0, 1, 2, 3, 4].map(i => ({id: 'c' + i, label: 'Choice ' + LET[i], value: c.ch[i] || '', max: 300})).concat([{id: 'a', label: 'Correct choice', type: 'select', options: [0, 1, 2, 3, 4].map(i => [i, LET[i]]), value: c.a}]) : [{id: 'ans', label: 'Answer', value: c.ans, max: 500}])
+    .concat([{id: 'ex', label: 'Explanation', value: c.ex, max: 900}, {id: 'topic', label: 'Topic', value: c.topic, max: 60}, {id: 'fl', label: 'Flag as possibly wrong?', type: 'select', options: [['0', 'No'], ['1', 'Yes 🚩']], value: c.fl ? '1' : '0'}]);
+  const r = await modal({title: 'Edit card', fields, validate: v => { if (!v.q.trim()) return 'The question can’t be empty.'; if (!mc) return v.ans.trim() ? '' : 'The answer can’t be empty.'; const ch = [0, 1, 2, 3, 4].map(i => v['c' + i].trim()); if (ch.filter(Boolean).length < 2) return 'Keep at least two choices.'; return ch[+v.a] ? '' : 'The correct choice can’t be empty.'; },
+    buttons: [{label: 'Delete', value: 'del', cls: 'danger'}, {label: 'Cancel', value: 'cancel'}, {label: 'Save', value: 'ok', primary: true}]});
+  if (r.value === 'del') { const idx = d.cards.indexOf(c), p = S.prog[c.id]; d.cards.splice(idx, 1); delete S.prog[c.id]; commit(); toast('Card deleted', 'Undo', () => { d.cards.splice(idx, 0, c); if (p) S.prog[c.id] = p; commit(); }); }
+  else if (r.value === 'ok') {
+    const v = r.vals; c.q = v.q.trim(); c.ex = v.ex.trim(); c.topic = v.topic.trim() || 'General'; c.fl = v.fl === '1';
+    if (mc) { const keep = [0, 1, 2, 3, 4].filter(i => v['c' + i].trim()); c.wr = keep.map(i => c.wr[i] || ''); c.ch = keep.map(i => v['c' + i].trim()); c.a = keep.indexOf(+v.a); c.wr[c.a] = ''; c.ans = c.ch[c.a]; c.tf = false; } else c.ans = v.ans.trim();
+    commit();
+  }
+}
+
+/* ---------- sessions ---------- */
+const cur = () => sess.cards[sess.i];
+function startMode(m) {
+  const d = deck(), n = dFilter.n || Infinity; let cards = d.cards.filter(c => dFilter.topic === 'all' || c.topic === dFilter.topic), label = '';
+  if (m === 'flash') {
+    let q = cards.filter(isDue).sort((a, b) => (P(a.id) ? 0 : 1) - (P(b.id) ? 0 : 1) || ((P(a.id) || {}).due || '').localeCompare((P(b.id) || {}).due || '')).slice(0, n);
+    if (!q.length) { q = shuffle(cards.slice()).slice(0, n); if (q.length) toast('Nothing due right now — practicing a random mix.'); }
+    if (!q.length) return toast('No cards in this selection.', null, null, true); return begin('flash', d, q);
+  }
+  if (m === 'miss') { cards = shuffle(cards.filter(isMiss)).slice(0, n); if (!cards.length) return toast('No mistakes to review in this selection.'); return begin('quiz', d, cards, 'Review mistakes'); }
+  if (m === 'exam') { const mc = shuffle(d.cards.filter(c => c.ch.length)).slice(0, S.set.examN); return begin('exam', d, mc); }
+  const pr = c => isMiss(c) ? 0 : !P(c.id) ? 1 : isDue(c) ? 2 : 3;
+  cards = shuffle(shuffle(cards.slice()).sort((a, b) => pr(a) - pr(b)).slice(0, n)); if (!cards.length) return toast('No cards in this selection.', null, null, true);
+  begin('quiz', d, cards);
+}
+function begin(mode, d, cards, label) {
+  clearInterval(sess && sess.timer);
+  sess = {mode, d: d.id, title: d.title, label: label || '', cards: cards.slice(), i: 0, res: {}, perm: {}, t0: Date.now(), revealed: false, again: {}, limit: mode === 'exam' && S.set.mins > 0 ? S.set.mins * 60 : 0, done: false, timer: null, again2: () => begin(mode, d, mode === 'exam' ? shuffle(d.cards.filter(c => c.ch.length)).slice(0, S.set.examN) : shuffle(cards.slice()), label)};
+  cards.forEach(c => { if (c.ch.length) { const p = c.ch.map((_, i) => i); sess.perm[c.id] = (S.set.shuffle && !c.tf) ? shuffle(p) : p; } });
+  if (sess.limit) sess.timer = setInterval(tick, 1000);
+  view = 'sess'; render(); renderQ(); window.scrollTo(0, 0);
+}
+function tick() { if (!sess || sess.done) return; const left = sess.limit - Math.floor((Date.now() - sess.t0) / 1000), el = $('#tm'); if (left <= 0) { toast('Time is up — exam finished.'); return finish(); } if (el) { el.textContent = '⏱ ' + fmtT(left); el.classList.toggle('low', left <= 60); } }
+function renderQ() {
+  const s = sess, c = cur(), r = s.res[c.id], ex = s.mode === 'exam', isLast = s.i >= s.cards.length - 1, mc = c.ch.length > 0;
+  let h = `<div class="sess"><div class="stop"><button class="btn-ghost sm" data-s="exit">✕ Exit</button><div class="prog" role="progressbar" aria-valuenow="${s.i}" aria-valuemax="${s.cards.length}"><i style="width:${s.i / s.cards.length * 100}%"></i></div><span class="cnt">${s.i + 1} / ${s.cards.length}</span>${s.limit ? '<span class="timer" id="tm"></span>' : ''}</div>`;
+  h += `<div class="qcard ${s.mode === 'flash' || !mc ? 'flip' : ''}" ${s.mode === 'flash' || (!mc && !r) ? 'data-s="flip"' : ''}><div><span class="tag">${esc(c.topic)}</span>${s.label ? ' <span class="tag">' + esc(s.label) + '</span>' : ''}</div><p class="qtext ml">${esc(c.q)}</p>`;
+  if (s.mode === 'flash' || !mc) {
+    const showBack = s.mode === 'flash' ? s.revealed : (s.revealed || !!r);
+    if (!showBack) h += '<p class="hint" style="text-align:center;margin-top:20px">Tap the card or press <b>Space</b> to reveal the answer</p>';
+    else h += `<div class="back"><div class="ans ml">${esc(c.ans)}</div>${c.ex ? `<p class="ml" style="color:var(--muted)">${esc(c.ex)}</p>` : ''}${c.ref ? `<p class="src" style="color:var(--muted);font-size:12.5px">Source: ${esc(c.ref)}</p>` : ''}<button class="lk" data-s="flag">${c.fl ? '🚩 Flagged — tap to unflag' : '🚩 This looks wrong'}</button></div>`;
+    h += '</div>';
+    if (showBack && !r || (showBack && s.mode === 'flash')) {
+      if (s.mode === 'flash') h += `<div class="rate">${[[1, '✕ Again'], [2, 'Hard'], [3, 'Good'], [4, 'Easy']].map(([k, l]) => `<button data-s="rate" data-r="${k}">${l}<small>${nextHint(c, k)} · key ${k}</small></button>`).join('')}</div>`;
+      else h += `<div class="rate" style="grid-template-columns:1fr 1fr"><button data-s="self" data-ok="0">✕ Missed it<small>key 1</small></button><button data-s="self" data-ok="1">✓ Got it<small>key 2</small></button></div>`;
+    }
+    if (r && s.mode !== 'flash') h += `<div class="actions"><span></span><button class="btn-main" data-s="next">${isLast ? 'Finish' : 'Next'} →</button></div>`;
+  } else {
+    h += '<div class="choices">' + sess.perm[c.id].map((k, pos) => {
+      let cls = '', mark = LET[pos];
+      if (ex) { if (r && r.pick === k) cls = 'sel'; }
+      else if (r) { if (k === c.a) { cls = 'right'; mark = '✓'; } else if (k === r.pick) { cls = 'wrong'; mark = '✕'; } }
+      return `<button class="ch ${cls}" data-s="pick" data-k="${k}" ${r && !ex ? 'disabled' : ''}><span class="L">${mark}</span><span class="ml">${esc(c.ch[k])}</span></button>`;
+    }).join('') + '</div></div>';
+    if (r && !ex) {
+      h += `<div class="fb ${r.ok ? 'ok' : 'no'}" role="status"><h4>${r.ok ? '✓ Correct' : '✕ Not quite'}</h4>${r.ok ? '' : `<p><b>You chose:</b> ${esc(c.ch[r.pick])}${c.wr[r.pick] ? ' — ' + esc(c.wr[r.pick]) : ''}</p><p><b>Correct answer:</b> ${esc(c.ans)}</p>`}${c.ex ? `<p class="ml">${esc(c.ex)}</p>` : ''}${c.ref ? `<p class="src">Source: ${esc(c.ref)}</p>` : ''}<button class="lk" data-s="flag">${c.fl ? '🚩 Flagged — tap to unflag' : '🚩 This looks wrong'}</button></div>`;
+      h += `<div class="actions"><span class="hint" style="margin:0">Press Enter for next</span><button class="btn-main" data-s="next">${isLast ? 'Finish' : 'Next'} →</button></div>`;
+    }
+    if (ex) {
+      h += `<div class="actions"><button class="btn-ghost" data-s="prev" ${s.i ? '' : 'disabled'}>← Previous</button><button class="btn-ghost" data-s="${isLast ? 'finish' : 'next'}">${isLast ? 'Review & finish' : 'Next →'}</button></div>`;
+      h += '<div class="nav" aria-label="Question navigator">' + s.cards.map((x, i) => `<button class="${s.res[x.id] ? 'a' : ''} ${i === s.i ? 'cur' : ''}" data-s="goto" data-i="${i}" aria-label="Question ${i + 1}${s.res[x.id] ? ', answered' : ''}">${i + 1}</button>`).join('') + '</div>';
+      h += '<div class="actions"><span class="hint" style="margin:0">' + Object.keys(s.res).length + ' of ' + s.cards.length + ' answered</span><button class="btn-main" data-s="finish">Finish exam</button></div>';
+    }
+  }
+  $('#vSess').innerHTML = h + '</div>'; if (s.limit) tick();
+}
+function advance() { if (sess.i >= sess.cards.length - 1) return finish(); sess.i++; sess.revealed = false; renderQ(); window.scrollTo(0, 0); }
+async function finish() {
+  const s = sess; if (!s || s.done) return;
+  if (s.mode === 'exam' && s.limit && Math.floor((Date.now() - s.t0) / 1000) < s.limit) { const un = s.cards.length - Object.keys(s.res).length; if (un) { const r = await modal({title: 'Finish the exam?', text: un + ' question' + (un > 1 ? 's are' : ' is') + ' still unanswered and will count as wrong.', buttons: [{label: 'Keep going', value: 'cancel'}, {label: 'Finish', value: 'ok', primary: true}]}); if (r.value !== 'ok') return; } }
+  else if (s.mode === 'exam' && !s.limit) { const un = s.cards.length - Object.keys(s.res).length; if (un) { const r = await modal({title: 'Finish the exam?', text: un + ' question' + (un > 1 ? 's are' : ' is') + ' still unanswered and will count as wrong.', buttons: [{label: 'Keep going', value: 'cancel'}, {label: 'Finish', value: 'ok', primary: true}]}); if (r.value !== 'ok') return; } }
+  if (s.done) return; s.done = true; clearInterval(s.timer);
+  if (s.mode === 'exam') s.cards.forEach(c => { const r = s.res[c.id]; if (r) { r.ok = r.pick === c.a; grade(c, r.ok); } else s.res[c.id] = {pick: null, ok: false, none: true}; });
+  const uniq = [...new Map(s.cards.map(c => [c.id, c])).values()], ok = uniq.filter(c => s.res[c.id] && s.res[c.id].ok).length;
+  s.R = {n: uniq.length, ok, secs: Math.round((Date.now() - s.t0) / 1000), uniq};
+  S.hist.unshift({t: Date.now(), deck: s.d, title: s.title, mode: s.mode, n: uniq.length, ok, secs: s.R.secs}); S.hist = S.hist.slice(0, 300); touch();
+  renderResults();
+}
+function renderResults() {
+  const s = sess, R = s.R, pct = R.n ? Math.round(R.ok / R.n * 100) : 0, C = 2 * Math.PI * 60, wrong = R.uniq.filter(c => !s.res[c.id].ok), pass = pct >= S.set.passPct;
+  const bt = new Map(); R.uniq.forEach(c => { const t = bt.get(c.topic) || {n: 0, ok: 0}; t.n++; if (s.res[c.id].ok) t.ok++; bt.set(c.topic, t); });
+  const ML = {flash: 'Flashcard session', quiz: 'Quiz', exam: 'Mock exam'};
+  let h = `<div class="sess"><div class="stop"><button class="btn-ghost sm" data-s="back">‹ Back to deck</button></div><section class="card"><h3>${s.label || ML[s.mode]} · results</h3>
+  <div class="resh"><svg class="ring" viewBox="0 0 150 150" role="img" aria-label="${pct} percent correct"><circle cx="75" cy="75" r="60" fill="none" stroke="#1a2536" stroke-width="14"/><circle cx="75" cy="75" r="60" fill="none" stroke="var(--accent)" stroke-width="14" stroke-linecap="round" stroke-dasharray="${C * pct / 100} ${C}" transform="rotate(-90 75 75)"/><text x="75" y="84" text-anchor="middle" font-size="30">${pct}%</text></svg>
+  <div><div style="font-size:20px;font-weight:700">${R.ok} of ${R.n} ${s.mode === 'flash' ? 'remembered' : 'correct'}</div><div style="color:var(--muted);margin:4px 0 10px">Time: ${fmtT(R.secs)}</div>${s.mode === 'exam' ? (pass ? `<span class="badge p">✓ Passed — needs ${S.set.passPct}%</span>` : `<span class="badge f">✕ Not yet — needs ${S.set.passPct}%</span>`) : (pct >= 85 ? '<span class="badge p">✓ Strong session</span>' : '<span class="badge f">◐ Keep practicing — it sticks with repetition</span>')}</div></div>
+  <div style="overflow-x:auto"><table class="t"><thead><tr><th>Topic</th><th>Score</th></tr></thead><tbody>${[...bt.entries()].map(([t, v]) => { const p = Math.round(v.ok / v.n * 100); return `<tr><td>${esc(t)}</td><td><span class="abar"><i style="width:${p}%"></i></span>${v.ok}/${v.n} · ${p}%</td></tr>`; }).join('')}</tbody></table></div>
+  <div class="actions"><span></span><span style="display:flex;gap:10px;flex-wrap:wrap">${wrong.length ? '<button class="btn-main" data-s="missed">Practice the ' + wrong.length + ' missed</button>' : ''}<button class="btn-ghost" data-s="retry">${s.mode === 'exam' ? 'Retake with new questions' : 'Go again'}</button></span></div></section>`;
+  if (wrong.length) h += '<section class="card"><h3>Review what you missed <small>' + wrong.length + '</small></h3>' + wrong.map(c => { const r = s.res[c.id]; return `<details class="miss"><summary class="ml">${esc(c.q)}</summary>${c.ch.length ? `<p><b>You chose:</b> ${r.none ? '— (no answer)' : esc(c.ch[r.pick]) + (c.wr[r.pick] ? ' — ' + esc(c.wr[r.pick]) : '')}</p>` : ''}<p><b>Correct:</b> ${esc(c.ans)}</p>${c.ex ? `<p class="ml">${esc(c.ex)}</p>` : ''}${c.ref ? `<p style="font-size:12.5px">Source: ${esc(c.ref)}</p>` : ''}</details>`; }).join('') + '</section>';
+  $('#vSess').innerHTML = h + '</div>'; window.scrollTo(0, 0);
+}
+async function exitSess() {
+  const s = sess; if (!s) return setView('deck');
+  if (!s.done && s.mode === 'exam' && Object.keys(s.res).length) { const r = await modal({title: 'Leave the exam?', text: 'Your answers in this exam won’t be saved.', buttons: [{label: 'Stay', value: 'cancel'}, {label: 'Leave', value: 'ok', primary: true}]}); if (r.value !== 'ok') return; }
+  clearInterval(s.timer); s.done = true; curDeck = s.d; setView(deckOf(s.d) ? 'deck' : 'home');
+}
+function pickChoice(k) {
+  const c = cur(), s = sess; if (s.res[c.id] && s.mode !== 'exam') return;
+  if (s.mode === 'exam') s.res[c.id] = {pick: k}; else { const ok = k === c.a; s.res[c.id] = {pick: k, ok}; grade(c, ok); }
+  renderQ();
+}
+function rate(r) { const c = cur(), s = sess; if (!s.revealed) return; const ok = r >= 2; grade(c, ok, r); if (!s.res[c.id]) s.res[c.id] = {ok, r}; if (r === 1 && (s.again[c.id] || 0) < 2) { s.again[c.id] = (s.again[c.id] || 0) + 1; s.cards.push(c); } advance(); }
+function selfGrade(ok) { const c = cur(), s = sess; if (s.res[c.id]) return; s.res[c.id] = {ok}; grade(c, ok); renderQ(); }
+$('#vSess').addEventListener('click', e => {
+  const b = e.target.closest('[data-s]'); if (!b || !sess) return; const a = b.dataset.s;
+  if (a === 'exit' || a === 'back') return a === 'back' ? (clearInterval(sess.timer), curDeck = sess.d, setView(deckOf(sess.d) ? 'deck' : 'home')) : exitSess();
+  if (a === 'flip') { if (!sess.revealed) { sess.revealed = true; renderQ(); } return; }
+  if (a === 'pick') return pickChoice(+b.dataset.k);
+  if (a === 'rate') return rate(+b.dataset.r);
+  if (a === 'self') return selfGrade(b.dataset.ok === '1');
+  if (a === 'next') return advance();
+  if (a === 'prev') { sess.i = Math.max(0, sess.i - 1); return renderQ(); }
+  if (a === 'goto') { sess.i = +b.dataset.i; return renderQ(); }
+  if (a === 'finish') return finish();
+  if (a === 'flag') { const c = cur(); c.fl = !c.fl; touch(); renderQ(); return toast(c.fl ? 'Flagged — fix or remove it from the deck later.' : 'Flag removed.'); }
+  if (a === 'retry') return sess.again2();
+  if (a === 'missed') { const d = deckOf(sess.d), w = sess.R.uniq.filter(c => !sess.res[c.id].ok); return begin('quiz', d, shuffle(w), 'Missed questions'); }
+});
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); return doSave(); }
+  if (view !== 'sess' || !sess || sess.done || $('#dlg').open || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+  const c = cur(), s = sess, r = s.res[c.id], mc = c.ch.length > 0;
+  if (e.key === 'Escape') return exitSess();
+  if (s.mode === 'flash' || !mc) {
+    const shown = s.mode === 'flash' ? s.revealed : (s.revealed || !!r);
+    if ((e.key === ' ' || e.key === 'Enter') && !shown) { e.preventDefault(); s.revealed = true; return renderQ(); }
+    if (s.mode === 'flash' && s.revealed && '1234'.includes(e.key) && e.key) return rate(+e.key);
+    if (s.mode !== 'flash' && shown && !r && (e.key === '1' || e.key === '2')) return selfGrade(e.key === '2');
+    if ((e.key === 'Enter' || e.key === ' ') && r && s.mode !== 'flash') { e.preventDefault(); return advance(); }
+    return;
+  }
+  if (/^[1-6]$/.test(e.key)) { const k = s.perm[c.id][+e.key - 1]; if (k !== undefined) return pickChoice(k); }
+  if (/^[a-fA-F]$/.test(e.key)) { const k = s.perm[c.id][LET.indexOf(e.key.toUpperCase())]; if (k !== undefined) return pickChoice(k); }
+  if (s.mode === 'exam') { if (e.key === 'ArrowRight' && s.i < s.cards.length - 1) { s.i++; renderQ(); } if (e.key === 'ArrowLeft' && s.i > 0) { s.i--; renderQ(); } }
+  else if (e.key === 'Enter' && r) { e.preventDefault(); advance(); }
+});
+
+/* ---------- top bar, backup ---------- */
+$('#hname').addEventListener('change', e => { S.name = e.target.value.trim().slice(0, 60) || 'My Study Space'; commit(); });
+const tip = $('#tip');
+document.addEventListener('mouseover', e => { const t = e.target.closest('[data-tip]'); if (!t) { tip.hidden = true; return; } const [a, b] = t.dataset.tip.split('|'); tip.innerHTML = `<b>${esc(a)}</b>${esc(b)}`; tip.hidden = false; });
+document.addEventListener('mousemove', e => { tip.style.left = e.clientX + 'px'; tip.style.top = e.clientY + 'px'; });
+
+function backupData() { const {name, decks, prog, hist, days, set} = S; return {name, decks, prog, hist, days, set}; }
+async function doSave() {
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  if (!needCrypto()) return; if (!S.decks.length) return toast('Nothing to back up yet.', null, null, true);
+  if (!sessionPw) { const pw = await askPassword(true); if (!pw) return; sessionPw = pw; }
+  const date = todayS(), n = S.exp.date === date ? S.exp.n + 1 : 1;
+  let text; try { text = await encrypt({app: 'cuech4-study', v: 1, ...backupData(), exportedAt: new Date().toISOString(), date, version: n}, sessionPw); } catch (e) { return toast('Couldn’t encrypt the backup in this browser.', null, null, true); }
+  const fname = safeName(S.name) + '_' + date + (n > 1 ? '_v' + n : '') + '.txt';
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type: 'text/plain'})); a.download = fname; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  S.exp = {date, n}; S.dirty = false; S.lastBackup = date; saveNow(); chip(); toast('Backup downloaded: ' + fname);
+}
+async function openFile(file) {
+  if (!file) return; const text = await file.text(); let obj; try { obj = JSON.parse(text); } catch (e) {}
+  if (obj && obj.app === 'cuech4-study' && obj.salt && obj.iv && obj.data) return openBackup(obj);
+  if (view !== 'make') { makeTarget = ''; openMake(); }
+  $('#mkIn').value = text; mkParse();
+  if (!mkP || !mkP.cards.length) toast('That file doesn’t look like a deck or a backup.', null, null, true);
+}
+async function openBackup(obj) {
+  if (!needCrypto()) return;
+  let err = '', data = null, pw = null;
+  while (!data) { pw = await askPassword(false, err); if (!pw) return; try { data = await decrypt(obj, pw); } catch (e) { err = 'Wrong password, or the file was changed.'; } }
+  const inc = clean(data); if (!inc || !inc.decks.length) return toast('The backup opened but has no decks in it.', null, null, true);
+  const nc = inc.decks.reduce((a, d) => a + d.cards.length, 0); let mode = 'replace';
+  if (S.decks.length) { const r = await modal({title: 'Open this backup', text: `It has ${inc.decks.length} deck${inc.decks.length > 1 ? 's' : ''} and ${nc} cards. Merge adds anything missing to what you have now (nothing is overwritten). Replace swaps your current study space for the backup.`, buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Replace', value: 'replace'}, {label: 'Merge', value: 'merge', primary: true}]}); if (r.value === 'cancel') return; mode = r.value; }
+  if (mode === 'replace') S = {...inc, exp: {date: String(data.date || ''), n: Number.isFinite(data.version) ? data.version : 0}, dirty: false, lastBackup: DATE_RE.test(data.date) ? data.date : ''};
+  else {
+    for (const d of inc.decks) { const m = S.decks.find(x => x.id === d.id); if (!m) S.decks.push(d); else { const ids = new Set(m.cards.map(c => c.id)); d.cards.forEach(c => { if (!ids.has(c.id)) m.cards.push(c); }); } }
+    for (const [k, p] of Object.entries(inc.prog)) { const e = S.prog[k]; if (!e || p.last > e.last) S.prog[k] = p; }
+    for (const [k, v] of Object.entries(inc.days)) S.days[k] = Math.max(S.days[k] || 0, v);
+    const hk = new Set(S.hist.map(h => h.t + h.deck)); inc.hist.forEach(h => { if (!hk.has(h.t + h.deck)) S.hist.push(h); }); S.hist = S.hist.sort((a, b) => b.t - a.t).slice(0, 300); S.dirty = true;
+  }
+  sessionPw = pw; curDeck = null; saveNow(); setView('home'); toast(mode === 'merge' ? 'Merged the backup into your study space' : 'Opened ' + S.name);
+}
+$('#btnSave').onclick = doSave; $('#btnOpen').onclick = () => $('#file').click();
+$('#file').onchange = e => { const f = e.target.files[0]; e.target.value = ''; openFile(f); };
+$('#btnPw').onclick = async () => { if (!needCrypto()) return; const pw = await askPassword(true); if (pw) { sessionPw = pw; chip(); toast('Password set. Your next backup will use it.'); } };
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => { e.preventDefault(); const f = e.dataTransfer && e.dataTransfer.files[0]; if (f && /\.(txt|json)$/i.test(f.name)) openFile(f); });
+$('#newBtn').onclick = async () => {
+  if (S.decks.length) {
+    const btns = S.dirty ? [{label: 'Cancel', value: 'cancel'}, {label: 'Discard & start new', value: 'discard'}, {label: 'Backup first', value: 'save', primary: true}] : [{label: 'Cancel', value: 'cancel'}, {label: 'Start new', value: 'discard', primary: true}];
+    const r = await modal({title: 'Start a new study space?', text: S.dirty ? 'You have changes that aren’t in a backup yet. Starting new clears this browser’s copy.' : 'Your latest backup has everything. Starting new clears this browser’s copy.', buttons: btns});
+    if (r.value === 'cancel') return; if (r.value === 'save') { await doSave(); if (S.dirty) return; }
+  }
+  clearInterval(sess && sess.timer); S = fresh(); sessionPw = null; curDeck = null; sess = null; saveNow(); setView('home');
+};
+
+/* ---------- boot ---------- */
+(async () => {
+  const st = await store.load(); const c = clean(st); if (c && st) S = c;
+  render(); window.__study = {get S() { return S; }, get sess() { return sess; }, ready: true, parseDeck, genPrompt, SAMPLE};
+})();
+})();
+</script>
+</body>
+</html>
