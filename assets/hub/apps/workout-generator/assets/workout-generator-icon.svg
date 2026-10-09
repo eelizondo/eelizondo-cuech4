@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <filter id="purple" color-interpolation-filters="sRGB">
-      <feColorMatrix type="matrix" values="0 0 0 0 0.659 0 0 0 0 0.333 0 0 0 0 0.969 0 0 0 1 0"/>
-    </filter>
-  </defs>
-  <text x="32" y="52" text-anchor="middle" font-size="54" font-family="sans-serif" filter="url(#purple)">💪︎</text>
+  <rect x="4" y="4" width="56" height="56" rx="12" fill="#7c3aed"/>
+  <rect x="25" y="29" width="14" height="6" rx="3" fill="#ede9fe"/>
+  <rect x="19" y="20" width="7" height="24" rx="3" fill="#ddd6fe"/>
+  <rect x="38" y="20" width="7" height="24" rx="3" fill="#ddd6fe"/>
+  <rect x="12" y="25" width="7" height="14" rx="3" fill="#c4b5fd"/>
+  <rect x="45" y="25" width="7" height="14" rx="3" fill="#c4b5fd"/>
 </svg>
