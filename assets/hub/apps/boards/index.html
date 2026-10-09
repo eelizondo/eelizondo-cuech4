@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boards — Cuech4 Hub</title>
+<link rel="icon" type="image/svg+xml" href="assets/boards-icon.svg">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0a0f1d; --panel: #161c2e; --panel-2: #0f1424; --line: #2a334b; --card: #232b40; --card-h: #2b3550;
+    --text: #e3e9f5; --muted: #8f9db8;
+    --accent: #579dff; --accent-2: #8bbcff; --accent-text: #c2dbff;
+    --good: #4bce97; --warn: #e2b203; --bad: #f87168;
+    --c-green: #4bce97; --c-yellow: #e2b203; --c-orange: #faa53d; --c-red: #f87168; --c-purple: #9f8fef; --c-blue: #579dff; --c-sky: #6cc3e0; --c-lime: #94c748; --c-pink: #e774bb; --c-gray: #8590a2;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body { margin: 0; background: radial-gradient(1100px 520px at 70% -10%, #1a2c56 0%, var(--bg) 60%) fixed; color: var(--text); font-family: Inter, system-ui, -apple-system, sans-serif; line-height: 1.4; min-height: 100vh; display: flex; flex-direction: column; }
+  body.lock { overflow: hidden; }
+  header.app { display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,.08); background: rgba(8,12,24,.7); backdrop-filter: blur(6px); flex: none; }
+  .title { font-size: 20px; font-weight: 700; background: linear-gradient(90deg, var(--accent-2), #c7b8ff 70%); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0; }
+  .hub-breadcrumb { color: var(--muted); font-size: 13px; text-decoration: none; }
+  .hub-breadcrumb:hover { color: var(--accent-text); }
+  button { font-family: inherit; }
+  .btn-ghost { background: rgba(20,27,46,.85); border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+  .btn-ghost:hover { border-color: var(--accent-2); }
+  .btn-main { background: linear-gradient(180deg, #8bbcff, #3b82f6); border: 0; color: #06182f; font-weight: 700; font-size: 14px; padding: 9px 18px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 22px rgba(87,157,255,.25); }
+  .btn-main:hover { filter: brightness(1.07); } .btn-main:disabled { opacity: .5; cursor: not-allowed; }
+  .sm { padding: 6px 12px !important; font-size: 13px !important; }
+  .ibtn { background: none; border: 0; color: var(--muted); cursor: pointer; width: 30px; height: 30px; border-radius: 8px; font-size: 15px; display: inline-grid; place-items: center; flex: none; }
+  .ibtn:hover { background: rgba(255,255,255,.1); color: var(--text); } .ibtn.on { color: #f5cd47; }
+  .lk { background: none; border: 0; color: var(--accent-2); cursor: pointer; font-size: 13px; padding: 0; } .lk:hover { text-decoration: underline; }
+  .wrap { max-width: 1240px; width: 100%; margin: 0 auto; padding: 14px 24px 50px; }
+  .top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .top .sp, .sp { flex: 1; }
+  #hname { font: 700 18px/1.2 system-ui; font-family: inherit; color: var(--text); background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 6px 10px; min-width: 200px; }
+  #hname:hover { border-color: var(--line); } #hname:focus { outline: none; border-color: var(--accent-2); background: #0b101e; }
+  .chip { font-size: 12.5px; font-weight: 600; border-radius: 999px; padding: 4px 12px; border: 1px solid rgba(75,206,151,.3); color: var(--good); background: rgba(75,206,151,.08); white-space: nowrap; }
+  .chip.dirty { color: #fbbf24; border-color: rgba(251,191,36,.35); background: rgba(251,191,36,.08); }
+  .chip.idle { color: var(--muted); border-color: var(--line); background: transparent; }
+  .fld, select.fld { background: #0e1424; color: var(--text); border: 1px solid var(--line); border-radius: 8px; height: 36px; padding: 0 10px; font: 14px system-ui; font-family: inherit; }
+  textarea.fld { height: auto; padding: 8px 10px; resize: vertical; line-height: 1.4; width: 100%; }
+  .fld:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(87,157,255,.2); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin-bottom: 16px; }
+  .card h3 { margin: 0 0 12px; font-size: 15px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .card h3 small { color: var(--muted); font-weight: 400; font-size: 13px; }
+  .empty { background: linear-gradient(180deg, #14234a, #0f1830); border: 1px solid #2b4a8a; border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .empty p { margin: 0; flex: 1 1 360px; color: var(--muted); font-size: 14px; } .empty p b { color: var(--accent-text); }
+  .nodata { color: var(--muted); font-size: 14px; padding: 14px 6px; text-align: center; }
+  .g2 { display: grid; grid-template-columns: 1.7fr 1fr; gap: 16px; align-items: start; }
+  .bgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .btile { position: relative; min-height: 92px; border-radius: 12px; padding: 12px 14px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid rgba(255,255,255,.12); box-shadow: 0 4px 16px rgba(0,0,0,.25); }
+  .btile:hover { filter: brightness(1.15); } .btile b { font-size: 15.5px; text-shadow: 0 1px 2px rgba(0,0,0,.4); padding-right: 22px; overflow: hidden; text-overflow: ellipsis; }
+  .btile small { color: rgba(255,255,255,.85); font-size: 12.5px; } .btile .soon { color: #ffd966; font-weight: 600; }
+  .btile .star { position: absolute; top: 8px; right: 8px; background: none; border: 0; color: rgba(255,255,255,.55); font-size: 17px; cursor: pointer; border-radius: 6px; width: 26px; height: 26px; } .btile .star:hover { background: rgba(0,0,0,.25); } .btile .star.on { color: #f5cd47; }
+  .btile.new { background: rgba(255,255,255,.06); border: 1px dashed var(--line); align-items: center; justify-content: center; color: var(--muted); font-weight: 600; box-shadow: none; }
+  .sect { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin: 6px 0 8px; font-weight: 600; }
+  .up { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 8px 6px; border-bottom: 1px solid #222b42; cursor: pointer; border-radius: 8px; font-size: 14px; }
+  .up:hover { background: #1b2540; } .up small { color: var(--muted); display: block; font-size: 12px; }
+
+  /* board */
+  #vBoard { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .bh { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: rgba(0,0,0,.28); flex: none; flex-wrap: wrap; }
+  #btitle { font: 700 18px/1.2 system-ui; font-family: inherit; color: #fff; background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 5px 10px; min-width: 120px; max-width: 46vw; }
+  #btitle:hover { background: rgba(255,255,255,.1); } #btitle:focus { outline: none; background: #0b101e; border-color: var(--accent-2); }
+  .fbar { padding: 6px 16px; background: rgba(87,157,255,.18); font-size: 13.5px; display: flex; gap: 10px; align-items: center; flex: none; }
+  .lists { flex: 1; display: flex; gap: 12px; align-items: flex-start; overflow-x: auto; overflow-y: hidden; padding: 14px 16px 18px; min-height: 0; scroll-snap-type: x proximity; }
+  .list { flex: none; width: 272px; background: rgba(12,16,28,.92); border-radius: 14px; display: flex; flex-direction: column; max-height: 100%; border: 1px solid rgba(255,255,255,.07); scroll-snap-align: start; }
+  .list.over { border-color: rgba(248,113,104,.7); }
+  .lh { display: flex; align-items: center; gap: 6px; padding: 10px 8px 6px 14px; cursor: grab; }
+  .lt { margin: 0; font-size: 14.5px; font-weight: 700; flex: 1; min-width: 0; overflow-wrap: anywhere; padding: 2px 0; cursor: pointer; }
+  .lt-in { flex: 1; min-width: 0; font: 700 14.5px system-ui; font-family: inherit; background: #0b101e; color: var(--text); border: 2px solid var(--accent); border-radius: 6px; padding: 3px 6px; }
+  .lcnt { color: var(--muted); font-size: 13px; } .wip { font-size: 12px; font-weight: 700; padding: 1px 7px; border-radius: 99px; background: rgba(255,255,255,.1); } .wip.over { background: rgba(248,113,104,.25); color: #fecaca; }
+  .cards { overflow-y: auto; padding: 4px 8px 4px; display: flex; flex-direction: column; gap: 8px; min-height: 8px; flex: 1; }
+  .lf { padding: 6px 8px 10px; }
+  .addc { width: 100%; text-align: left; background: none; border: 0; color: var(--muted); padding: 8px 8px; border-radius: 8px; cursor: pointer; font-size: 14px; } .addc:hover { background: rgba(255,255,255,.08); color: var(--text); }
+  .comp textarea { width: 100%; background: var(--card); border: 2px solid var(--accent); color: var(--text); border-radius: 10px; padding: 8px 10px; font: 14px/1.4 system-ui; font-family: inherit; resize: none; }
+  .comp .row2 { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
+  .addlist { flex: none; width: 272px; background: rgba(255,255,255,.14); border-radius: 14px; padding: 12px 14px; color: var(--text); cursor: pointer; font-weight: 600; font-size: 14px; border: 0; text-align: left; }
+  .addlist:hover { background: rgba(255,255,255,.22); }
+  .addl { flex: none; width: 272px; background: rgba(12,16,28,.92); border-radius: 14px; padding: 10px; }
+  .addl input { width: 100%; margin-bottom: 8px; }
+  .list.col { width: 48px; } .lcol { background: none; border: 0; color: var(--text); width: 100%; padding: 12px 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .lcol span { writing-mode: vertical-rl; font-weight: 700; font-size: 14px; max-height: 260px; overflow: hidden; } .lcol i { font-style: normal; color: var(--muted); font-size: 13px; }
+  .tcard { background: var(--card); border-radius: 10px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,.35); overflow: hidden; border: 1px solid transparent; flex: none; }
+  .tcard:hover { background: var(--card-h); border-color: rgba(255,255,255,.15); } .tcard:focus-visible { outline: 2px solid var(--accent); }
+  .tcard .cb { padding: 8px 12px 10px; }
+  .tcard.done .ct { color: var(--muted); text-decoration: line-through; }
+  .cimg { display: block; width: 100%; max-height: 190px; object-fit: cover; }
+  .ccol { height: 34px; }
+  .ct { font-size: 14px; overflow-wrap: anywhere; white-space: pre-wrap; }
+  .lbls { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+  .lb { display: inline-block; min-width: 40px; height: 8px; border-radius: 4px; cursor: pointer; }
+  .lb.x { height: auto; padding: 1px 8px; font-size: 12px; font-weight: 600; color: #101827; min-width: 0; line-height: 18px; }
+  .lb.wide { height: auto; display: block; padding: 5px 10px; font-size: 13.5px; font-weight: 600; color: #101827; border-radius: 6px; min-width: 0; }
+  .lb.chip2 { height: auto; padding: 3px 12px; font-size: 13px; font-weight: 600; color: #101827; min-width: 36px; line-height: 20px; cursor: pointer; }
+  .lb-green { background-color: var(--c-green); } .lb-yellow { background-color: var(--c-yellow); } .lb-orange { background-color: var(--c-orange); } .lb-red { background-color: var(--c-red); } .lb-purple { background-color: var(--c-purple); }
+  .lb-blue { background-color: var(--c-blue); } .lb-sky { background-color: var(--c-sky); } .lb-lime { background-color: var(--c-lime); } .lb-pink { background-color: var(--c-pink); } .lb-gray { background-color: var(--c-gray); }
+  .pat .lb-green { background-image: repeating-linear-gradient(135deg, rgba(0,0,0,.3) 0 3px, transparent 3px 8px); }
+  .pat .lb-red { background-image: radial-gradient(rgba(0,0,0,.4) 1.5px, transparent 1.8px); background-size: 7px 7px; }
+  .pat .lb-orange { background-image: repeating-linear-gradient(90deg, rgba(0,0,0,.3) 0 2px, transparent 2px 6px); }
+  .pat .lb-yellow { background-image: repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 2px, transparent 2px 6px); }
+  .pat .lb-blue { background-image: repeating-linear-gradient(45deg, rgba(0,0,0,.28) 0 3px, transparent 3px 8px); }
+  .pat .lb-purple { background-image: linear-gradient(45deg, rgba(0,0,0,.28) 25%, transparent 25% 75%, rgba(0,0,0,.28) 75%), linear-gradient(45deg, rgba(0,0,0,.28) 25%, transparent 25% 75%, rgba(0,0,0,.28) 75%); background-size: 10px 10px; background-position: 0 0, 5px 5px; }
+  .pat .lb-sky { background-image: repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 1px, transparent 1px 4px), repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0 1px, transparent 1px 4px); }
+  .pat .lb-lime { background-image: repeating-linear-gradient(135deg, rgba(0,0,0,.28) 0 5px, transparent 5px 9px); }
+  .pat .lb-pink { background-image: radial-gradient(rgba(0,0,0,.3) 2.6px, transparent 3px); background-size: 10px 10px; }
+  .pat .lb-gray { background-image: repeating-linear-gradient(45deg, rgba(0,0,0,.3) 0 1px, transparent 1px 5px), repeating-linear-gradient(135deg, rgba(0,0,0,.3) 0 1px, transparent 1px 5px); }
+  .bdg { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 8px; color: var(--muted); font-size: 12.5px; align-items: center; }
+  .bdg span { display: inline-flex; gap: 4px; align-items: center; border-radius: 4px; padding: 1px 4px; }
+  .bdg .norm { background: transparent; } .bdg .soon { background: #7f5f01; color: #fff3c4; } .bdg .bad { background: #8a2b24; color: #ffd8d4; } .bdg .ok { background: #216e4e; color: #d3f7e6; } .bdg .full { background: #216e4e; color: #d3f7e6; }
+  .ph-card { background: rgba(255,255,255,.12); border: 2px dashed rgba(255,255,255,.3); border-radius: 10px; flex: none; }
+  .ph-list { flex: none; width: 272px; background: rgba(255,255,255,.1); border: 2px dashed rgba(255,255,255,.3); border-radius: 14px; }
+  .ghost { transform: rotate(3deg); box-shadow: 0 14px 40px rgba(0,0,0,.55); opacity: .96; }
+  body.dragging, body.dragging * { cursor: grabbing !important; user-select: none; -webkit-user-select: none; }
+
+  /* card overlay */
+  #cov { position: fixed; inset: 0; background: rgba(0,0,0,.66); z-index: 40; overflow-y: auto; padding: 4vh 12px; display: flex; justify-content: center; align-items: flex-start; }
+  #cdlg { background: #1b2234; border: 1px solid var(--line); border-radius: 14px; width: min(1000px, 100%); box-shadow: 0 30px 80px rgba(0,0,0,.6); overflow: hidden; }
+  .cd-cover-img { display: block; width: 100%; max-height: 260px; object-fit: cover; } .cd-cover-col { height: 90px; }
+  .cd-head { display: flex; align-items: center; gap: 4px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .lsel { color: var(--muted); font-size: 13px; display: inline-flex; align-items: center; gap: 8px; } .lsel select { background: #2a3350; color: var(--text); border: 1px solid #3a4568; border-radius: 6px; padding: 5px 8px; font: 600 13.5px system-ui; font-family: inherit; max-width: 220px; }
+  .cd-grid { display: grid; grid-template-columns: 1.65fr 1fr; }
+  .cd-main { padding: 16px 22px 24px; min-width: 0; } .cd-side { padding: 16px 20px 24px; background: #151b2b; border-left: 1px solid var(--line); min-width: 0; }
+  .cd-title { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; }
+  .cd-title textarea { flex: 1; font: 700 22px/1.25 system-ui; font-family: inherit; color: var(--text); background: transparent; border: 2px solid transparent; border-radius: 8px; padding: 4px 8px; resize: none; overflow: hidden; }
+  .cd-title textarea:hover { background: rgba(255,255,255,.05); } .cd-title textarea:focus { outline: none; border-color: var(--accent); background: #0e1424; }
+  .circ { flex: none; width: 24px; height: 24px; margin-top: 9px; border-radius: 50%; border: 2px solid #7d89a6; background: none; color: #06182f; cursor: pointer; font-size: 14px; font-weight: 800; display: grid; place-items: center; padding: 0; }
+  .circ:hover { border-color: var(--good); } .circ.on { background: var(--good); border-color: var(--good); }
+  .cd-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px 34px; }
+  .cd-actions button { background: #2a3350; color: var(--text); border: 1px solid #3a4568; border-radius: 8px; padding: 7px 12px; font-size: 13.5px; cursor: pointer; } .cd-actions button:hover { background: #34406a; }
+  .cd-sec { margin: 0 0 18px 34px; } .cd-sec h4 { margin: 0 0 8px; font-size: 14.5px; display: flex; align-items: center; gap: 8px; } .cd-sec h4 .sp { flex: 1; }
+  .cd-sec .mini { color: var(--muted); font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .lrowc { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .dchip { display: inline-flex; align-items: center; gap: 8px; background: #2a3350; border-radius: 8px; padding: 6px 10px; font-size: 13.5px; cursor: pointer; } .dchip input { accent-color: var(--accent); width: 16px; height: 16px; }
+  .dchip .tg { font-size: 11.5px; font-weight: 700; padding: 1px 6px; border-radius: 4px; } .dchip .tg.soon { background: #7f5f01; color: #fff3c4; } .dchip .tg.bad { background: #8a2b24; color: #ffd8d4; } .dchip .tg.ok { background: #216e4e; color: #d3f7e6; }
+  .desc { background: #232b40; border-radius: 8px; padding: 10px 12px; font-size: 14.5px; cursor: pointer; min-height: 56px; overflow-wrap: anywhere; } .desc:hover { background: #2b3550; }
+  .desc.empty2 { color: var(--muted); } .desc p { margin: 0 0 6px; } .desc ul { margin: 4px 0 6px; padding-left: 20px; } .desc code { background: #11172a; padding: 1px 5px; border-radius: 4px; font-size: 13px; } .desc a { color: var(--accent-2); }
+  .cl { margin-bottom: 14px; } .cl-h { display: flex; align-items: center; gap: 8px; } .cl-h b { flex: 1; font-size: 14.5px; }
+  .pbar { display: flex; align-items: center; gap: 8px; margin: 6px 0 8px; font-size: 12px; color: var(--muted); } .pbar i { flex: 1; height: 7px; background: #2a3350; border-radius: 99px; overflow: hidden; } .pbar i b { display: block; height: 100%; background: var(--accent); border-radius: 99px; } .pbar.full i b { background: var(--good); }
+  .ci { display: flex; gap: 8px; align-items: flex-start; padding: 4px 6px; border-radius: 8px; } .ci:hover { background: rgba(255,255,255,.05); } .ci input { margin-top: 4px; width: 16px; height: 16px; accent-color: var(--accent); flex: none; }
+  .ci span { flex: 1; font-size: 14px; cursor: text; overflow-wrap: anywhere; } .ci.d span { color: var(--muted); text-decoration: line-through; } .ci .ibtn { width: 24px; height: 24px; font-size: 13px; opacity: 0; } .ci:hover .ibtn { opacity: 1; }
+  .ci-in { flex: 1; background: #0e1424; color: var(--text); border: 2px solid var(--accent); border-radius: 6px; padding: 5px 8px; font: 14px system-ui; font-family: inherit; }
+  .att { display: flex; gap: 12px; align-items: center; padding: 6px 0; } .att img { width: 96px; height: 68px; object-fit: cover; border-radius: 6px; cursor: zoom-in; flex: none; background: #0e1424; }
+  .att .lnk { width: 96px; height: 68px; border-radius: 6px; background: #2a3350; display: grid; place-items: center; font-weight: 700; color: var(--muted); flex: none; }
+  .att div { min-width: 0; flex: 1; } .att b { display: block; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .att small { color: var(--muted); }
+  .att a { color: var(--accent-2); }
+  .cm-in { width: 100%; background: #232b40; border: 1px solid var(--line); border-radius: 10px; color: var(--text); padding: 10px 12px; font: 14px system-ui; font-family: inherit; resize: vertical; min-height: 42px; }
+  .cm-in:focus { outline: none; border-color: var(--accent); }
+  .feed { margin-top: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .fi { display: flex; gap: 10px; } .av { flex: none; width: 30px; height: 30px; border-radius: 50%; background: #3a4a7a; display: grid; place-items: center; font-weight: 700; font-size: 13px; color: #dbe6ff; }
+  .fi .fb2 { min-width: 0; flex: 1; font-size: 13.5px; } .fi time { color: var(--accent-2); font-size: 12px; display: block; } .fi .bub { background: #232b40; border-radius: 8px; padding: 8px 10px; margin: 4px 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; }
+  .fi .acts { font-size: 12px; color: var(--muted); } .fi .acts button { background: none; border: 0; color: var(--muted); cursor: pointer; text-decoration: underline; padding: 0 6px 0 0; font-size: 12px; }
+  .pop { position: fixed; z-index: 70; width: 300px; max-width: calc(100vw - 16px); background: #1f2740; border: 1px solid #3a4568; border-radius: 12px; box-shadow: 0 16px 50px rgba(0,0,0,.55); max-height: 80vh; overflow: auto; }
+  .pop .ph { display: flex; align-items: center; justify-content: center; padding: 10px 40px 4px; position: relative; font-size: 13.5px; color: var(--muted); } .pop .ph .ibtn { position: absolute; right: 6px; top: 6px; }
+  .pop .pb { padding: 8px 14px 14px; font-size: 14px; } .pop label.f { display: block; font-size: 12px; color: var(--muted); font-weight: 600; margin: 8px 0 4px; } .pop .fld { width: 100%; }
+  .pop .mi { display: block; width: 100%; text-align: left; background: none; border: 0; color: var(--text); padding: 8px 8px; border-radius: 8px; font-size: 14px; cursor: pointer; } .pop .mi:hover { background: rgba(255,255,255,.1); } .pop .mi.dg { color: #fca5a5; }
+  .pop .lrow { display: flex; align-items: center; gap: 8px; margin: 4px 0; cursor: pointer; } .pop .lrow input { accent-color: var(--accent); width: 16px; height: 16px; } .pop .lrow .lb { flex: 1; }
+  .pop .row2 { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .swatch { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 6px 0; } .swatch button { height: 32px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; } .swatch button.on { border-color: #fff; }
+  .bgs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; } .bgs button { height: 56px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; color: #fff; font-weight: 600; font-size: 12.5px; text-shadow: 0 1px 2px rgba(0,0,0,.6); } .bgs button.on { border-color: #fff; }
+  #lb { position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 90; display: grid; place-items: center; cursor: zoom-out; } #lb img { max-width: 94vw; max-height: 92vh; border-radius: 8px; }
+  #toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: #1f2740; border: 1px solid var(--line); color: var(--text); padding: 10px 16px; border-radius: 12px; font-size: 14px; display: flex; gap: 14px; align-items: center; z-index: 95; box-shadow: 0 10px 40px rgba(0,0,0,.5); max-width: 92vw; }
+  #toast.err { border-color: rgba(248,113,113,.5); } #toast button { background: transparent; border: 0; color: var(--accent-2); font-weight: 600; cursor: pointer; font-size: 14px; }
+  dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 16px; padding: 0; width: min(460px, 94vw); max-height: 92vh; }
+  dialog.wide { width: min(700px, 96vw); } dialog::backdrop { background: rgba(0,0,0,.65); }
+  .dh { font-size: 17px; font-weight: 700; padding: 18px 22px 4px; } .db { padding: 6px 22px 4px; font-size: 14px; color: var(--muted); max-height: 62vh; overflow: auto; } .db p { margin: 6px 0 10px; }
+  .db label { display: block; font-size: 13px; color: var(--text); margin: 10px 0 0; }
+  .db input, .db select { display: block; width: 100%; margin-top: 6px; height: 40px; background: #0b101e; border: 1px solid var(--line); border-radius: 10px; color: var(--text); padding: 0 12px; font: 15px system-ui; font-family: inherit; }
+  .db input:focus, .db select:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(87,157,255,.2); }
+  .derr { color: #f87171; min-height: 18px; font-size: 13px; }
+  .df { display: flex; justify-content: flex-end; gap: 10px; padding: 8px 22px 18px; flex-wrap: wrap; } .df .btn-main { padding: 9px 18px; } .df .danger { color: #fca5a5; border-color: rgba(248,113,113,.4); margin-right: auto; }
+  .lbed { display: flex; gap: 8px; align-items: center; margin: 6px 0; } .lbed select, .lbed input { margin: 0 !important; height: 36px !important; } .lbed .ibtn { width: 30px; }
+  .arow { display: flex; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px solid #222b42; color: var(--text); } .arow span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .arow small { color: var(--muted); }
+  .note { color: var(--muted); font-size: 12.5px; text-align: center; margin-top: 18px; }
+  @media (max-width: 1000px) { .g2 { grid-template-columns: 1fr; } }
+  @media (max-width: 800px) { .cd-grid { grid-template-columns: 1fr; } .cd-side { border-left: 0; border-top: 1px solid var(--line); } #cov { padding: 0; } #cdlg { border-radius: 0; min-height: 100vh; } .cd-sec, .cd-actions { margin-left: 0; } }
+  @media (max-width: 560px) { .wrap { padding: 12px 14px 40px; } header.app { padding: 10px 14px; } .list, .addlist, .addl, .ph-list { width: 82vw; } #hname { flex: 1 1 100%; } .bh { padding: 8px 10px; } #btitle { max-width: 100%; flex: 1 1 100%; order: 3; } }
+
+  .lists { scroll-padding-left: 16px; }
+  body.inb { height: 100vh; height: 100dvh; overflow: hidden; }
+  body.inb #vBoard { overflow: hidden; }
+  .tcard, .list .lh { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  .tcard .ct { -webkit-user-select: none; }
+  .chipbtn.dirty { border-color: rgba(251,191,36,.6); color: #fbbf24; }
+  .btn-ghost.on { background: #1d3a6e; border-color: var(--accent); }
+  .bh .btn-ghost, .bh .ibtn { color: #fff; } .bh .btn-ghost { background: rgba(255,255,255,.14); border-color: transparent; } .bh .btn-ghost:hover { background: rgba(255,255,255,.26); }
+  .bh .chipbtn.dirty { color: #ffe08a; }
+  .pop .lrow .ibtn { flex: none; }
+  .db textarea { display: block; width: 100%; margin-top: 6px; background: #0b101e; border: 1px solid var(--line); border-radius: 10px; color: var(--text); padding: 10px 12px; font: 14px/1.4 system-ui; font-family: inherit; resize: vertical; }
+  .tcard:focus-visible { outline: 2px solid var(--accent); }
+</style>
+</head>
+<body>
+<header class="app">
+  <div><h1 class="title">📋 Boards</h1><a class="hub-breadcrumb" href="../../hub.html#latest-builds">← Cuech4 Hub</a></div>
+  <button class="btn-ghost" id="newBtn">＋ New</button>
+</header>
+<div id="vHome" class="wrap">
+  <div class="top">
+    <input id="hname" maxlength="60" aria-label="Workspace name">
+    <span class="chip" id="chip"></span><span class="sp"></span>
+    <button class="btn-ghost" id="btnOpen">⬆ Open backup</button>
+    <button class="btn-ghost" id="btnPw">🔑 <span id="pwLbl">Set password</span></button>
+    <button class="btn-main" id="btnSave">⬇ Download backup</button>
+  </div>
+  <div class="empty" id="hEmpty"><p><b>Organize anything with boards, lists and cards.</b> Drag cards between lists, add checklists, due dates and labels — all stored privately in your browser. Coming from Trello? Import your board’s JSON export.</p>
+    <button class="btn-main" data-a="create">＋ Create a board</button><button class="btn-ghost" data-a="import">⬆ Import from Trello</button><button class="btn-ghost" data-a="sample">Try a sample board</button></div>
+  <div class="g2"><div><div id="bStar"></div><div class="sect">Your boards</div><div class="bgrid" id="bAll"></div>
+    <p><button class="lk" data-a="import">⬆ Import a Trello (.json) board</button> &nbsp; <button class="lk" data-a="sample">Add a sample board</button></p></div>
+    <section class="card"><h3>Coming up <small>due soon, all boards</small></h3><div id="upc"></div></section></div>
+  <p class="note">Everything stays in this browser (unencrypted, this device only). The downloaded backup is one <b>.txt</b> encrypted with your password — it can’t be recovered if you lose it. There’s no account and no real-time sharing: to share a board, export it or send the backup.</p>
+</div>
+<div id="vBoard" hidden></div>
+<div id="cov" hidden><div id="cdlg" role="dialog" aria-modal="true" aria-label="Card"></div></div>
+<div id="lb" hidden></div>
+<div id="toast" hidden></div>
+<dialog id="dlg"><div class="dh" id="dT"></div><div class="db" id="dB"></div><div class="df" id="dF"></div></dialog>
+<input type="file" id="file" accept=".txt,.json,text/plain,application/json" hidden>
+<input type="file" id="imgIn" accept="image/*" multiple hidden>
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const p2 = n => String(n).padStart(2, '0');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const dstr = d => d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+const todayS = () => dstr(new Date());
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const shortD = s => { const d = new Date(s + 'T00:00:00'); return MON[d.getMonth()] + ' ' + d.getDate(); };
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/, TIME_RE = /^\d{2}:\d{2}$/;
+const str = (v, n) => String(v == null ? '' : v).replace(/\r\n?/g, '\n').trim().slice(0, n);
+const int = (v, d = 0) => Number.isFinite(+v) && v !== '' && v !== null ? Math.round(+v) : d;
+const COLORS = ['green', 'yellow', 'orange', 'red', 'purple', 'blue', 'sky', 'lime', 'pink', 'gray'];
+const BGS = {
+  navy: ['Navy', 'linear-gradient(135deg,#1d4ed8,#0b1b4a)'], purple: ['Purple', 'linear-gradient(135deg,#7c3aed,#2e1065)'], green: ['Green', 'linear-gradient(135deg,#15803d,#052e16)'],
+  orange: ['Sunset', 'linear-gradient(135deg,#ea580c,#7c2d12)'], rose: ['Rose', 'linear-gradient(135deg,#db2777,#500724)'], teal: ['Teal', 'linear-gradient(135deg,#0d9488,#042f2e)'],
+  slate: ['Slate', 'linear-gradient(135deg,#475569,#0f172a)'], ocean: ['Ocean', 'linear-gradient(135deg,#0ea5e9,#1e3a8a)']
+};
+const bgOf = b => (BGS[b.bg] || BGS.navy)[1];
+
+/* ---------- storage ---------- */
+const store = {
+  db: null,
+  async open() { if (this.db) return this.db; this.db = await new Promise((res, rej) => { const r = indexedDB.open('cuech4-boards', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); return this.db; },
+  async load() { try { const db = await this.open(); return await new Promise((res, rej) => { const q = db.transaction('kv').objectStore('kv').get('state'); q.onsuccess = () => res(q.result || null); q.onerror = () => rej(q.error); }); } catch (e) { try { return JSON.parse(localStorage.getItem('boards_state') || 'null'); } catch (_) { return null; } } },
+  async save(obj) { try { const db = await this.open(); await new Promise((res, rej) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(obj, 'state'); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); return true; } catch (e) { try { localStorage.setItem('boards_state', JSON.stringify(obj)); return true; } catch (_) { return false; } } }
+};
+
+/* ---------- state ---------- */
+const fresh = () => ({name: 'My Boards', boards: [], set: {pat: true, me: 'Me'}, exp: {date: '', n: 0}, dirty: false, lastBackup: ''});
+let S = fresh(), curB = null, curC = null, sessionPw = null, saveT = null, F = {q: '', labels: [], due: ''};
+
+const arr = (v, n) => Array.isArray(v) ? v.slice(0, n) : [];
+function cleanCard(c) {
+  if (!c || typeof c !== 'object') return null;
+  const title = str(c.title, 500); if (!title) return null;
+  const imgs = arr(c.imgs, 30).filter(i => i && typeof i.data === 'string' && /^data:image\/(png|jpe?g|gif|webp);base64,/i.test(i.data)).map(i => ({id: str(i.id, 40) || uid(), name: str(i.name, 120) || 'image', data: i.data}));
+  const cv = c.cover && typeof c.cover === 'object' ? c.cover : null;
+  let cover = null;
+  if (cv && cv.t === 'img' && imgs.some(i => i.id === cv.id)) cover = {t: 'img', id: cv.id};
+  else if (cv && cv.t === 'color' && COLORS.includes(cv.c)) cover = {t: 'color', c: cv.c};
+  return {id: str(c.id, 40) || uid(), title, desc: str(c.desc, 20000), labels: arr(c.labels, 30).map(x => str(x, 40)).filter(Boolean),
+    due: DATE_RE.test(c.due) ? c.due : '', dueT: TIME_RE.test(c.dueT) && DATE_RE.test(c.due) ? c.dueT : '', done: !!c.done,
+    checklists: arr(c.checklists, 30).filter(x => x && typeof x === 'object').map(x => ({id: str(x.id, 40) || uid(), title: str(x.title, 200) || 'Checklist', items: arr(x.items, 300).filter(i => i && typeof i === 'object' && str(i.t, 500)).map(i => ({id: str(i.id, 40) || uid(), t: str(i.t, 500), done: !!i.done}))})),
+    comments: arr(c.comments, 300).filter(m => m && str(m.text, 5000)).map(m => ({id: str(m.id, 40) || uid(), ts: int(m.ts, Date.now()), text: str(m.text, 5000)})),
+    act: arr(c.act, 80).filter(a => a && str(a.text, 300)).map(a => ({ts: int(a.ts, Date.now()), text: str(a.text, 300)})),
+    links: arr(c.links, 40).filter(l => l && /^https?:\/\//i.test(String(l.url || ''))).map(l => ({id: str(l.id, 40) || uid(), url: str(l.url, 1500), name: str(l.name, 200)})),
+    imgs, cover, archived: !!c.archived, created: int(c.created, Date.now())};
+}
+function cleanBoard(b) {
+  if (!b || typeof b !== 'object') return null;
+  const seen = new Set();
+  const labels = arr(b.labels, 60).filter(l => l && typeof l === 'object').map(l => ({id: str(l.id, 40) || uid(), color: COLORS.includes(l.color) ? l.color : 'gray', name: str(l.name, 60)}));
+  const lids = new Set(labels.map(l => l.id));
+  return {id: str(b.id, 40) || uid(), title: str(b.title, 80) || 'Untitled board', bg: BGS[b.bg] ? b.bg : 'navy', star: !!b.star, lblExp: !!b.lblExp, labels,
+    lists: arr(b.lists, 200).filter(l => l && typeof l === 'object').map(l => ({id: str(l.id, 40) || uid(), title: str(l.title, 120) || 'List', wip: Math.max(0, Math.min(999, int(l.wip))), collapsed: !!l.collapsed, archived: !!l.archived,
+      cards: arr(l.cards, 3000).map(cleanCard).filter(Boolean).filter(c => !seen.has(c.id) && seen.add(c.id)).map(c => ({...c, labels: c.labels.filter(x => lids.has(x))}))})),
+    created: int(b.created, Date.now())};
+}
+function clean(o) {
+  if (!o || typeof o !== 'object') return null;
+  const out = fresh(); out.name = str(o.name, 60) || out.name;
+  const ids = new Set();
+  out.boards = arr(o.boards, 200).map(cleanBoard).filter(Boolean).filter(b => !ids.has(b.id) && ids.add(b.id));
+  const s = o.set || {}; out.set = {pat: s.pat !== false, me: str(s.me, 30) || 'Me'};
+  out.exp = o.exp && typeof o.exp.n === 'number' ? {date: str(o.exp.date, 10), n: int(o.exp.n)} : {date: '', n: 0};
+  out.dirty = !!o.dirty; out.lastBackup = DATE_RE.test(o.lastBackup) ? o.lastBackup : '';
+  return out;
+}
+function queueSave() { clearTimeout(saveT); saveT = setTimeout(saveNow, 350); }
+let warned = false;
+async function saveNow() { clearTimeout(saveT); const ok = await store.save(S); if (!ok && !warned) { warned = true; toast('Your browser couldn’t save locally. Download a backup to keep your work.', null, null, true); } }
+window.addEventListener('pagehide', () => { store.save(S); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) store.save(S); });
+const touch = () => { S.dirty = true; queueSave(); };
+
+/* ---------- lookups ---------- */
+const board = () => S.boards.find(b => b.id === curB);
+const findList = (b, id) => b.lists.find(l => l.id === id);
+function findCard(b, cid) { for (const l of b.lists) { const c = l.cards.find(x => x.id === cid); if (c) return {c, l}; } return null; }
+const labelOf = (b, id) => b.labels.find(l => l.id === id);
+const activeLists = b => b.lists.filter(l => !l.archived);
+const activeCards = l => l.cards.filter(c => !c.archived);
+function logAct(c, text) { c.act.unshift({ts: Date.now(), text}); if (c.act.length > 60) c.act.length = 60; }
+
+/* ---------- dates ---------- */
+const dueDate = c => c.due ? new Date(c.due + 'T' + (c.dueT || '23:59') + ':00') : null;
+function dueState(c) {
+  if (!c.due) return null; if (c.done) return 'ok';
+  const diff = dueDate(c) - Date.now(); return diff < 0 ? 'bad' : diff < 864e5 ? 'soon' : 'norm';
+}
+function fmtTime(t) { const [h, m] = t.split(':').map(Number); return ((h + 11) % 12 + 1) + ':' + p2(m) + ' ' + (h < 12 ? 'AM' : 'PM'); }
+const fmtDue = c => c.due ? shortD(c.due) + (c.dueT ? ', ' + fmtTime(c.dueT) : '') : '';
+function fmtTs(ts) { const d = new Date(ts); return MON[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear() + ', ' + fmtTime(p2(d.getHours()) + ':' + p2(d.getMinutes())); }
+function checkCount(c) { let t = 0, d = 0; c.checklists.forEach(x => x.items.forEach(i => { t++; if (i.done) d++; })); return {t, d}; }
+
+/* ---------- filter ---------- */
+const filtering = () => !!(F.q || F.labels.length || F.due);
+function matches(b, c) {
+  if (F.q && !(c.title + ' ' + c.desc).toLowerCase().includes(F.q.toLowerCase())) return false;
+  if (F.labels.length && !F.labels.some(id => id === '_none' ? !c.labels.length : c.labels.includes(id))) return false;
+  if (F.due) {
+    const st = dueState(c), dt = dueDate(c), diff = dt ? dt - Date.now() : 0;
+    if (F.due === 'none' && c.due) return false;
+    if (F.due === 'overdue' && st !== 'bad') return false;
+    if (F.due === 'day' && !(c.due && !c.done && diff >= 0 && diff < 864e5)) return false;
+    if (F.due === 'week' && !(c.due && !c.done && diff < 7 * 864e5)) return false;
+    if (F.due === 'done' && !(c.due && c.done)) return false;
+  }
+  return true;
+}
+
+/* ---------- board factory / templates ---------- */
+const mkLabels = () => ['green', 'yellow', 'orange', 'red', 'purple', 'blue'].map(color => ({id: uid() + color[0], color, name: ''}));
+const TEMPLATES = {
+  blank: ['Blank board', []],
+  kanban: ['Simple kanban', ['To do', 'Doing', 'Done']],
+  mine: ['Backlog / On Hold / In Progress / Done', ['Backlog', 'On Hold', 'In Progress', 'Done']],
+  week: ['Weekly planner', ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Weekend']],
+  project: ['Project', ['Ideas', 'To do', 'In progress', 'Review', 'Done']]
+};
+function newBoard(title, bg, tpl) {
+  const labels = mkLabels();
+  return {id: uid(), title: str(title, 80) || 'Untitled board', bg: BGS[bg] ? bg : 'navy', star: false, lblExp: false, labels, created: Date.now(),
+    lists: (TEMPLATES[tpl] || TEMPLATES.blank)[1].map(t => ({id: uid() + Math.random().toString(36).slice(2, 4), title: t, wip: 0, collapsed: false, archived: false, cards: []}))};
+}
+function newCard(title) { return {id: uid() + Math.random().toString(36).slice(2, 4), title: str(title, 500), desc: '', labels: [], due: '', dueT: '', done: false, checklists: [], comments: [], act: [], links: [], imgs: [], cover: null, archived: false, created: Date.now()}; }
+function sampleBoard() {
+  const b = newBoard('Website launch (sample)', 'navy', 'mine'), L = b.lists, lb = b.labels;
+  lb[0].name = 'Design'; lb[1].name = 'Content'; lb[3].name = 'Urgent'; lb[5].name = 'Dev';
+  const mk = (li, title, o = {}) => { const c = {...newCard(title), ...o}; logAct(c, 'added this card to ' + L[li].title); L[li].cards.push(c); return c; };
+  const d = k => { const x = new Date(); x.setDate(x.getDate() + k); return dstr(x); };
+  mk(0, 'Collect customer testimonials', {labels: [lb[1].id]});
+  mk(0, 'Plan newsletter announcement', {labels: [lb[1].id], desc: 'Draft the **launch email**.\n- Subject line options\n- Hero image\n- Link to the pricing page'});
+  mk(1, 'Legal review of terms page', {due: d(6), labels: [lb[3].id]});
+  mk(2, 'Build the pricing page', {labels: [lb[5].id, lb[0].id], due: d(2), dueT: '17:00', checklists: [{id: uid(), title: 'Checklist', items: [{id: uid(), t: 'Wireframe', done: true}, {id: uid(), t: 'Hero section', done: true}, {id: uid(), t: 'Plans table', done: false}, {id: uid(), t: 'FAQ', done: false}]}], comments: [{id: uid(), ts: Date.now() - 3600e3, text: 'Waiting on final plan names.'}]});
+  mk(2, 'Fix mobile menu bug', {labels: [lb[5].id, lb[3].id], due: d(-1)});
+  mk(3, 'Register the domain', {done: true, due: d(-5), checklists: [{id: uid(), title: 'Checklist', items: [{id: uid(), t: 'Pick a registrar', done: true}, {id: uid(), t: 'Set DNS', done: true}]}]});
+  mk(3, 'Logo and brand colors', {labels: [lb[0].id], cover: {t: 'color', c: 'purple'}});
+  return b;
+}
+
+/* ---------- Trello import ---------- */
+const baseColor = c => { c = String(c || '').replace(/_(dark|light)$/, ''); return c === 'black' ? 'gray' : COLORS.includes(c) ? c : 'gray'; };
+const TBG = {blue: 'navy', orange: 'orange', green: 'green', red: 'rose', purple: 'purple', pink: 'rose', lime: 'green', sky: 'ocean', grey: 'slate', gray: 'slate'};
+function isTrello(o) { return o && typeof o === 'object' && Array.isArray(o.lists) && Array.isArray(o.cards) && !o.format; }
+function importTrello(o) {
+  const pos = (a, b) => (a.pos || 0) - (b.pos || 0);
+  const labels = (o.labels || []).filter(l => l && l.id).map(l => ({id: String(l.id), color: baseColor(l.color), name: str(l.name, 60)}));
+  const cl = new Map(); (o.checklists || []).forEach(c => cl.set(c.id, c));
+  const cm = new Map(); (o.actions || []).filter(a => a && a.type === 'commentCard' && a.data && a.data.card).forEach(a => { const k = a.data.card.id; (cm.get(k) || cm.set(k, []).get(k)).push({id: uid(), ts: Date.parse(a.date) || Date.now(), text: str(a.data.text, 5000)}); });
+  const b = {id: uid(), title: str(o.name, 80) || 'Imported board', bg: TBG[(o.prefs || {}).background] || TBG[(o.prefs || {}).backgroundColor] || 'navy', star: false, lblExp: false, labels: labels.length ? labels : mkLabels(), created: Date.now(), lists: []};
+  let nCards = 0;
+  [...o.lists].sort(pos).forEach(l => {
+    const list = {id: String(l.id || uid()), title: str(l.name, 120) || 'List', wip: 0, collapsed: false, archived: !!l.closed, cards: []};
+    o.cards.filter(c => c.idList === l.id).sort(pos).forEach(c => {
+      const due = c.due ? new Date(c.due) : null;
+      const checklists = (c.idChecklists || []).map(id => cl.get(id)).filter(Boolean).map(x => ({id: uid(), title: str(x.name, 200) || 'Checklist', items: [...(x.checkItems || [])].sort(pos).map(i => ({id: uid(), t: str(i.name, 500), done: i.state === 'complete'}))}));
+      const links = (c.attachments || []).filter(a => /^https?:\/\//i.test(a.url || '')).map(a => ({id: uid(), url: str(a.url, 1500), name: str(a.name, 200)}));
+      const card = {...newCard(c.name || 'Untitled'), id: String(c.id || uid()), desc: str(c.desc, 20000), labels: (c.idLabels || []).map(String), done: !!c.dueComplete, archived: !!c.closed, checklists, links,
+        comments: (cm.get(c.id) || []).sort((a, b2) => b2.ts - a.ts), created: Date.parse(c.dateLastActivity) || Date.now(),
+        due: due && !isNaN(due) ? dstr(due) : '', dueT: due && !isNaN(due) && (due.getHours() || due.getMinutes()) ? p2(due.getHours()) + ':' + p2(due.getMinutes()) : ''};
+      if (c.cover && COLORS.includes(baseColor(c.cover.color)) && c.cover.color) card.cover = {t: 'color', c: baseColor(c.cover.color)};
+      if (!card.title) card.title = 'Untitled';
+      list.cards.push(card); nCards++;
+    });
+    b.lists.push(list);
+  });
+  const cb = cleanBoard(b); if (cb) cb.imported = nCards; return cb;
+}
+
+/* ---------- toast / modals ---------- */
+let toastT;
+function toast(msg, label, fn, isErr) {
+  const t = $('#toast'); t.className = isErr ? 'err' : '';
+  t.innerHTML = '<span>' + esc(msg) + '</span>' + (label ? '<button>' + esc(label) + '</button>' : ''); t.hidden = false;
+  if (label) t.querySelector('button').onclick = () => { t.hidden = true; fn(); };
+  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, label ? 8000 : 3800);
+}
+const dlg = $('#dlg');
+function open(title, bodyHtml, buttons, onKey) {
+  return new Promise(res => {
+    $('#dT').textContent = title; $('#dB').innerHTML = bodyHtml;
+    $('#dF').innerHTML = buttons.map(b => `<button class="${b.primary ? 'btn-main' : 'btn-ghost'} ${b.cls || ''}" data-v="${b.value}">${esc(b.label)}</button>`).join('');
+    const finish = v => { const b = buttons.find(x => x.value === v); if (b && b.check) { const e = b.check(); if (e) { const el = $('#dE'); if (el) el.textContent = e; return; } } dlg.close(); dlg.classList.remove('wide'); res(v); };
+    $('#dF').onclick = e => { const b = e.target.closest('button'); if (b) finish(b.dataset.v); };
+    dlg.onkeydown = e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); const pb = buttons.find(b => b.primary); if (pb) finish(pb.value); } };
+    dlg.oncancel = e => { e.preventDefault(); finish('cancel'); };
+    dlg.showModal(); const f = dlg.querySelector('input,select'); if (f) f.focus();
+  });
+}
+function fieldHtml(f) {
+  const v = f.value == null ? '' : f.value;
+  const fl = f.full ? ' style="grid-column:1/-1"' : '';
+  if (f.type === 'textarea') return `<label${fl}>${esc(f.label)}<textarea id="f_${f.id}" rows="${f.rows || 3}" maxlength="${f.max || 500}">${esc(v)}</textarea></label>`;
+  if (f.type === 'select') return `<label${fl}>${esc(f.label)}<select id="f_${f.id}">${f.options.map(([val, lab]) => `<option value="${esc(val)}"${String(val) === String(v) ? ' selected' : ''}>${esc(lab)}</option>`).join('')}</select></label>`;
+  return `<label${fl}>${esc(f.label)}<input id="f_${f.id}" type="${f.type || 'text'}" ${f.step ? `step="${f.step}"` : ''} ${f.min != null ? `min="${f.min}"` : ''} maxlength="${f.max || 120}" autocomplete="${f.ac || 'off'}" value="${esc(v)}"></label>`;
+}
+async function modal(o) {
+  const fields = o.fields || [], vals = () => { const r = {}; fields.forEach(f => r[f.id] = $('#f_' + f.id).value); return r; };
+  const btns = o.buttons.map(b => b.primary && o.validate ? {...b, check: () => o.validate(vals())} : b);
+  const v = await open(o.title, (o.text ? `<p>${esc(o.text)}</p>` : '') + `<div class="${fields.length > 3 ? 'grid2' : ''}">` + fields.map(fieldHtml).join('') + '</div><p class="derr" id="dE">' + esc(o.error || '') + '</p>', btns);
+  return {value: v, vals: v === 'cancel' ? {} : vals()};
+}
+
+const b64 = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const ITER = 250000;
+async function deriveKey(pw, salt, iter) { const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']); return crypto.subtle.deriveKey({name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256'}, km, {name: 'AES-GCM', length: 256}, false, ['encrypt', 'decrypt']); }
+async function encrypt(obj, pw) { const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), key = await deriveKey(pw, salt, ITER); const ct = new Uint8Array(await crypto.subtle.encrypt({name: 'AES-GCM', iv}, key, new TextEncoder().encode(JSON.stringify(obj)))); return JSON.stringify({app: 'cuech4-boards', format: 1, enc: 'AES-GCM-256', kdf: 'PBKDF2-SHA256', iter: ITER, salt: b64(salt), iv: b64(iv), data: b64(ct)}); }
+async function decrypt(file, pw) { const key = await deriveKey(pw, unb64(file.salt), file.iter); return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name: 'AES-GCM', iv: unb64(file.iv)}, key, unb64(file.data)))); }
+const safeName = s => (s || 'Boards').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '').replace(/\s+/g, ' ').trim().replace(/ /g, '_').slice(0, 60) || 'Boards';
+function needCrypto() { if (window.crypto && crypto.subtle) return true; toast('Encryption needs a secure page (https or a local file).', null, null, true); return false; }
+async function askPassword(confirm, error) {
+  const r = await modal({title: confirm ? 'Protect your backup' : 'Enter your password', text: confirm ? 'Your backup is encrypted with this password. There’s no reset — if you lose it, the file can’t be opened.' : 'This backup is encrypted. Enter the password you used when you downloaded it.',
+    fields: confirm ? [{id: 'p1', label: 'Password', type: 'password', ac: 'new-password'}, {id: 'p2', label: 'Confirm password', type: 'password', ac: 'new-password'}] : [{id: 'p1', label: 'Password', type: 'password', ac: 'current-password'}], error,
+    validate: v => confirm ? (v.p1.length < 6 ? 'Use at least 6 characters.' : v.p1 !== v.p2 ? 'The passwords don’t match.' : '') : (v.p1 ? '' : 'Enter the password.'),
+    buttons: [{label: 'Cancel', value: 'cancel'}, {label: confirm ? 'Encrypt & continue' : 'Open', value: 'ok', primary: true}]});
+  return r.value === 'ok' ? r.vals.p1 : null;
+}
+
+
+/* ---------- popover ---------- */
+let popEl = null, popAnchor = null;
+function closePop() { if (popEl) { popEl.remove(); popEl = null; document.removeEventListener('pointerdown', popOut, true); document.removeEventListener('keydown', popKey, true); } }
+function popOut(e) { if (popEl && !popEl.contains(e.target) && !(popAnchor && popAnchor.contains(e.target)) && !$('#dlg').contains(e.target)) closePop(); }
+function popKey(e) { if (e.key === 'Escape' && popEl && !$('#dlg').open) { e.stopPropagation(); e.preventDefault(); closePop(); } }
+function pop(anchor, title, build) {
+  closePop();
+  const el = document.createElement('div'); el.className = 'pop'; el.innerHTML = '<div class="ph"><span></span><button class="ibtn" data-x aria-label="Close">✕</button></div><div class="pb"></div>';
+  document.body.appendChild(el); popEl = el; popAnchor = anchor;
+  const api = {close: closePop, body: el.querySelector('.pb'), el, title: t => { el.querySelector('.ph span').textContent = t; }, place() {
+    const r = anchor && anchor.isConnected ? anchor.getBoundingClientRect() : (api.rect || {left: 20, bottom: 60}); api.rect = {left: r.left, bottom: r.bottom};
+    const w = el.offsetWidth, h = el.offsetHeight; let left = Math.max(8, Math.min(r.left, innerWidth - w - 8)), top = r.bottom + 6;
+    if (top + h > innerHeight - 8) top = Math.max(8, innerHeight - h - 8); el.style.left = left + 'px'; el.style.top = top + 'px';
+  }};
+  api.title(title); el.querySelector('[data-x]').onclick = closePop;
+  build(api); api.place();
+  document.addEventListener('pointerdown', popOut, true); document.addEventListener('keydown', popKey, true);
+  return api;
+}
+
+/* ---------- view ---------- */
+let composing = null, addingList = false, editList = null, suppressClick = false, drag = null;
+function openBoard(id, cardId) { curB = id; F = {q: '', labels: [], due: ''}; composing = null; addingList = false; editList = null; curC = cardId || null; closePop(); render(); window.scrollTo(0, 0); }
+function goHome() { curB = null; curC = null; closePop(); render(); }
+function render() {
+  document.body.classList.toggle('pat', S.set.pat);
+  if (curB && !board()) { curB = null; curC = null; }
+  document.body.classList.toggle('inb', !!curB); $('#vHome').hidden = !!curB; $('#vBoard').hidden = !curB;
+  if (curB) renderBoard(); else renderHome();
+  if (curC && curB && findCard(board(), curC)) renderCard(); else { curC = null; hideCard(); }
+  chip();
+}
+function commit() { touch(); render(); }
+function chip() {
+  const c = $('#chip'), lb = S.lastBackup ? shortD(S.lastBackup) : '';
+  if (!S.boards.length) { c.className = 'chip idle'; c.textContent = 'Empty · autosaves in this browser'; }
+  else if (S.dirty) { c.className = 'chip dirty'; c.textContent = '● Changes not backed up' + (lb ? ' · last backup ' + lb : ' yet'); }
+  else { c.className = 'chip'; c.textContent = '🔒 Backup up to date · ' + lb; }
+  $('#pwLbl').textContent = sessionPw ? 'Change password' : 'Set password';
+  const bb = $('#bBackup'); if (bb) bb.classList.toggle('dirty', S.dirty && S.boards.length > 0);
+}
+
+/* ---------- home ---------- */
+function boardStats(b) { let n = 0, soon = 0; b.lists.filter(l => !l.archived).forEach(l => activeCards(l).forEach(c => { n++; const s = dueState(c); if (s === 'bad' || s === 'soon') soon++; })); return {n, soon}; }
+function tile(b) {
+  const s = boardStats(b);
+  return `<div class="btile" data-id="${b.id}" tabindex="0" role="button" style="background:${bgOf(b)}"><button class="star${b.star ? ' on' : ''}" data-a="tstar" aria-label="Star board">${b.star ? '★' : '☆'}</button><b>${esc(b.title)}</b><small>${s.n} card${s.n === 1 ? '' : 's'}${s.soon ? ` · <span class="soon">${s.soon} due soon</span>` : ''}</small></div>`;
+}
+function renderHome() {
+  $('#hname').value = S.name; $('#hEmpty').hidden = S.boards.length > 0;
+  const starred = S.boards.filter(b => b.star);
+  $('#bStar').innerHTML = starred.length ? '<div class="sect">★ Starred boards</div><div class="bgrid">' + starred.map(tile).join('') + '</div>' : '';
+  $('#bAll').innerHTML = S.boards.map(tile).join('') + '<div class="btile new" data-a="create" tabindex="0" role="button">＋ Create new board</div>';
+  const up = [];
+  S.boards.forEach(b => b.lists.forEach(l => { if (l.archived) return; activeCards(l).forEach(c => { if (c.due && !c.done && dueDate(c) - Date.now() < 7 * 864e5) up.push({b, c, dt: dueDate(c)}); }); }));
+  up.sort((a, b) => a.dt - b.dt);
+  $('#upc').innerHTML = up.length ? up.slice(0, 12).map(u => `<div class="up" data-b="${u.b.id}" data-c="${u.c.id}" tabindex="0" role="button"><span>${esc(u.c.title.slice(0, 70))}<small>${esc(u.b.title)}</small></span><span class="bdg" style="margin:0"><span class="${dueState(u.c)}">🕒 ${esc(fmtDue(u.c))}</span></span></div>`).join('') : '<div class="nodata">Nothing due in the next 7 days.</div>';
+}
+async function createBoardDlg() {
+  let bg = 'navy';
+  const body = `<label>Board title<input id="nbT" maxlength="80" placeholder="e.g. Groceries, Job search, Side project"></label>
+    <label>Start from<select id="nbTpl">${Object.entries(TEMPLATES).map(([k, v]) => `<option value="${k}"${k === 'kanban' ? ' selected' : ''}>${esc(v[0])}</option>`).join('')}</select></label>
+    <label>Background</label><div class="bgs" id="nbBg">${Object.entries(BGS).map(([k, v]) => `<button type="button" data-bg="${k}" class="${k === bg ? 'on' : ''}" style="background:${v[1]}">${v[0]}</button>`).join('')}</div><p class="derr" id="dE"></p>`;
+  const p = open('Create board', body, [{label: 'Cancel', value: 'cancel'}, {label: 'Create', value: 'ok', primary: true, check: () => $('#nbT').value.trim() ? '' : 'Give the board a title.'}]);
+  $('#nbBg').onclick = e => { const b = e.target.closest('button'); if (!b) return; bg = b.dataset.bg; $$('#nbBg button').forEach(x => x.classList.toggle('on', x === b)); };
+  const v = await p; if (v !== 'ok') return;
+  const b = newBoard($('#nbT').value, bg, $('#nbTpl').value); S.boards.push(b); touch(); openBoard(b.id);
+}
+$('#vHome').addEventListener('click', e => {
+  const a = e.target.closest('[data-a]');
+  if (a) {
+    e.stopPropagation(); const k = a.dataset.a;
+    if (k === 'tstar') { const id = a.closest('.btile').dataset.id, b = S.boards.find(x => x.id === id); b.star = !b.star; commit(); }
+    else if (k === 'create') createBoardDlg();
+    else if (k === 'import') { importMode = 'board'; $('#file').click(); }
+    else if (k === 'sample') { const b = sampleBoard(); S.boards.push(b); touch(); openBoard(b.id); toast('Sample board added — drag cards between lists, open a card, try the filter.'); }
+    return;
+  }
+  const t = e.target.closest('.btile'); if (t) return openBoard(t.dataset.id);
+  const u = e.target.closest('.up'); if (u) openBoard(u.dataset.b, u.dataset.c);
+});
+$('#vHome').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('.btile,.up')) e.target.click(); });
+$('#hname').addEventListener('change', e => { S.name = e.target.value.trim().slice(0, 60) || 'My Boards'; commit(); });
+let importMode = 'board';
+
+/* ---------- board ---------- */
+function cardHtml(b, c) {
+  let cover = '';
+  if (c.cover) { if (c.cover.t === 'img') { const im = c.imgs.find(i => i.id === c.cover.id); if (im) cover = `<img class="cimg" src="${im.data}" alt="" draggable="false">`; } else cover = `<div class="ccol lb-${c.cover.c}"></div>`; }
+  const lb = c.labels.map(id => labelOf(b, id)).filter(Boolean);
+  const lbs = lb.length ? '<div class="lbls">' + lb.map(l => b.lblExp ? `<span class="lb x lb-${l.color}" data-a="lbx" title="${esc(l.name)}">${esc(l.name) || '&nbsp;'}</span>` : `<span class="lb lb-${l.color}" data-a="lbx" title="${esc(l.name || l.color)}"></span>`).join('') + '</div>' : '';
+  const bd = [], st = dueState(c), cc = checkCount(c);
+  if (c.due) bd.push(`<span class="${st === 'ok' ? 'ok' : st}" title="Due date">${c.done ? '☑' : '🕒'} ${esc(fmtDue(c))}${st === 'bad' ? ' · overdue' : ''}</span>`);
+  if (c.desc) bd.push('<span class="norm" title="Has a description">☰</span>');
+  if (c.comments.length) bd.push(`<span class="norm" title="Comments">💬 ${c.comments.length}</span>`);
+  const na = c.imgs.length + c.links.length; if (na) bd.push(`<span class="norm" title="Attachments">📎 ${na}</span>`);
+  if (cc.t) bd.push(`<span class="${cc.d === cc.t ? 'full' : 'norm'}" title="Checklist items">☑ ${cc.d}/${cc.t}</span>`);
+  return `<div class="tcard${c.done ? ' done' : ''}" data-id="${c.id}" tabindex="0">${cover}<div class="cb">${lbs}<div class="ct">${esc(c.title)}</div>${bd.length ? '<div class="bdg">' + bd.join('') + '</div>' : ''}</div></div>`;
+}
+function listHtml(b, l) {
+  const all = activeCards(l), vis = all.filter(c => matches(b, c));
+  if (l.collapsed) return `<div class="list col" data-id="${l.id}"><button class="lcol" data-a="expand" title="Expand list"><i>${all.length}</i><span>${esc(l.title)}</span></button></div>`;
+  const over = l.wip && all.length > l.wip;
+  const head = editList === l.id ? `<input class="lt-in" id="ltIn" maxlength="120" value="${esc(l.title)}">` : `<h2 class="lt" data-a="ltitle">${esc(l.title)}</h2>`;
+  const foot = composing === l.id ? `<div class="comp"><textarea id="compT" rows="3" maxlength="500" placeholder="Enter a title for this card… (paste several lines to add several cards)"></textarea><div class="row2"><button class="btn-main sm" data-a="c-ok">Add card</button><button class="ibtn" data-a="c-x" aria-label="Cancel">✕</button></div></div>` : '<button class="addc" data-a="addc">＋ Add a card</button>';
+  return `<div class="list${over ? ' over' : ''}" data-id="${l.id}"><div class="lh">${head}${l.wip ? `<span class="wip${over ? ' over' : ''}" title="Work-in-progress limit">${all.length}/${l.wip}</span>` : `<span class="lcnt">${all.length}</span>`}<button class="ibtn" data-a="lmenu" aria-label="List actions">⋯</button></div>
+    <div class="cards">${vis.map(c => cardHtml(b, c)).join('')}</div><div class="lf">${foot}</div></div>`;
+}
+function renderBoard() {
+  const b = board(), root = $('#vBoard'), old = root.querySelector('.lists'), sl = old ? old.scrollLeft : 0, st = {};
+  root.querySelectorAll('.list').forEach(l => { const c = l.querySelector('.cards'); if (c) st[l.dataset.id] = c.scrollTop; });
+  const total = b.lists.filter(l => !l.archived).reduce((n, l) => n + activeCards(l).length, 0), shown = b.lists.filter(l => !l.archived).reduce((n, l) => n + activeCards(l).filter(c => matches(b, c)).length, 0);
+  root.style.background = bgOf(b);
+  root.innerHTML = `<div class="bh"><button class="btn-ghost sm" data-a="home">‹ Boards</button><input id="btitle" maxlength="80" value="${esc(b.title)}" aria-label="Board title"><button class="ibtn${b.star ? ' on' : ''}" data-a="bstar" aria-label="Star board">${b.star ? '★' : '☆'}</button><span class="sp"></span>
+    <button class="btn-ghost sm" data-a="filter">⛃ Filter${filtering() ? ' •' : ''}</button><button class="btn-ghost sm chipbtn" id="bBackup" data-a="backup" title="Download an encrypted backup">⬇ Backup</button><button class="btn-ghost sm" data-a="bmenu">⋯ Menu</button></div>
+    ${filtering() ? `<div class="fbar"><span>Showing ${shown} of ${total} cards</span><button class="lk" data-a="fclear">Clear filters</button></div>` : ''}
+    <div class="lists">${activeLists(b).map(l => listHtml(b, l)).join('')}${addingList ? '<div class="addl"><input class="fld" id="alIn" maxlength="120" placeholder="Enter list name…"><div class="row2" style="display:flex;gap:6px;align-items:center"><button class="btn-main sm" data-a="al-ok">Add list</button><button class="ibtn" data-a="al-x" aria-label="Cancel">✕</button></div></div>' : '<button class="addlist" data-a="al">＋ Add another list</button>'}</div>`;
+  const ls = root.querySelector('.lists'); ls.scrollLeft = sl; root.querySelectorAll('.list').forEach(l => { const c = l.querySelector('.cards'); if (c && st[l.dataset.id]) c.scrollTop = st[l.dataset.id]; });
+  const f = composing && $('#compT') || editList && $('#ltIn') || addingList && $('#alIn'); if (f) { f.focus(); if (f.select && editList) f.select(); if (composing) { const l = $(`.list[data-id="${composing}"] .cards`); if (l) l.scrollTop = l.scrollHeight; } }
+}
+function addCards(l, text) {
+  const b = board(), ls = String(text).split(/\n+/).map(s => s.replace(/^\s*(?:[-*•]|\d+[.)]|\[[ x]?\])\s+/, '').trim()).filter(Boolean).slice(0, 100);
+  ls.forEach(t => { const c = newCard(t); logAct(c, 'added this card to ' + l.title); l.cards.push(c); });
+  if (ls.length > 1) toast('Added ' + ls.length + ' cards'); return ls.length;
+}
+function moveCard(cid, toLid, beforeId) {
+  const b = board(), f = findCard(b, cid), to = findList(b, toLid); if (!f || !to) return;
+  f.l.cards.splice(f.l.cards.indexOf(f.c), 1);
+  let i = beforeId ? to.cards.findIndex(x => x.id === beforeId) : -1; if (i < 0) i = to.cards.length; to.cards.splice(i, 0, f.c);
+  if (f.l !== to) logAct(f.c, `moved this card from ${f.l.title} to ${to.title}`);
+  commit();
+}
+function moveList(lid, beforeId) {
+  const b = board(), i = b.lists.findIndex(l => l.id === lid); if (i < 0) return; const [l] = b.lists.splice(i, 1);
+  let j = beforeId ? b.lists.findIndex(x => x.id === beforeId) : -1; if (j < 0) { const act = b.lists.map((x, k) => x.archived ? -1 : k).filter(k => k >= 0); j = act.length ? act[act.length - 1] + 1 : b.lists.length; }
+  b.lists.splice(j, 0, l); commit();
+}
+function listMenu(anchor, l) {
+  const b = board();
+  pop(anchor, 'List actions', api => {
+    const root = () => {
+      api.title('List actions');
+      api.body.innerHTML = '<button class="mi" data-k="add">＋ Add card</button><button class="mi" data-k="ren">✎ Rename list</button><button class="mi" data-k="wip">⏱ Set card limit…</button><button class="mi" data-k="sort">⇅ Sort cards…</button><button class="mi" data-k="col">⇤ Collapse list</button><button class="mi" data-k="arc">🗃 Archive all cards in this list</button><button class="mi dg" data-k="arcl">🗃 Archive this list</button>';
+    };
+    root();
+    api.body.onclick = async e => {
+      const m = e.target.closest('.mi'); if (!m) return; const k = m.dataset.k;
+      if (k === 'sort') {
+        api.title('Sort cards'); api.body.innerHTML = '<button class="mi" data-k="s-due">By due date (soonest first)</button><button class="mi" data-k="s-az">By title (A → Z)</button><button class="mi" data-k="s-new">Newest first</button><button class="mi" data-k="s-old">Oldest first</button><button class="mi" data-k="back">‹ Back</button>'; api.place(); return;
+      }
+      if (k === 'back') { root(); api.place(); return; }
+      if (k.startsWith('s-')) {
+        const act = l.cards.filter(c => !c.archived), rest = l.cards.filter(c => c.archived);
+        if (k === 's-due') act.sort((x, y) => (x.due ? +dueDate(x) : 9e15) - (y.due ? +dueDate(y) : 9e15)); else if (k === 's-az') act.sort((x, y) => x.title.localeCompare(y.title)); else if (k === 's-new') act.sort((x, y) => y.created - x.created); else act.sort((x, y) => x.created - y.created);
+        l.cards = act.concat(rest); closePop(); commit(); return;
+      }
+      closePop();
+      if (k === 'add') { composing = l.id; renderBoard(); }
+      else if (k === 'ren') { editList = l.id; renderBoard(); }
+      else if (k === 'wip') { const r = await modal({title: 'Card limit', text: 'The list header turns red when it holds more cards than this. Use 0 for no limit.', fields: [{id: 'n', label: 'Maximum cards', type: 'number', value: l.wip, min: 0}], buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Save', value: 'ok', primary: true}]}); if (r.value === 'ok') { l.wip = Math.max(0, Math.min(999, int(r.vals.n))); commit(); } }
+      else if (k === 'col') { l.collapsed = true; commit(); }
+      else if (k === 'arc') { const n = activeCards(l).length; if (!n) return toast('No cards to archive.'); const r = await modal({title: 'Archive all cards?', text: `${n} card${n > 1 ? 's' : ''} will move to Archived items (restorable from the board menu).`, buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Archive', value: 'ok', primary: true}]}); if (r.value === 'ok') { l.cards.forEach(c => { if (!c.archived) { c.archived = true; logAct(c, 'archived this card'); } }); commit(); } }
+      else if (k === 'arcl') { l.archived = true; commit(); toast('List archived', 'Undo', () => { l.archived = false; commit(); }); }
+    };
+  });
+}
+function filterPop(anchor) {
+  const b = board();
+  pop(anchor, 'Filter cards', api => {
+    api.body.innerHTML = `<label class="f">Keyword</label><input class="fld" id="fq" placeholder="Search titles and descriptions…" value="${esc(F.q)}">
+      <label class="f">Labels</label>${b.labels.map(l => `<label class="lrow"><input type="checkbox" data-l="${l.id}"${F.labels.includes(l.id) ? ' checked' : ''}><span class="lb wide lb-${l.color}">${esc(l.name) || '&nbsp;'}</span></label>`).join('')}<label class="lrow"><input type="checkbox" data-l="_none"${F.labels.includes('_none') ? ' checked' : ''}><span>No labels</span></label>
+      <label class="f">Due date</label><select class="fld" id="fd"><option value="">Any</option><option value="none">No due date</option><option value="overdue">Overdue</option><option value="day">Due in the next 24 hours</option><option value="week">Due in the next 7 days</option><option value="done">Marked complete</option></select>
+      <div class="row2"><button class="btn-ghost sm" id="fc">Clear filters</button></div>`;
+    $('#fd').value = F.due;
+    const upd = () => { renderBoard(); }; // popover lives outside #vBoard, so typing keeps focus
+    $('#fq').oninput = e => { F.q = e.target.value; upd(); };
+    api.body.onchange = e => { if (e.target.dataset.l) { const id = e.target.dataset.l; F.labels = e.target.checked ? [...F.labels, id] : F.labels.filter(x => x !== id); upd(); } else if (e.target.id === 'fd') { F.due = e.target.value; upd(); } };
+    $('#fc').onclick = () => { F = {q: '', labels: [], due: ''}; closePop(); renderBoard(); };
+    $('#fq').focus();
+  });
+}
+async function labelsPop(anchor, card) {
+  const b = board();
+  pop(anchor, card ? 'Labels' : 'Board labels', api => {
+    let editing = null;
+    const list = () => {
+      api.title(card ? 'Labels' : 'Board labels');
+      api.body.innerHTML = (b.labels.length ? b.labels.map(l => `<div class="lrow" data-id="${l.id}">${card ? `<input type="checkbox"${card.labels.includes(l.id) ? ' checked' : ''} aria-label="${esc(l.name || l.color)}">` : ''}<span class="lb wide lb-${l.color}">${esc(l.name) || '&nbsp;'}</span><button class="ibtn" data-k="edit" aria-label="Edit label">✎</button></div>`).join('') : '<p style="color:var(--muted)">No labels yet.</p>') + '<button class="btn-ghost sm" data-k="new" style="margin-top:8px;width:100%;justify-content:center">Create a new label</button>';
+      api.place();
+    };
+    const form = l => {
+      editing = l; api.title(l.id ? 'Edit label' : 'Create label'); let col = l.color;
+      api.body.innerHTML = `<span class="lb wide lb-${col}" id="lpv" style="margin-bottom:8px">${esc(l.name) || '&nbsp;'}</span><label class="f">Title</label><input class="fld" id="ln" maxlength="60" value="${esc(l.name)}"><label class="f">Color</label><div class="swatch">${COLORS.map(c => `<button type="button" class="lb-${c}${c === col ? ' on' : ''}" data-c="${c}" aria-label="${c}"></button>`).join('')}</div>
+        <div class="row2"><button class="btn-main sm" data-k="save">${l.id ? 'Save' : 'Create'}</button><button class="btn-ghost sm" data-k="cancel">Back</button>${l.id ? '<button class="btn-ghost sm dg" data-k="del" style="margin-left:auto;color:#fca5a5">Delete</button>' : ''}</div>`;
+      api.body.querySelector('.swatch').onclick = e => { const x = e.target.closest('button'); if (!x) return; col = x.dataset.c; $$('.pop .swatch button').forEach(y => y.classList.toggle('on', y === x)); $('#lpv').className = 'lb wide lb-' + col; };
+      $('#ln').oninput = e => { $('#lpv').textContent = e.target.value || ' '; };
+      api.body.onclick = e => {
+        const k = (e.target.closest('[data-k]') || {}).dataset; if (!k) return;
+        if (k.k === 'cancel') { api.body.onclick = main; list(); }
+        else if (k.k === 'save') { const name = $('#ln').value.trim().slice(0, 60); if (l.id) { l.name = name; l.color = col; } else { const nl = {id: uid(), name, color: col}; b.labels.push(nl); if (card) card.labels.push(nl.id); } api.body.onclick = main; commit(); list(); }
+        else if (k.k === 'del') { b.labels = b.labels.filter(x => x.id !== l.id); b.lists.forEach(li => li.cards.forEach(c => { c.labels = c.labels.filter(x => x !== l.id); })); F.labels = F.labels.filter(x => x !== l.id); api.body.onclick = main; commit(); list(); }
+      };
+      $('#ln').focus();
+    };
+    const main = e => {
+      const row = e.target.closest('.lrow'), k = (e.target.closest('[data-k]') || {}).dataset;
+      if (k && k.k === 'new') return form({id: '', name: '', color: 'green'});
+      if (k && k.k === 'edit') return form(b.labels.find(l => l.id === row.dataset.id));
+      if (card && row && e.target.type === 'checkbox') { const id = row.dataset.id; card.labels = e.target.checked ? [...card.labels, id] : card.labels.filter(x => x !== id); commit(); }
+    };
+    api.body.onclick = main; list();
+  });
+}
+function bgPop(anchor) {
+  const b = board();
+  pop(anchor, 'Change background', api => {
+    api.body.innerHTML = '<div class="bgs">' + Object.entries(BGS).map(([k, v]) => `<button data-bg="${k}" class="${k === b.bg ? 'on' : ''}" style="background:${v[1]}">${v[0]}</button>`).join('') + '</div>';
+    api.body.onclick = e => { const x = e.target.closest('button'); if (!x) return; b.bg = x.dataset.bg; touch(); $('#vBoard').style.background = bgOf(b); $$('.pop .bgs button').forEach(y => y.classList.toggle('on', y === x)); };
+  });
+}
+function boardMenu(anchor) {
+  const b = board();
+  pop(anchor, 'Board menu', api => {
+    api.body.innerHTML = '<button class="mi" data-k="bg">🎨 Change background</button><button class="mi" data-k="lbl">🏷 Labels</button><button class="mi" data-k="arch">🗃 Archived items</button><button class="mi" data-k="set">⚙ Settings</button><button class="mi" data-k="exp">⬇ Export this board (.json)</button><button class="mi" data-k="imp">⬆ Import a board…</button><button class="mi dg" data-k="del">🗑 Delete this board</button>';
+    api.body.onclick = async e => {
+      const m = e.target.closest('.mi'); if (!m) return; const k = m.dataset.k;
+      if (k === 'bg') return bgPop(anchor); if (k === 'lbl') return labelsPop(anchor, null);
+      closePop();
+      if (k === 'arch') archivedDlg();
+      else if (k === 'set') settingsDlg();
+      else if (k === 'exp') exportBoard(b);
+      else if (k === 'imp') { importMode = 'board'; $('#file').click(); }
+      else if (k === 'del') { const r = await modal({title: 'Delete this board?', text: `“${b.title}” and all its lists and cards will be removed from this browser. This can’t be undone (your last backup file still has it).`, buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Delete board', value: 'ok', primary: true}]}); if (r.value === 'ok') { S.boards = S.boards.filter(x => x.id !== b.id); curB = null; curC = null; commit(); toast('Board deleted'); } }
+    };
+  });
+}
+async function settingsDlg() {
+  const r = await modal({title: 'Settings', text: 'Your name appears on comments and activity.', fields: [{id: 'me', label: 'Your name', value: S.set.me, max: 30}, {id: 'pat', label: 'Label patterns (helps with color blindness)', type: 'select', options: [['1', 'Show patterns on labels'], ['0', 'Colors only']], value: S.set.pat ? '1' : '0'}], buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Save', value: 'ok', primary: true}]});
+  if (r.value === 'ok') { S.set.me = r.vals.me.trim().slice(0, 30) || 'Me'; S.set.pat = r.vals.pat === '1'; commit(); }
+}
+function archivedDlg() {
+  const b = board(); let tab = 'cards';
+  const body = () => {
+    const cards = [], lists = b.lists.filter(l => l.archived);
+    b.lists.forEach(l => l.cards.forEach(c => { if (c.archived) cards.push({c, l}); }));
+    const rows = tab === 'cards' ? cards.map(x => `<div class="arow" data-c="${x.c.id}"><span>${esc(x.c.title)} <small>in ${esc(x.l.title)}${x.l.archived ? ' (archived list)' : ''}</small></span><button class="btn-ghost sm" data-k="rc">Restore</button><button class="btn-ghost sm" data-k="dc" style="color:#fca5a5">Delete</button></div>`).join('') || '<p>No archived cards.</p>'
+      : lists.map(l => `<div class="arow" data-l="${l.id}"><span>${esc(l.title)} <small>${l.cards.length} cards</small></span><button class="btn-ghost sm" data-k="rl">Restore</button><button class="btn-ghost sm" data-k="dl" style="color:#fca5a5">Delete</button></div>`).join('') || '<p>No archived lists.</p>';
+    $('#dB').innerHTML = `<div class="seg2" style="display:flex;gap:6px;margin-bottom:8px"><button class="btn-ghost sm${tab === 'cards' ? ' on' : ''}" data-t="cards">Cards (${cards.length})</button><button class="btn-ghost sm${tab === 'lists' ? ' on' : ''}" data-t="lists">Lists (${lists.length})</button></div>` + rows;
+  };
+  const p = open('Archived items', '', [{label: 'Close', value: 'cancel', primary: true}]); body();
+  $('#dB').onclick = e => {
+    const t = e.target.closest('[data-t]'); if (t) { tab = t.dataset.t; return body(); }
+    const k = (e.target.closest('[data-k]') || {}).dataset; if (!k) return; const row = e.target.closest('.arow');
+    if (row.dataset.c) { const f = findCard(b, row.dataset.c); if (k.k === 'rc') { f.c.archived = false; if (f.l.archived) f.l.archived = false; logAct(f.c, 'restored this card'); } else f.l.cards.splice(f.l.cards.indexOf(f.c), 1); }
+    else { const l = findList(b, row.dataset.l); if (k.k === 'rl') l.archived = false; else b.lists.splice(b.lists.indexOf(l), 1); }
+    touch(); body(); renderBoard();
+  };
+  return p;
+}
+function download(name, text, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type: type || 'text/plain'})); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+function exportBoard(b) { download(safeName(b.title) + '_board.json', JSON.stringify({format: 'cuech4-board', v: 1, board: b}), 'application/json'); toast('Board exported. This file is not encrypted — keep it private.'); }
+
+/* ---------- board events ---------- */
+const bv = $('#vBoard');
+bv.addEventListener('click', e => {
+  if (suppressClick) { suppressClick = false; e.stopPropagation(); return; }
+  const a = e.target.closest('[data-a]'), b = board();
+  if (a) {
+    const k = a.dataset.a, lEl = a.closest('.list'), l = lEl ? findList(b, lEl.dataset.id) : null;
+    if (k === 'home') goHome();
+    else if (k === 'bstar') { b.star = !b.star; commit(); }
+    else if (k === 'filter') filterPop(a);
+    else if (k === 'fclear') { F = {q: '', labels: [], due: ''}; renderBoard(); }
+    else if (k === 'backup') doSave();
+    else if (k === 'bmenu') boardMenu(a);
+    else if (k === 'lbx') { b.lblExp = !b.lblExp; touch(); renderBoard(); }
+    else if (k === 'addc') { composing = l.id; renderBoard(); }
+    else if (k === 'c-x') { composing = null; renderBoard(); }
+    else if (k === 'c-ok') submitComposer(l);
+    else if (k === 'ltitle') { editList = l.id; renderBoard(); }
+    else if (k === 'lmenu') listMenu(a, l);
+    else if (k === 'expand') { l.collapsed = false; commit(); }
+    else if (k === 'al') { addingList = true; renderBoard(); }
+    else if (k === 'al-x') { addingList = false; renderBoard(); }
+    else if (k === 'al-ok') submitList();
+    return;
+  }
+  const c = e.target.closest('.tcard'); if (c) openCard(c.dataset.id);
+});
+function submitComposer(l) { const t = $('#compT'); if (!t.value.trim()) { composing = null; return renderBoard(); } addCards(l, t.value); touch(); renderBoard(); }
+function submitList() { const t = $('#alIn'), v = t.value.trim(); if (!v) { addingList = false; return renderBoard(); } board().lists.push({id: uid(), title: v.slice(0, 120), wip: 0, collapsed: false, archived: false, cards: []}); touch(); renderBoard(); const ls = $('.lists'); ls.scrollLeft = ls.scrollWidth; }
+bv.addEventListener('keydown', e => {
+  const b = board(); if (!b) return;
+  if (e.target.id === 'compT') {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitComposer(findList(b, composing)); }
+    else if (e.key === 'Escape') { composing = null; renderBoard(); }
+  } else if (e.target.id === 'ltIn') {
+    if (e.key === 'Enter') e.target.blur(); else if (e.key === 'Escape') { editList = null; renderBoard(); }
+  } else if (e.target.id === 'alIn') {
+    if (e.key === 'Enter') submitList(); else if (e.key === 'Escape') { addingList = false; renderBoard(); }
+  } else if (e.target.id === 'btitle') { if (e.key === 'Enter') e.target.blur(); }
+  else if (e.key === 'Enter' && e.target.classList.contains('tcard')) openCard(e.target.dataset.id);
+});
+bv.addEventListener('focusout', e => {
+  const b = board(); if (!b) return;
+  if (e.target.id === 'ltIn' && editList) { const l = findList(b, editList), v = e.target.value.trim(); editList = null; if (v && l && v !== l.title) l.title = v.slice(0, 120); commit(); }
+  else if (e.target.id === 'btitle') { const v = e.target.value.trim(); if (v && v !== b.title) { b.title = v.slice(0, 80); touch(); chip(); } else e.target.value = b.title; }
+});
+/* ---------- drag & drop (mouse, pen and touch long-press) ---------- */
+bv.addEventListener('pointerdown', e => {
+  if (e.button > 0 || drag) return;
+  if (e.target.closest('input,textarea,select,a,button,.comp,.addl')) return;
+  const cardEl = e.target.closest('.tcard'), listEl = !cardEl && e.target.closest('.lh') && e.target.closest('.list');
+  const el = cardEl || listEl; if (!el) return;
+  drag = {kind: cardEl ? 'card' : 'list', el, id: el.dataset.id, x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY, pid: e.pointerId, touch: e.pointerType === 'touch', started: false};
+  if (drag.touch) drag.timer = setTimeout(() => { if (drag && !drag.started) dragBegin(); }, 280);
+  document.addEventListener('pointermove', dragMove); document.addEventListener('pointerup', dragEnd); document.addEventListener('pointercancel', dragEnd);
+});
+document.addEventListener('touchmove', e => { if (drag && drag.started && e.cancelable) e.preventDefault(); }, {passive: false});
+bv.addEventListener('contextmenu', e => { if (drag && drag.touch) e.preventDefault(); });
+function dragBegin() {
+  const d = drag; d.started = true; if (navigator.vibrate) try { navigator.vibrate(12); } catch (_) {}
+  const r = d.el.getBoundingClientRect(); d.offX = d.x - r.left; d.offY = d.y - r.top;
+  d.ghost = d.el.cloneNode(true); d.ghost.classList.add('ghost'); Object.assign(d.ghost.style, {position: 'fixed', left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', margin: '0', pointerEvents: 'none', zIndex: 80, maxHeight: '70vh', overflow: 'hidden'});
+  d.ph = document.createElement('div'); d.ph.className = d.kind === 'card' ? 'ph-card' : 'ph-list'; d.ph.style.height = r.height + 'px'; d.el.parentNode.insertBefore(d.ph, d.el); d.el.style.display = 'none';
+  document.body.appendChild(d.ghost); document.body.classList.add('dragging'); closePop();
+  d.raf = requestAnimationFrame(function loop() { if (!drag || !drag.started) return; autoScroll(); drag.raf = requestAnimationFrame(loop); });
+}
+function dragMove(e) {
+  const d = drag; if (!d || e.pointerId !== d.pid) return; d.x = e.clientX; d.y = e.clientY;
+  if (!d.started) {
+    const dist = Math.hypot(d.x - d.x0, d.y - d.y0);
+    if (d.touch) { if (dist > 8) dragCancel(); return; }
+    if (dist > 5) { dragBegin(); } else return;
+  }
+  e.preventDefault(); place();
+}
+function place() {
+  const d = drag; d.ghost.style.left = (d.x - d.offX) + 'px'; d.ghost.style.top = (d.y - d.offY) + 'px';
+  const under = document.elementFromPoint(d.x, d.y);
+  if (d.kind === 'card') {
+    const lst = under && under.closest('.list:not(.col)'); if (!lst) return; const cont = lst.querySelector('.cards');
+    const sibs = [...cont.children].filter(c => c.classList.contains('tcard') && c !== d.el);
+    const next = sibs.find(c => { const r = c.getBoundingClientRect(); return d.y < r.top + r.height / 2; }) || null;
+    let cur = d.ph.nextElementSibling; while (cur === d.el) cur = cur.nextElementSibling;
+    if (d.ph.parentNode !== cont || cur !== next) cont.insertBefore(d.ph, next);
+  } else {
+    const box = $('#vBoard .lists'), sibs = [...box.children].filter(c => c.classList.contains('list') && c !== d.el);
+    const next = sibs.find(c => { const r = c.getBoundingClientRect(); return d.x < r.left + r.width / 2; }) || box.querySelector('.addlist,.addl');
+    let cur = d.ph.nextElementSibling; while (cur === d.el) cur = cur.nextElementSibling;
+    if (cur !== next) box.insertBefore(d.ph, next);
+  }
+}
+function autoScroll() {
+  const d = drag, box = $('#vBoard .lists'); if (!box) return; const r = box.getBoundingClientRect(), E = 56; let moved = false;
+  if (d.x > r.right - E) { box.scrollLeft += 16; moved = true; } else if (d.x < r.left + E) { box.scrollLeft -= 16; moved = true; }
+  if (d.kind === 'card') { const lst = document.elementFromPoint(d.x, d.y), c = lst && lst.closest('.list') && lst.closest('.list').querySelector('.cards'); if (c) { const cr = c.getBoundingClientRect(); if (d.y > cr.bottom - E) { c.scrollTop += 14; moved = true; } else if (d.y < cr.top + E) { c.scrollTop -= 14; moved = true; } } }
+  if (moved) place();
+}
+function dragCleanup() { const d = drag; if (!d) return; clearTimeout(d.timer); cancelAnimationFrame(d.raf); if (d.ghost) d.ghost.remove(); if (d.ph) d.ph.remove(); if (d.el) d.el.style.display = ''; document.body.classList.remove('dragging'); document.removeEventListener('pointermove', dragMove); document.removeEventListener('pointerup', dragEnd); document.removeEventListener('pointercancel', dragEnd); drag = null; }
+function dragCancel() { dragCleanup(); }
+function dragEnd(e) {
+  const d = drag; if (!d || e.pointerId !== d.pid) return;
+  if (!d.started) return dragCleanup();
+  let to = null, before = null;
+  if (e.type !== 'pointercancel') {
+    if (d.kind === 'card') { const lst = d.ph.closest('.list'); if (lst) { to = lst.dataset.id; let nx = d.ph.nextElementSibling; while (nx === d.el) nx = nx.nextElementSibling; before = nx && nx.classList.contains('tcard') ? nx.dataset.id : null; } }
+    else { let nx = d.ph.nextElementSibling; while (nx === d.el) nx = nx.nextElementSibling; before = nx && nx.classList.contains('list') ? nx.dataset.id : null; to = 'x'; }
+  }
+  const kind = d.kind, id = d.id; dragCleanup(); suppressClick = true; setTimeout(() => { suppressClick = false; }, 60);
+  if (!to) return;
+  if (kind === 'card') moveCard(id, to, before); else moveList(id, before);
+}
+
+/* ---------- card overlay ---------- */
+let editDesc = false, addItem = null, editItem = null, showDetails = false, cmDraft = '', editCm = null, descDraft = '';
+function openCard(id) { curC = id; editDesc = false; addItem = null; editItem = null; showDetails = false; cmDraft = ''; editCm = null; closePop(); renderCard(); }
+function closeCard() { curC = null; closePop(); hideCard(); renderBoard(); }
+function hideCard() { $('#cov').hidden = true; $('#cdlg').innerHTML = ''; document.body.classList.remove('lock'); }
+function md(src) {
+  const lines = String(src).split('\n'); let out = '', inList = false;
+  const inl = t => esc(t).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<i>$2</i>').replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)])/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+  for (const ln of lines) {
+    const li = /^\s*(?:[-*•]|\d+[.)])\s+(.*)$/.exec(ln), h = /^(#{1,3})\s+(.*)$/.exec(ln);
+    if (li) { if (!inList) { out += '<ul>'; inList = true; } out += '<li>' + inl(li[1]) + '</li>'; continue; }
+    if (inList) { out += '</ul>'; inList = false; }
+    if (h) out += `<p><b style="font-size:${17 - h[1].length}px">${inl(h[2])}</b></p>`; else if (ln.trim()) out += '<p>' + inl(ln) + '</p>';
+  }
+  return out + (inList ? '</ul>' : '');
+}
+function renderCard(focusSel) {
+  const b = board(), f = b && findCard(b, curC); if (!f) return hideCard();
+  const c = f.c, cov = $('#cov'), sc = cov.scrollTop;
+  let cover = '';
+  if (c.cover) { if (c.cover.t === 'img') { const im = c.imgs.find(i => i.id === c.cover.id); if (im) cover = `<img class="cd-cover-img" src="${im.data}" alt="">`; } else cover = `<div class="cd-cover-col lb-${c.cover.c}"></div>`; }
+  const lbs = c.labels.map(id => labelOf(b, id)).filter(Boolean), st = dueState(c), cc = checkCount(c);
+  const sec = (title, icon, inner, extra) => `<div class="cd-sec"><h4><span>${icon}</span>${title}<span class="sp"></span>${extra || ''}</h4>${inner}</div>`;
+  const cls = c.checklists.map(cl => {
+    const d = cl.items.filter(i => i.done).length, pc = cl.items.length ? Math.round(d / cl.items.length * 100) : 0;
+    return `<div class="cl" data-id="${cl.id}"><div class="cl-h"><span>☑</span><b data-a="cl-ren" style="cursor:pointer">${esc(cl.title)}</b><button class="btn-ghost sm" data-a="cl-del">Delete</button></div>
+      <div class="pbar${pc === 100 && cl.items.length ? ' full' : ''}"><span>${pc}%</span><i><b style="width:${pc}%"></b></i></div>
+      ${cl.items.map(i => `<div class="ci${i.done ? ' d' : ''}" data-id="${i.id}"><input type="checkbox" data-a="ci-tg"${i.done ? ' checked' : ''} aria-label="Done">${editItem === i.id ? `<input class="ci-in" id="ciEdit" maxlength="500" value="${esc(i.t)}">` : `<span data-a="ci-ed">${esc(i.t)}</span>`}<button class="ibtn" data-a="ci-del" aria-label="Delete item">✕</button></div>`).join('')}
+      ${addItem === cl.id ? `<div style="margin:6px 0 0 24px"><textarea class="ci-in" id="ciNew" rows="2" maxlength="5000" placeholder="Add an item (Shift+Enter or paste for several)" style="width:100%;resize:vertical"></textarea><div style="display:flex;gap:6px;margin-top:6px"><button class="btn-main sm" data-a="ci-ok">Add</button><button class="ibtn" data-a="ci-x" aria-label="Cancel">✕</button></div></div>` : `<button class="btn-ghost sm" data-a="ci-add" style="margin:6px 0 0 24px">Add an item</button>`}</div>`;
+  }).join('');
+  const atts = c.imgs.map(i => `<div class="att" data-id="${i.id}"><img src="${i.data}" alt="" data-a="zoom"><div><b>${esc(i.name)}</b><small>Image</small><br><button class="lk" data-a="cov-img">${c.cover && c.cover.id === i.id ? 'Remove cover' : 'Make cover'}</button> · <button class="lk" data-a="img-del">Delete</button></div></div>`).join('')
+    + c.links.map(l => `<div class="att" data-id="${l.id}"><div class="lnk">🔗</div><div><b>${esc(l.name || l.url)}</b><small><a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.url.slice(0, 60))}</a></small><br><button class="lk" data-a="lnk-del">Delete</button></div></div>`).join('');
+  const feed = [...c.comments.map(m => ({ts: m.ts, m})), ...(showDetails ? c.act.map(a => ({ts: a.ts, a})) : [])].sort((x, y) => y.ts - x.ts).map(x => x.m
+    ? `<div class="fi" data-id="${x.m.id}"><div class="av">${esc(S.set.me[0].toUpperCase())}</div><div class="fb2"><b>${esc(S.set.me)}</b> <time>${esc(fmtTs(x.m.ts))}</time>${editCm === x.m.id ? `<textarea class="cm-in" id="cmEdit" rows="3" maxlength="5000">${esc(x.m.text)}</textarea><div style="display:flex;gap:6px;margin-top:6px"><button class="btn-main sm" data-a="cm-save">Save</button><button class="btn-ghost sm" data-a="cm-x">Cancel</button></div>` : `<div class="bub">${esc(x.m.text)}</div><div class="acts"><button data-a="cm-ed">Edit</button><button data-a="cm-del">Delete</button></div>`}</div></div>`
+    : `<div class="fi"><div class="av">${esc(S.set.me[0].toUpperCase())}</div><div class="fb2"><b>${esc(S.set.me)}</b> ${esc(x.a.text)}<time>${esc(fmtTs(x.a.ts))}</time></div></div>`).join('');
+  $('#cdlg').innerHTML = `${cover}<div class="cd-head"><span class="lsel"><select id="cdList" aria-label="List">${activeLists(b).map(l => `<option value="${l.id}"${l.id === f.l.id ? ' selected' : ''}>${esc(l.title)}</option>`).join('')}</select></span><span class="sp" style="flex:1"></span><button class="ibtn" data-a="cmenu" aria-label="Card actions">⋯</button><button class="ibtn" data-a="close" aria-label="Close">✕</button></div>
+    <div class="cd-grid"><div class="cd-main">
+      <div class="cd-title"><button class="circ${c.done ? ' on' : ''}" data-a="done" title="${c.done ? 'Mark incomplete' : 'Mark complete'}" aria-label="Complete">${c.done ? '✓' : ''}</button><textarea id="cdT" rows="1" maxlength="500" aria-label="Card title">${esc(c.title)}</textarea></div>
+      <div class="cd-actions"><button data-a="p-lbl">🏷 Labels</button><button data-a="p-due">🕒 Dates</button><button data-a="p-cl">☑ Checklist</button><button data-a="p-att">📎 Attachment</button><button data-a="p-cov">🖼 Cover</button></div>
+      ${lbs.length ? `<div class="cd-sec"><div class="mini">Labels</div><div class="lrowc">${lbs.map(l => `<span class="lb chip2 lb-${l.color}" data-a="p-lbl">${esc(l.name) || '&nbsp;'}</span>`).join('')}<button class="ibtn" data-a="p-lbl" aria-label="Add label">＋</button></div></div>` : ''}
+      ${c.due ? `<div class="cd-sec"><div class="mini">Due date</div><label class="dchip"><input type="checkbox" data-a="done-cb"${c.done ? ' checked' : ''}> <span data-a="p-due">${esc(fmtDue(c))}</span> ${c.done ? '<span class="tg ok">Complete</span>' : st === 'bad' ? '<span class="tg bad">Overdue</span>' : st === 'soon' ? '<span class="tg soon">Due soon</span>' : ''}</label></div>` : ''}
+      ${sec('Description', '☰', editDesc ? `<textarea class="cm-in" id="descT" rows="6" maxlength="20000" placeholder="Add a more detailed description… (supports **bold**, *italic*, - lists, # headings, links)">${esc(descDraft)}</textarea><div style="display:flex;gap:6px;margin-top:6px"><button class="btn-main sm" data-a="desc-save">Save</button><button class="btn-ghost sm" data-a="desc-x">Cancel</button></div>` : `<div class="desc${c.desc ? '' : ' empty2'}" data-a="desc-ed" tabindex="0" role="button">${c.desc ? md(c.desc) : 'Add a more detailed description…'}</div>`)}
+      ${c.checklists.length ? sec('Checklist' + (c.checklists.length > 1 ? 's' : ''), '', cls, cc.t ? `<small style="color:var(--muted);font-weight:400">${cc.d}/${cc.t} done</small>` : '') : ''}
+      ${atts ? sec('Attachments', '📎', atts) : ''}
+    </div><div class="cd-side"><h4 style="display:flex;align-items:center;gap:8px;margin:0 0 10px">💬 <span style="flex:1">Comments and activity</span><button class="btn-ghost sm" data-a="details">${showDetails ? 'Hide details' : 'Show details'}</button></h4>
+      <textarea class="cm-in" id="cmNew" rows="1" maxlength="5000" placeholder="Write a comment…">${esc(cmDraft)}</textarea><div id="cmBtn" ${cmDraft ? '' : 'hidden'} style="margin-top:6px"><button class="btn-main sm" data-a="cm-add">Save</button></div>
+      <div class="feed">${feed || '<div class="nodata">No comments yet.</div>'}</div></div></div>`;
+  cov.hidden = false; document.body.classList.add('lock'); cov.scrollTop = sc;
+  autoH($('#cdT'));
+  const fx = focusSel && $(focusSel); if (fx) { fx.focus(); if (fx.select && fx.tagName === 'INPUT' && focusSel === '#ciEdit') fx.select(); }
+}
+const autoH = t => { if (t) { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; } };
+const cardCtx = () => { const b = board(), f = b && findCard(b, curC); return f ? {b, c: f.c, l: f.l} : null; };
+const cdlg = $('#cdlg');
+function cardChanged(focusSel) { touch(); renderBoard(); renderCard(focusSel); chip(); }
+
+cdlg.addEventListener('click', async e => {
+  const a = e.target.closest('[data-a]'); if (!a) return; const x = cardCtx(); if (!x) return; const {b, c, l} = x, k = a.dataset.a;
+  const cl = a.closest('.cl') && c.checklists.find(z => z.id === a.closest('.cl').dataset.id), it = cl && a.closest('.ci') && cl.items.find(z => z.id === a.closest('.ci').dataset.id);
+  if (k === 'close') closeCard();
+  else if (k === 'done' || k === 'done-cb') { c.done = !c.done; logAct(c, c.done ? 'marked this card complete' : 'marked this card incomplete'); cardChanged(); }
+  else if (k === 'cmenu') cardMenu(a);
+  else if (k === 'p-lbl') labelsPop(a, c);
+  else if (k === 'p-due') duePop(a, c);
+  else if (k === 'p-cl') checklistPop(a, c);
+  else if (k === 'p-att') attachPop(a, c);
+  else if (k === 'p-cov') coverPop(a, c);
+  else if (k === 'desc-ed') { editDesc = true; descDraft = c.desc; renderCard('#descT'); }
+  else if (k === 'desc-x') { editDesc = false; renderCard(); }
+  else if (k === 'desc-save') { c.desc = $('#descT').value.trim(); editDesc = false; cardChanged(); }
+  else if (k === 'cl-ren') { const r = await modal({title: 'Rename checklist', fields: [{id: 't', label: 'Title', value: cl.title, max: 200}], buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Save', value: 'ok', primary: true}]}); if (r.value === 'ok' && r.vals.t.trim()) { cl.title = r.vals.t.trim().slice(0, 200); cardChanged(); } }
+  else if (k === 'cl-del') { const r = await modal({title: 'Delete checklist?', text: `“${cl.title}” and its ${cl.items.length} item${cl.items.length === 1 ? '' : 's'} will be removed.`, buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Delete', value: 'ok', primary: true}]}); if (r.value === 'ok') { c.checklists.splice(c.checklists.indexOf(cl), 1); cardChanged(); } }
+  else if (k === 'ci-tg') { it.done = a.checked; cardChanged(); }
+  else if (k === 'ci-ed') { editItem = it.id; renderCard('#ciEdit'); }
+  else if (k === 'ci-del') { cl.items.splice(cl.items.indexOf(it), 1); cardChanged(); }
+  else if (k === 'ci-add') { addItem = cl.id; renderCard('#ciNew'); }
+  else if (k === 'ci-x') { addItem = null; renderCard(); }
+  else if (k === 'ci-ok') addChecklistItems(cl);
+  else if (k === 'zoom') { $('#lb').innerHTML = `<img src="${a.src}" alt="">`; $('#lb').hidden = false; }
+  else if (k === 'cov-img') { const id = a.closest('.att').dataset.id; c.cover = c.cover && c.cover.id === id ? null : {t: 'img', id}; cardChanged(); }
+  else if (k === 'img-del') { const id = a.closest('.att').dataset.id; c.imgs = c.imgs.filter(i => i.id !== id); if (c.cover && c.cover.id === id) c.cover = null; cardChanged(); }
+  else if (k === 'lnk-del') { const id = a.closest('.att').dataset.id; c.links = c.links.filter(i => i.id !== id); cardChanged(); }
+  else if (k === 'details') { showDetails = !showDetails; cmDraft = ($('#cmNew') || {}).value || ''; renderCard(); }
+  else if (k === 'cm-add') { const v = $('#cmNew').value.trim(); if (!v) return; c.comments.unshift({id: uid(), ts: Date.now(), text: v.slice(0, 5000)}); cmDraft = ''; cardChanged(); }
+  else if (k === 'cm-ed') { cmDraft = ($('#cmNew') || {}).value || ''; editCm = a.closest('.fi').dataset.id; renderCard('#cmEdit'); }
+  else if (k === 'cm-x') { editCm = null; renderCard(); }
+  else if (k === 'cm-save') { const m = c.comments.find(z => z.id === editCm), v = $('#cmEdit').value.trim(); if (m && v) m.text = v.slice(0, 5000); editCm = null; cardChanged(); }
+  else if (k === 'cm-del') { const id = a.closest('.fi').dataset.id; c.comments = c.comments.filter(z => z.id !== id); cardChanged(); }
+});
+function addChecklistItems(cl) {
+  const t = $('#ciNew'); const ls = t.value.split(/\n+/).map(s => s.replace(/^\s*(?:[-*•]|\d+[.)]|\[[ x]?\])\s+/, '').trim()).filter(Boolean).slice(0, 100);
+  if (!ls.length) { addItem = null; return renderCard(); } ls.forEach(s => cl.items.push({id: uid(), t: s.slice(0, 500), done: false})); cardChanged('#ciNew');
+}
+cdlg.addEventListener('change', e => {
+  const x = cardCtx(); if (!x) return; const {b, c, l} = x;
+  if (e.target.id === 'cdT') { const v = e.target.value.trim(); if (v) c.title = v.slice(0, 500); else e.target.value = c.title; touch(); renderBoard(); }
+  else if (e.target.id === 'cdList') { const to = findList(b, e.target.value); if (to && to !== l) { l.cards.splice(l.cards.indexOf(c), 1); to.cards.push(c); logAct(c, `moved this card from ${l.title} to ${to.title}`); cardChanged(); } }
+  else if (e.target.id === 'ciEdit') { const cl = c.checklists.find(z => z.items.some(i => i.id === editItem)), it = cl && cl.items.find(i => i.id === editItem); editItem = null; if (it) { const v = e.target.value.trim(); if (v) it.t = v.slice(0, 500); else cl.items.splice(cl.items.indexOf(it), 1); } cardChanged(); }
+});
+cdlg.addEventListener('input', e => {
+  if (e.target.id === 'cdT') autoH(e.target);
+  else if (e.target.id === 'cmNew') { cmDraft = e.target.value; $('#cmBtn').hidden = !cmDraft.trim(); e.target.style.height = 'auto'; e.target.style.height = Math.max(42, e.target.scrollHeight) + 'px'; }
+  else if (e.target.id === 'descT') descDraft = e.target.value;
+});
+cdlg.addEventListener('keydown', e => {
+  if (e.target.id === 'cdT' && e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
+  else if (e.target.id === 'ciNew') { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const x = cardCtx(); addChecklistItems(x.c.checklists.find(z => z.id === addItem)); } else if (e.key === 'Escape') { e.stopPropagation(); addItem = null; renderCard(); } }
+  else if (e.target.id === 'ciEdit') { if (e.key === 'Enter') e.target.blur(); else if (e.key === 'Escape') { e.stopPropagation(); editItem = null; renderCard(); } }
+  else if (e.target.id === 'descT' && e.key === 'Escape') { e.stopPropagation(); editDesc = false; renderCard(); }
+  else if (e.target.classList.contains('desc') && e.key === 'Enter') e.target.click();
+});
+$('#cov').addEventListener('mousedown', e => { if (e.target.id === 'cov') { $('#cov').dataset.bd = '1'; } else delete $('#cov').dataset.bd; });
+$('#cov').addEventListener('click', e => { if (e.target.id === 'cov' && $('#cov').dataset.bd) closeCard(); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if ($('#lb') && !$('#lb').hidden) { $('#lb').hidden = true; return; }
+  if (popEl || $('#dlg').open) return;
+  if (curC) closeCard();
+});
+$('#lb').onclick = () => { $('#lb').hidden = true; };
+
+/* ---------- card popovers ---------- */
+function duePop(anchor, c) {
+  pop(anchor, 'Dates', api => {
+    api.body.innerHTML = `<label class="f">Due date</label><input class="fld" type="date" id="dd" value="${esc(c.due)}"><label class="f">Time (optional)</label><input class="fld" type="time" id="dt" value="${esc(c.dueT)}">
+      <div class="row2"><button class="btn-main sm" data-k="save">Save</button><button class="btn-ghost sm" data-k="rm">Remove</button></div>`;
+    api.body.onclick = e => {
+      const k = (e.target.closest('[data-k]') || {}).dataset; if (!k) return;
+      if (k.k === 'save') { const d = $('#dd').value; if (!DATE_RE.test(d)) { $('#dd').focus(); return; } c.due = d; c.dueT = $('#dt').value; logAct(c, 'set the due date to ' + fmtDue(c)); }
+      else { c.due = ''; c.dueT = ''; c.done = false; }
+      closePop(); cardChanged();
+    };
+    $('#dd').focus();
+  });
+}
+function checklistPop(anchor, c) {
+  pop(anchor, 'Add checklist', api => {
+    api.body.innerHTML = '<label class="f">Title</label><input class="fld" id="clT" maxlength="200" value="Checklist"><div class="row2"><button class="btn-main sm" data-k="add">Add</button></div>';
+    const go = () => { const id = uid(); c.checklists.push({id, title: $('#clT').value.trim().slice(0, 200) || 'Checklist', items: []}); addItem = id; closePop(); cardChanged('#ciNew'); };
+    api.body.onclick = e => { if (e.target.closest('[data-k]')) go(); }; $('#clT').onkeydown = e => { if (e.key === 'Enter') go(); }; $('#clT').select(); $('#clT').focus();
+  });
+}
+function attachPop(anchor, c) {
+  pop(anchor, 'Attach', api => {
+    api.body.innerHTML = '<button class="btn-ghost sm" data-k="img" style="width:100%;justify-content:center">🖼 Upload image(s)</button><label class="f">…or attach a link</label><input class="fld" id="alU" placeholder="https://…"><label class="f">Link name (optional)</label><input class="fld" id="alN" maxlength="200"><div class="row2"><button class="btn-main sm" data-k="link">Attach link</button></div><p style="color:var(--muted);font-size:12px;margin:10px 0 0">Images are shrunk and stored in this browser (and in your backup).</p>';
+    api.body.onclick = e => {
+      const k = (e.target.closest('[data-k]') || {}).dataset; if (!k) return;
+      if (k.k === 'img') { imgTarget = c.id; $('#imgIn').click(); closePop(); }
+      else { let u = $('#alU').value.trim(); if (u && !/^[a-z]+:\/\//i.test(u)) u = 'https://' + u; if (!/^https?:\/\/\S+\.\S+/i.test(u)) { toast('Enter a valid web address.', null, null, true); return; } c.links.push({id: uid(), url: u.slice(0, 1500), name: $('#alN').value.trim().slice(0, 200)}); logAct(c, 'attached a link'); closePop(); cardChanged(); }
+    };
+    $('#alU').focus();
+  });
+}
+let imgTarget = null;
+async function shrink(file) {
+  const bmp = await createImageBitmap(file), M = 1400, s = Math.min(1, M / Math.max(bmp.width, bmp.height)), cv = document.createElement('canvas');
+  cv.width = Math.max(1, Math.round(bmp.width * s)); cv.height = Math.max(1, Math.round(bmp.height * s)); const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(bmp, 0, 0, cv.width, cv.height);
+  return cv.toDataURL('image/jpeg', .82);
+}
+$('#imgIn').onchange = async e => {
+  const files = [...e.target.files]; e.target.value = ''; const b = board(), f = b && findCard(b, imgTarget); if (!f) return; let n = 0;
+  for (const file of files.slice(0, 10)) {
+    try { const data = await shrink(file); if (data.length > 2.6e6) { toast('“' + file.name + '” is too large even after shrinking.', null, null, true); continue; } const im = {id: uid(), name: file.name.slice(0, 120), data}; f.c.imgs.push(im); n++; }
+    catch (err) { toast('Couldn’t read “' + file.name + '” as an image.', null, null, true); }
+  }
+  if (n) { logAct(f.c, 'attached ' + n + ' image' + (n > 1 ? 's' : '')); cardChanged(); }
+};
+function coverPop(anchor, c) {
+  pop(anchor, 'Cover', api => {
+    api.body.innerHTML = `<label class="f">Colors</label><div class="swatch">${COLORS.map(x => `<button type="button" class="lb-${x}${c.cover && c.cover.t === 'color' && c.cover.c === x ? ' on' : ''}" data-c="${x}" aria-label="${x}"></button>`).join('')}</div>
+      ${c.imgs.length ? '<label class="f">Images</label><div class="swatch" style="grid-template-columns:repeat(3,1fr)">' + c.imgs.map(i => `<button type="button" data-i="${i.id}" style="height:56px;background:url(${i.data}) center/cover;${c.cover && c.cover.id === i.id ? 'border-color:#fff' : ''}" aria-label="${esc(i.name)}"></button>`).join('') + '</div>' : '<p style="color:var(--muted);font-size:12.5px">Attach an image to use it as a cover.</p>'}
+      <div class="row2"><button class="btn-ghost sm" data-k="rm">Remove cover</button></div>`;
+    api.body.onclick = e => {
+      const x = e.target.closest('button'); if (!x) return;
+      if (x.dataset.c) c.cover = {t: 'color', c: x.dataset.c}; else if (x.dataset.i) c.cover = {t: 'img', id: x.dataset.i}; else c.cover = null;
+      closePop(); cardChanged();
+    };
+  });
+}
+function cardMenu(anchor) {
+  const x = cardCtx(); if (!x) return; const {b, c, l} = x;
+  pop(anchor, 'Card actions', api => {
+    api.body.innerHTML = '<button class="mi" data-k="copy">⧉ Copy card</button><button class="mi" data-k="arc">🗃 Archive</button><button class="mi dg" data-k="del">🗑 Delete</button>';
+    api.body.onclick = async e => {
+      const m = e.target.closest('.mi'); if (!m) return; const k = m.dataset.k; closePop();
+      if (k === 'copy') { const cp = JSON.parse(JSON.stringify(c)); cp.id = uid() + 'c'; cp.title = (c.title + ' (copy)').slice(0, 500); cp.created = Date.now(); cp.act = []; cp.comments = []; cp.cover = null; cp.imgs = []; cp.checklists.forEach(z => { z.id = uid(); z.items.forEach(i => { i.id = uid(); i.done = false; }); }); logAct(cp, 'copied this card from ' + c.title); l.cards.splice(l.cards.indexOf(c) + 1, 0, cp); touch(); renderBoard(); toast('Card copied (images and comments are not copied).'); }
+      else if (k === 'arc') { c.archived = true; logAct(c, 'archived this card'); curC = null; hideCard(); commit(); toast('Card archived', 'Undo', () => { c.archived = false; commit(); }); }
+      else if (k === 'del') { const r = await modal({title: 'Delete this card?', text: 'This permanently removes the card. Archive it instead if you might need it again.', buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Delete', value: 'ok', primary: true}]}); if (r.value === 'ok') { l.cards.splice(l.cards.indexOf(c), 1); curC = null; hideCard(); commit(); toast('Card deleted'); } }
+    };
+  });
+}
+function backupData() { const {name, boards, set} = S; return {name, boards, set}; }
+async function doSave() {
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  if (!needCrypto()) return; if (!S.boards.length) return toast('Nothing to back up yet.', null, null, true);
+  if (!sessionPw) { const pw = await askPassword(true); if (!pw) return; sessionPw = pw; }
+  const date = todayS(), n = S.exp.date === date ? S.exp.n + 1 : 1;
+  let text; try { text = await encrypt({app: 'cuech4-boards', v: 1, ...backupData(), exportedAt: new Date().toISOString(), date, version: n}, sessionPw); } catch (e) { return toast('Couldn’t encrypt the backup in this browser.', null, null, true); }
+  const fname = safeName(S.name) + '_' + date + (n > 1 ? '_v' + n : '') + '.txt';
+  download(fname, text); S.exp = {date, n}; S.dirty = false; S.lastBackup = date; saveNow(); chip(); toast('Backup downloaded: ' + fname);
+}
+function addImported(b, what) {
+  if (!b || !b.lists.length) return toast('That file has no lists to import.', null, null, true);
+  if (S.boards.some(x => x.id === b.id)) b.id = uid();
+  S.boards.push(b); touch(); const n = b.lists.reduce((a, l) => a + l.cards.length, 0); openBoard(b.id);
+  toast(`Imported “${b.title}” — ${b.lists.length} lists, ${n} cards${what === 'trello' ? '. Uploaded files from Trello come across as links.' : ''}`);
+}
+async function openFile(file) {
+  if (!file) return; const text = await file.text(); let obj; try { obj = JSON.parse(text); } catch (e) {}
+  if (obj && obj.app === 'cuech4-boards' && obj.salt && obj.iv && obj.data) return openBackup(obj);
+  if (obj && obj.format === 'cuech4-board' && obj.board) return addImported(cleanBoard(obj.board), 'own');
+  if (isTrello(obj)) return addImported(importTrello(obj), 'trello');
+  toast('That file isn’t a Boards backup, a Boards export or a Trello JSON export.', null, null, true);
+}
+async function openBackup(obj) {
+  if (!needCrypto()) return;
+  let err = '', data = null, pw = null;
+  while (!data) { pw = await askPassword(false, err); if (!pw) return; try { data = await decrypt(obj, pw); } catch (e) { err = 'Wrong password, or the file was changed.'; } }
+  const inc = clean(data); if (!inc || !inc.boards.length) return toast('The backup opened but has no boards in it.', null, null, true);
+  const nc = inc.boards.reduce((a, b) => a + b.lists.reduce((x, l) => x + l.cards.length, 0), 0); let mode = 'replace';
+  if (S.boards.length) { const r = await modal({title: 'Open this backup', text: `It has ${inc.boards.length} board${inc.boards.length > 1 ? 's' : ''} and ${nc} cards. Merge adds anything missing to what you have now (nothing is overwritten). Replace swaps your current boards for the backup.`, buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Replace', value: 'replace'}, {label: 'Merge', value: 'merge', primary: true}]}); if (r.value === 'cancel') return; mode = r.value; }
+  if (mode === 'replace') S = {...inc, exp: {date: String(data.date || ''), n: Number.isFinite(data.version) ? data.version : 0}, dirty: false, lastBackup: DATE_RE.test(data.date) ? data.date : ''};
+  else {
+    for (const b of inc.boards) {
+      const m = S.boards.find(x => x.id === b.id); if (!m) { S.boards.push(b); continue; }
+      const lids = new Set(m.labels.map(l => l.id)); b.labels.forEach(l => { if (!lids.has(l.id)) m.labels.push(l); });
+      for (const l of b.lists) {
+        const ml = m.lists.find(x => x.id === l.id); if (!ml) { m.lists.push(l); continue; }
+        const have = new Set(m.lists.flatMap(x => x.cards.map(c => c.id))); l.cards.forEach(c => { if (!have.has(c.id)) ml.cards.push(c); });
+      }
+    }
+    S.dirty = true;
+  }
+  sessionPw = pw; curB = null; curC = null; saveNow(); render(); toast(mode === 'merge' ? 'Merged the backup into your boards' : 'Opened ' + S.name);
+}
+$('#btnSave').onclick = doSave; $('#btnOpen').onclick = () => { importMode = 'backup'; $('#file').click(); };
+$('#file').onchange = e => { const f = e.target.files[0]; e.target.value = ''; openFile(f); };
+$('#btnPw').onclick = async () => { if (!needCrypto()) return; const pw = await askPassword(true); if (pw) { sessionPw = pw; chip(); toast('Password set. Your next backup will use it.'); } };
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => { e.preventDefault(); const f = e.dataTransfer && e.dataTransfer.files[0]; if (f && /\.(txt|json)$/i.test(f.name)) openFile(f); });
+$('#newBtn').onclick = async () => {
+  if (S.boards.length) {
+    const btns = S.dirty ? [{label: 'Cancel', value: 'cancel'}, {label: 'Discard & start new', value: 'discard'}, {label: 'Backup first', value: 'save', primary: true}] : [{label: 'Cancel', value: 'cancel'}, {label: 'Start new', value: 'discard', primary: true}];
+    const r = await modal({title: 'Start a new workspace?', text: S.dirty ? 'You have changes that aren’t in a backup yet. Starting new clears this browser’s copy.' : 'Your latest backup has everything. Starting new clears this browser’s copy.', buttons: btns});
+    if (r.value === 'cancel') return; if (r.value === 'save') { await doSave(); if (S.dirty) return; }
+  }
+  S = fresh(); sessionPw = null; curB = null; curC = null; saveNow(); render();
+};
+
+/* ---------- boot ---------- */
+(async () => {
+  const st = await store.load(); const c = clean(st); if (c && st) S = c;
+  render(); window.__boards = {get S() { return S; }, get cur() { return curB; }, ready: true, importTrello, cleanBoard, sampleBoard, openBoard, openCard, get F() { return F; }};
+})();
+})();
+</script>
+</body>
+</html>

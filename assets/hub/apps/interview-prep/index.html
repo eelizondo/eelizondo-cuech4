@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interview Prep — Cuech4 Hub</title>
+<link rel="icon" type="image/svg+xml" href="assets/interview-prep-icon.svg">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0d0a14; --panel: #161022; --panel-2: #110c1b; --line: #2e2342;
+    --text: #efeaf8; --muted: #a597bd;
+    --accent: #a78bfa; --accent-2: #c4b5fd; --accent-text: #ddd6fe;
+    --good: #34d399; --warn: #fbbf24; --bad: #f87171;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: radial-gradient(1100px 520px at 70% -10%, #261a4d 0%, var(--bg) 60%); color: var(--text); font-family: Inter, system-ui, -apple-system, sans-serif; line-height: 1.45; min-height: 100vh; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid var(--line); background: rgba(13,10,20,.85); }
+  .title { font-size: 20px; font-weight: 700; background: linear-gradient(90deg, var(--accent-2), #e9d5ff 55%, #f9a8d4); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0; }
+  .hub-breadcrumb { color: var(--muted); font-size: 13px; text-decoration: none; }
+  .hub-breadcrumb:hover { color: var(--accent-text); }
+  button { font-family: inherit; }
+  .btn-ghost { background: #151025; border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+  .btn-ghost:hover { border-color: var(--accent-2); }
+  .btn-main { background: linear-gradient(180deg, #c4b5fd, #7c3aed); border: 0; color: #1a0b3a; font-weight: 700; font-size: 14px; padding: 9px 18px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 22px rgba(167,139,250,.25); }
+  .btn-main:hover { filter: brightness(1.07); }
+  .btn-main:disabled, .btn-ghost:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+  .sm { padding: 6px 12px !important; font-size: 13px !important; }
+  .lk { background: none; border: 0; color: var(--accent-2); cursor: pointer; font-size: 13px; padding: 0; }
+  .lk:hover { text-decoration: underline; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 14px 24px 60px; }
+  .top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .top .sp { flex: 1; }
+  #hname { font: 700 18px/1.2 inherit; font-family: inherit; color: var(--text); background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 6px 10px; min-width: 200px; }
+  #hname:hover { border-color: var(--line); } #hname:focus { outline: none; border-color: var(--accent-2); background: #0c0813; }
+  .chip { font-size: 12.5px; font-weight: 600; border-radius: 999px; padding: 4px 12px; border: 1px solid rgba(52,211,153,.3); color: var(--good); background: rgba(52,211,153,.07); white-space: nowrap; }
+  .chip.dirty { color: #fbbf24; border-color: rgba(251,191,36,.35); background: rgba(251,191,36,.08); }
+  .chip.idle { color: var(--muted); border-color: var(--line); background: transparent; }
+  .fld, select.mini { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; height: 36px; padding: 0 10px; font: 14px inherit; font-family: inherit; }
+  textarea.fld { height: auto; padding: 10px 12px; line-height: 1.4; resize: vertical; width: 100%; }
+  .fld:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(167,139,250,.18); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin-bottom: 16px; }
+  .card h3 { margin: 0 0 12px; font-size: 15px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .card h3 small { color: var(--muted); font-weight: 400; font-size: 13px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+  .kpi, .kpis > * { min-width: 0; }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
+  .kpi small { color: var(--muted); font-size: 13px; display: block; }
+  .kpi b { display: block; font-size: 28px; letter-spacing: -.02em; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .kpi i { font-style: normal; font-size: 12.5px; color: var(--muted); }
+  .kpi.hero { background: linear-gradient(180deg, #241846, var(--panel)); border-color: #4a3a85; }
+  .g2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; align-items: start; }
+  .empty { background: linear-gradient(180deg, #1d1538, #150f26); border: 1px solid #4a3a85; border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .empty p { margin: 0; flex: 1 1 360px; color: var(--muted); font-size: 14px; }
+  .empty p b { color: var(--accent-text); }
+  .nodata { color: var(--muted); font-size: 14px; padding: 18px 6px; text-align: center; }
+  .decks { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .deck { background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; cursor: pointer; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .deck:hover { border-color: var(--accent-2); }
+  .deck b { font-size: 15.5px; overflow: hidden; text-overflow: ellipsis; display: block; }
+  .deck small { color: var(--muted); font-size: 12.5px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mbar { height: 8px; background: #241a38; border-radius: 99px; display: flex; overflow: hidden; gap: 2px; }
+  .mbar i { display: block; height: 100%; }
+  .mbar .m { background: var(--accent); } .mbar .l { background: rgba(167,139,250,.42); }
+  .mleg { font-size: 12px; color: var(--muted); }
+  .dfoot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 2px; }
+  .due { font-size: 13px; font-weight: 600; color: var(--warn); } .due.ok { color: var(--good); }
+  .chartbar { width: 100%; height: auto; display: block; }
+  .chartbar text { fill: var(--muted); font-size: 11px; } .chartbar .grid { stroke: #251b3a; stroke-width: 1; }
+  .crumb { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .crumb .sp { flex: 1; }
+  #dtitle { font: 700 22px/1.2 inherit; font-family: inherit; color: var(--text); background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 4px 10px; min-width: 160px; flex: 0 1 460px; }
+  #dtitle:hover { border-color: var(--line); } #dtitle:focus { outline: none; border-color: var(--accent-2); background: #0c0813; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 16px; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; text-align: left; color: var(--text); cursor: pointer; display: flex; flex-direction: column; gap: 4px; position: relative; min-width: 0; }
+  .tile:hover:not(:disabled) { border-color: var(--accent-2); background: #1d1530; }
+  .tile:disabled { opacity: .5; cursor: not-allowed; }
+  .tile .ti { font-size: 26px; } .tile b { font-size: 15.5px; } .tile small { color: var(--muted); font-size: 12.5px; }
+  .tile .cog { position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; color: var(--muted); }
+  .tile .cog:hover { background: #2a1f42; color: var(--text); }
+  .tools2 { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 0 0 14px; }
+  .tools2 .fld { height: 36px; } .tools2 input.fld { flex: 1 1 180px; }
+  table.t { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.t th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12.5px; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  table.t td { padding: 9px 8px; border-bottom: 1px solid #241a38; vertical-align: middle; }
+  table.t tr.row { cursor: pointer; } table.t tr.row:hover td { background: #1a1230; }
+  .abar { display: inline-block; vertical-align: middle; width: 120px; height: 8px; background: #241a38; border-radius: 99px; overflow: hidden; margin-right: 8px; }
+  .abar i { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+  .st { font-size: 12.5px; font-weight: 600; white-space: nowrap; } .st.w { color: var(--warn); } .st.g { color: var(--good); } .st.n { color: var(--muted); font-weight: 400; } .st.m { color: var(--accent-2); }
+  .tag { display: inline-block; font-size: 12px; padding: 1px 9px; border-radius: 99px; background: #201738; color: var(--accent-text); border: 1px solid #3a2a63; white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+  .fl { color: var(--bad); font-size: 12px; font-weight: 600; margin-left: 6px; }
+  .ml { white-space: pre-line; }
+  .clip { display: block; max-width: 560px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* make view */
+  .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .steps h3 .n { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #1a0b3a; font-size: 13px; margin-right: 8px; }
+  .form2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; margin-bottom: 12px; }
+  .form2 label, .mk label { font-size: 13px; color: var(--muted); display: block; }
+  .form2 .fld, .mk .fld { width: 100%; margin-top: 4px; }
+  .full { grid-column: 1 / -1; }
+  .checks { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13.5px; color: var(--text); }
+  .checks label { display: inline-flex; gap: 6px; align-items: center; color: var(--text); cursor: pointer; }
+  .hint { color: var(--muted); font-size: 13px; margin: 8px 0; }
+  .status { border-radius: 12px; padding: 10px 14px; font-size: 14px; margin: 10px 0; border: 1px solid var(--line); background: var(--panel-2); }
+  .status.ok { border-color: rgba(52,211,153,.4); } .status.bad { border-color: rgba(248,113,113,.4); }
+  .status ul { margin: 6px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; max-height: 120px; overflow: auto; }
+  .row2 { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+
+  /* session */
+  .sess { max-width: 820px; margin: 0 auto; }
+  .stop { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .prog { flex: 1; height: 8px; background: #241a38; border-radius: 99px; overflow: hidden; } .prog i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .25s; }
+  .stop .cnt { font-size: 13.5px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .qcard { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 24px 26px; }
+  .qcard .tag { margin-bottom: 12px; }
+  .qtext { font-size: 20px; font-weight: 600; line-height: 1.35; margin: 0 0 18px; }
+  .flip { cursor: pointer; min-height: 200px; display: flex; flex-direction: column; justify-content: center; }
+  .back { border-top: 1px dashed var(--line); margin-top: 16px; padding-top: 16px; }
+  .ans { font-size: 18px; color: var(--accent-text); font-weight: 600; }
+  .choices { display: grid; gap: 10px; }
+  .ch { text-align: left; display: flex; gap: 12px; align-items: flex-start; background: var(--panel-2); border: 1px solid var(--line); color: var(--text); padding: 12px 14px; border-radius: 12px; font-size: 15.5px; cursor: pointer; width: 100%; }
+  .ch:hover:not(:disabled) { border-color: var(--accent-2); }
+  .ch .L { flex: none; width: 26px; height: 26px; border-radius: 8px; background: #241a3d; display: grid; place-items: center; font-size: 13px; font-weight: 700; color: var(--accent-text); }
+  .ch.sel { border-color: var(--accent); background: #2a1f55; }
+  .ch.right { border-color: var(--good); background: rgba(52,211,153,.1); } .ch.right .L { background: var(--good); color: #05261b; }
+  .ch.wrong { border-color: var(--bad); background: rgba(248,113,113,.1); } .ch.wrong .L { background: var(--bad); color: #2a0707; }
+  .ch:disabled { cursor: default; }
+  .fb { margin-top: 16px; border-radius: 14px; padding: 14px 16px; border: 1px solid var(--line); background: var(--panel-2); font-size: 14.5px; }
+  .fb.ok { border-color: rgba(52,211,153,.45); } .fb.no { border-color: rgba(248,113,113,.45); }
+  .fb h4 { margin: 0 0 6px; font-size: 15.5px; } .fb.ok h4 { color: var(--good); } .fb.no h4 { color: var(--bad); }
+  .fb p { margin: 6px 0; } .fb .src { color: var(--muted); font-size: 12.5px; }
+  .actions { display: flex; gap: 10px; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+  .rate { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+  .rate button { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; color: var(--text); padding: 10px 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
+  .rate button small { display: block; color: var(--muted); font-weight: 400; font-size: 12px; margin-top: 2px; }
+  .rate button:hover { border-color: var(--accent-2); }
+  .nav { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 0; }
+  .nav button { width: 34px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--muted); cursor: pointer; font-size: 12.5px; }
+  .nav button.a { background: #2a1f55; border-color: #5b45a8; color: var(--accent-text); } .nav button.cur { outline: 2px solid var(--accent); }
+  .timer { font-variant-numeric: tabular-nums; font-size: 14px; color: var(--accent-text); font-weight: 600; }
+  .timer.low { color: var(--warn); }
+  .ring { width: 150px; height: 150px; flex: none; }
+  .ring text { fill: var(--text); font-weight: 700; }
+  .resh { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+  .badge { display: inline-block; font-weight: 700; font-size: 14px; border-radius: 99px; padding: 5px 14px; border: 1px solid; }
+  .badge.p { color: var(--good); border-color: rgba(52,211,153,.5); background: rgba(52,211,153,.08); } .badge.f { color: var(--warn); border-color: rgba(251,191,36,.5); background: rgba(251,191,36,.08); }
+  details.miss { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; background: var(--panel-2); font-size: 14px; }
+  details.miss summary { cursor: pointer; font-weight: 600; }
+  details.miss p { margin: 6px 0; color: var(--muted); } details.miss p b { color: var(--text); }
+  textarea#mkOut { font: 12.5px/1.45 ui-monospace, Menlo, monospace; min-height: 280px; }
+  textarea#mkIn { font: 12.5px/1.45 ui-monospace, Menlo, monospace; min-height: 220px; }
+
+  #tip { position: fixed; z-index: 50; background: #1d1530; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: 13px; pointer-events: none; box-shadow: 0 10px 30px rgba(0,0,0,.5); transform: translate(12px, 12px); white-space: nowrap; }
+  #tip b { display: block; margin-bottom: 2px; }
+  #toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: #1d1530; border: 1px solid var(--line); color: var(--text); padding: 10px 16px; border-radius: 12px; font-size: 14px; display: flex; gap: 14px; align-items: center; z-index: 60; box-shadow: 0 10px 40px rgba(0,0,0,.5); max-width: 92vw; }
+  #toast.err { border-color: rgba(248,113,113,.5); }
+  #toast button { background: transparent; border: 0; color: var(--accent-2); font-weight: 600; cursor: pointer; font-size: 14px; }
+  dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 16px; padding: 0; width: min(460px, 94vw); max-height: 92vh; }
+  dialog.wide { width: min(760px, 96vw); }
+  dialog::backdrop { background: rgba(0,0,0,.65); }
+  .dh { font-size: 17px; font-weight: 700; padding: 18px 22px 4px; }
+  .db { padding: 6px 22px 4px; font-size: 14px; color: var(--muted); max-height: 62vh; overflow: auto; }
+  .db p { margin: 6px 0 10px; }
+  .db label { display: block; font-size: 13px; color: var(--text); margin: 10px 0 0; }
+  .db input, .db select { display: block; width: 100%; margin-top: 6px; height: 40px; background: #0c0813; border: 1px solid var(--line); border-radius: 10px; color: var(--text); padding: 0 12px; font: 15px inherit; font-family: inherit; }
+  .db input:focus, .db select:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(167,139,250,.18); }
+  .derr { color: #f87171; min-height: 18px; font-size: 13px; }
+  .df { display: flex; justify-content: flex-end; gap: 10px; padding: 8px 22px 18px; flex-wrap: wrap; }
+  .df .btn-main { padding: 9px 18px; }
+  .df .danger { color: #fca5a5; border-color: rgba(248,113,113,.4); margin-right: auto; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  .note { color: var(--muted); font-size: 12.5px; text-align: center; margin-top: 18px; }
+  @media (max-width: 1000px) {
+    .kpis { grid-template-columns: 1fr 1fr; } .g2, .steps { grid-template-columns: 1fr; } .grid2 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .wrap { padding: 12px 16px 50px; } header { padding: 12px 16px; }
+    .kpi b { font-size: 22px; } .kpi { padding: 14px; } .qtext { font-size: 18px; } .qcard { padding: 18px; }
+    .form2 { grid-template-columns: 1fr; } .rate { grid-template-columns: 1fr 1fr; } #hname { flex: 1 1 100%; }
+    table.t .hide-s { display: none; } .abar { width: 70px; } .tile { padding: 14px; }
+  }
+
+  .btn-ghost.dg { color: #fca5a5; border-color: rgba(248,113,113,.35); }
+  .db textarea { display: block; width: 100%; margin-top: 6px; background: #0c0813; border: 1px solid var(--line); border-radius: 10px; color: var(--text); padding: 10px 12px; font: 14px/1.4 inherit; font-family: inherit; resize: vertical; }
+  .db textarea:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(167,139,250,.18); }
+  .stop .sp { flex: 1; }
+  .seg2 { display: inline-flex; gap: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 4px; margin-bottom: 14px; flex-wrap: wrap; }
+  .seg2 button { background: none; border: 0; color: var(--muted); padding: 8px 14px; border-radius: 9px; font-size: 14px; cursor: pointer; font-weight: 600; }
+  .seg2 button.on { background: #2a1f55; color: var(--accent-text); }
+  .hrow { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid #241a38; font-size: 14px; }
+  .log { display: flex; justify-content: space-between; gap: 12px; padding: 10px 6px; border-bottom: 1px solid #241a38; cursor: pointer; border-radius: 8px; }
+  .log:hover { background: #1a1230; }
+  .warnbox { border: 1px solid rgba(251,191,36,.45); background: rgba(251,191,36,.07); border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: 14px; }
+  .warnbox ul { margin: 6px 0 0; padding-left: 18px; color: var(--muted); }
+  .kph { font-size: 12.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 16px 0 6px; font-weight: 600; }
+  .kp { display: grid; gap: 6px; }
+  .kpi2 { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); cursor: pointer; font-size: 15px; }
+  .kpi2 input { margin-top: 3px; accent-color: var(--accent); width: 17px; height: 17px; flex: none; }
+  .kpi2:has(input:checked) { border-color: var(--accent); background: #1d1540; }
+  .mans { font-size: 16px; line-height: 1.55; margin: 0 0 6px; }
+  details.star { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; margin-top: 10px; font-size: 14px; background: var(--panel-2); }
+  details.star summary { cursor: pointer; font-weight: 600; color: var(--accent-text); } details.star p { margin: 6px 0; } details.star ul { margin: 6px 0; padding-left: 18px; }
+  .rate button.sug { border-color: var(--accent); background: #1d1540; }
+  .src { color: var(--muted); font-size: 12.5px; margin: 12px 0 4px; }
+  .sheet { background: #fff; color: #1a1a24; max-width: 820px; margin: 0 auto; padding: 36px 44px; border-radius: 6px; font-size: 14px; line-height: 1.45; }
+  .sheet h1 { margin: 0; font-size: 24px; } .shm { margin: 2px 0 14px; color: #555; }
+  .sh { margin-top: 16px; break-inside: avoid; } .sh h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; border-bottom: 2px solid #7c3aed; padding-bottom: 3px; margin: 0 0 8px; color: #4c1d95; }
+  .st1 { margin-bottom: 9px; } .st1 ul { margin: 3px 0 0; padding-left: 18px; }
+  .shT { width: 100%; border-collapse: collapse; } .shT td { border-bottom: 1px solid #ddd; padding: 4px 6px; vertical-align: top; } .shT td:first-child { width: 46%; color: #555; }
+  @media print { body { background: #fff !important; } header, .top, .note, #toast, #tip, .noprint { display: none !important; } .wrap { padding: 0; max-width: none; } .sheet { padding: 0; border-radius: 0; } }
+
+</style>
+</head>
+<body>
+<header>
+  <div><h1 class="title">🎤 Interview Prep</h1><a class="hub-breadcrumb" href="../../hub.html#latest-builds">← Cuech4 Hub</a></div>
+  <button class="btn-ghost" id="newBtn">＋ New</button>
+</header>
+<main class="wrap">
+  <div class="top">
+    <input id="hname" maxlength="60" aria-label="Name">
+    <span class="chip" id="chip"></span>
+    <span class="sp"></span>
+    <button class="btn-ghost" id="btnOpen">⬆ Open backup</button>
+    <button class="btn-ghost" id="btnPw">🔑 <span id="pwLbl">Set password</span></button>
+    <button class="btn-main" id="btnSave">⬇ Download backup</button>
+  </div>
+
+  <section id="vHome">
+    <div class="empty" id="empty">
+      <p><b>Know your resume cold and practice real interviews.</b> Build a prompt, give it to any AI (ChatGPT, Claude, Gemini…) together with your resume — and the job description if you have one — then paste the answer back here. Nothing is uploaded to us.</p>
+      <button class="btn-main" data-go="resume">📄 Learn my resume</button>
+      <button class="btn-ghost" data-go="role">🎯 Prep for a role</button>
+      <button class="btn-ghost" id="btnSample">Try a sample deck</button>
+    </div>
+    <div class="kpis" id="hk"></div>
+    <div class="g2">
+      <section class="card"><h3>Your decks <span><button class="lk" id="btnImportDeck">⬆ Open deck file</button> &nbsp; <button class="lk" data-go="resume">＋ Resume deck</button> &nbsp; <button class="lk" data-go="role">＋ Role deck</button></span></h3><div class="decks" id="decks"></div></section>
+      <section class="card"><h3>Last 14 days <small>questions practiced</small></h3><div id="act"></div></section>
+    </div>
+  </section>
+
+  <section id="vMake" hidden>
+    <div class="crumb"><button class="btn-ghost sm" id="mkBack">‹ Back</button><b style="font-size:18px" id="mkTitle">Create a practice deck with AI</b></div>
+    <div class="seg2" id="mkKind" role="group" aria-label="Deck type"><button data-k="resume" class="on">📄 Learn my resume</button><button data-k="role">🎯 Prep for a specific role</button></div>
+    <div class="steps">
+      <section class="card mk">
+        <h3><span><span class="n">1</span>Build your prompt</span></h3>
+        <div class="form2">
+          <label class="full" data-for="resume">Target job or field (optional)<input class="fld" id="mkTarget2" maxlength="90" placeholder="e.g. marketing coordinator"></label>
+          <label data-for="role">Company<input class="fld" id="mkCompany" maxlength="80" placeholder="e.g. Acme Inc."></label>
+          <label data-for="role">Job title<input class="fld" id="mkRole" maxlength="80" placeholder="e.g. Data Analyst"></label>
+          <label>Level<select class="fld" id="mkLevel"><option value="">Not specified</option><option>Entry level</option><option>Mid level</option><option>Senior</option><option>Lead / Manager</option></select></label>
+          <label data-for="role">Interview type<select class="fld" id="mkIType"><option value="">Mixed / not sure</option><option>Recruiter screen</option><option>Phone screen</option><option>Technical interview</option><option>Behavioral interview</option><option>Panel interview</option></select></label>
+          <label>Number of cards<select class="fld" id="mkN"><option>15</option><option selected>25</option><option>35</option><option>50</option><option>60</option></select></label>
+          <label>Focus on a part (optional)<input class="fld" id="mkSec" maxlength="120" placeholder="e.g. my last two jobs"></label>
+          <div class="full checks" id="mkOpts">
+            <div class="checks" data-for="resume"><label><input type="checkbox" value="walk" data-def="1"> Job &amp; project walk-throughs</label><label><input type="checkbox" value="behav" data-def="1"> Behavioral (STAR)</label><label><input type="checkbox" value="gap" data-def="1"> Gaps &amp; red flags</label><label><input type="checkbox" value="intro" data-def="1"> Intro &amp; closing</label><label><input type="checkbox" value="recall" data-def="1"> Resume fact recall</label></div>
+            <div class="checks" data-for="role" hidden><label><input type="checkbox" value="tech" data-def="1"> Role-specific technical</label><label><input type="checkbox" value="behav" data-def="1"> Behavioral tied to the job</label><label><input type="checkbox" value="gap" data-def="1"> Where my resume is weak</label><label><input type="checkbox" value="intro" data-def="1"> Intro &amp; why this job</label><label><input type="checkbox" value="ask" data-def="1"> Questions to ask them</label><label><input type="checkbox" value="recall" data-def="0"> Fact recall</label></div>
+          </div>
+          <label class="full">Optional — paste your resume text so it’s included in the prompt <small>(not saved anywhere)</small><textarea class="fld" id="mkResume" rows="3" placeholder="Or skip this and attach your resume file in the AI chat. Remove your phone number and address first."></textarea></label>
+          <label class="full" data-for="role" hidden>Optional — paste the job description <small>(not saved)</small><textarea class="fld" id="mkJD" rows="3" placeholder="Or attach it in the AI chat."></textarea></label>
+        </div>
+        <textarea class="fld" id="mkOut" readonly aria-label="Generated prompt"></textarea>
+        <div class="row2"><button class="btn-main" id="mkCopy">📋 Copy prompt</button><span class="hint" style="margin:0">Paste it into your AI and <b>attach your resume</b> (and the job description) right after.</span></div>
+      </section>
+      <section class="card mk">
+        <h3><span><span class="n">2</span>Paste the AI’s answer</span><button class="lk" id="mkFile">⬆ Load a .json / .txt file</button></h3>
+        <textarea class="fld" id="mkIn" placeholder='Paste the whole reply here. It should start with { "deck": … }' spellcheck="false" aria-label="AI answer"></textarea>
+        <div class="status" id="mkStat">Waiting for the AI’s answer…</div>
+        <div class="form2"><label class="full">Save into<select class="fld" id="mkTarget"></select></label></div>
+        <div class="row2"><button class="btn-main" id="mkImport" disabled>Add to my decks</button><button class="btn-ghost" id="mkFix" hidden>Copy a “please fix” message for the AI</button></div>
+        <p class="hint">AI can invent or exaggerate. Anything it wasn’t sure about is marked <b>⚠ confirm</b> — fill in the real details yourself and only practice what is true.</p>
+      </section>
+    </div>
+  </section>
+
+  <section id="vDeck" hidden></section>
+  <section id="vSess" hidden></section>
+  <section id="vSheet" hidden></section>
+
+  <p class="note">Everything stays in this browser (unencrypted, this device only). The downloaded backup is one <b>.txt</b> encrypted with your password — it can’t be recovered if you lose it. Your resume is only ever seen by the AI you choose to give it to.</p>
+</main>
+<div id="tip" hidden></div>
+<div id="toast" hidden></div>
+<dialog id="dlg"><div class="dh" id="dT"></div><div class="db" id="dB"></div><div class="df" id="dF"></div></dialog>
+<input type="file" id="file" accept=".txt,.json,text/plain,application/json" hidden>
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const p2 = n => String(n).padStart(2, '0');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const norm = s => String(s == null ? '' : s).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+const dstr = d => d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+const todayS = () => dstr(new Date());
+const addDays = (s, k) => { const d = new Date(s + 'T00:00:00'); d.setDate(d.getDate() + k); return dstr(d); };
+const daysTo = s => Math.round((new Date(s + 'T00:00:00') - new Date(todayS() + 'T00:00:00')) / 864e5);
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const shortD = s => { const d = new Date(s + 'T00:00:00'); return MON[d.getMonth()] + ' ' + d.getDate(); };
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const INT = [0, 1, 2, 4, 8, 16];
+const str = (v, n) => String(v == null ? '' : v).replace(/\r\n?/g, '\n').trim().slice(0, n);
+const int = (v, d = 0) => Number.isFinite(+v) && v !== '' && v !== null ? Math.round(+v) : d;
+const fmtT = s => Math.floor(s / 60) + ':' + p2(s % 60);
+const lines = v => (Array.isArray(v) ? v : String(v == null ? '' : v).split(/\n/)).map(x => String(x == null ? '' : typeof x === 'object' ? '' : x).replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').trim()).filter(Boolean);
+const TYPES = {intro: 'Intro & closing', resume: 'Resume walk-through', behavioral: 'Behavioral', situational: 'Situational', technical: 'Technical', gap: 'Gap / red flag', ask: 'Questions to ask', recall: 'Resume recall'};
+const STAGES = ['Recruiter screen', 'Phone screen', 'Technical', 'Behavioral', 'Panel / onsite', 'Final / HR', 'Other'];
+const STATUS = ['Preparing', 'Applied', 'Interviewing', 'Offer', 'Closed'];
+const LEVELS = ['Entry level', 'Mid level', 'Senior', 'Lead / Manager'];
+
+/* ---------- storage ---------- */
+const store = {
+  db: null,
+  async open() { if (this.db) return this.db; this.db = await new Promise((res, rej) => { const r = indexedDB.open('cuech4-interview', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); return this.db; },
+  async load() { try { const db = await this.open(); return await new Promise((res, rej) => { const q = db.transaction('kv').objectStore('kv').get('state'); q.onsuccess = () => res(q.result || null); q.onerror = () => rej(q.error); }); } catch (e) { try { return JSON.parse(localStorage.getItem('interview_state') || 'null'); } catch (_) { return null; } } },
+  async save(obj) { try { const db = await this.open(); await new Promise((res, rej) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(obj, 'state'); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); return true; } catch (e) { try { localStorage.setItem('interview_state', JSON.stringify(obj)); return true; } catch (_) { return false; } } }
+};
+
+/* ---------- state ---------- */
+const fresh = () => ({name: 'My Interview Prep', decks: [], prog: {}, hist: [], days: {}, set: {secs: 90, mockN: 10, mk: {}}, exp: {date: '', n: 0}, dirty: false, lastBackup: ''});
+let S = fresh(), view = 'home', curDeck = null, sess = null, sessionPw = null, saveT = null, makeTarget = '', mkKind = 'resume', dFilter = {type: 'all', topic: 'all', n: 10, q: '', f: 'all', all: false};
+
+function cleanCard(c) {
+  if (!c || typeof c !== 'object') return null;
+  const q = str(c.q, 700); if (!q) return null; const st = c.star || {};
+  return {id: str(c.id, 40) || uid(), q, type: TYPES[c.type] ? c.type : 'behavioral', topic: str(c.topic, 60) || 'General', kp: lines(c.kp).slice(0, 8).map(x => x.slice(0, 240)), ans: str(c.ans, 1500),
+    star: {s: str(st.s, 400), t: str(st.t, 400), a: str(st.a, 500), r: str(st.r, 400)}, fu: lines(c.fu).slice(0, 5).map(x => x.slice(0, 200)), ref: str(c.ref, 240), conf: lines(c.conf).slice(0, 8).map(x => x.slice(0, 200)),
+    mine: str(c.mine, 2000), diff: Math.max(1, Math.min(3, int(c.diff, 2))), fl: !!c.fl};
+}
+function clean(o) {
+  if (!o || typeof o !== 'object') return null;
+  const out = fresh(), arr = (v, n) => Array.isArray(v) ? v.slice(0, n) : [], seen = new Set();
+  out.name = str(o.name, 60) || out.name;
+  out.decks = arr(o.decks, 100).filter(d => d && typeof d === 'object').map(d => ({id: str(d.id, 40) || uid(), title: str(d.title, 80) || 'Untitled', kind: d.kind === 'role' ? 'role' : 'resume', company: str(d.company, 80), role: str(d.role, 80), status: STATUS.includes(d.status) ? d.status : 'Preparing', date: DATE_RE.test(d.date) ? d.date : '', notes: str(d.notes, 3000), added: DATE_RE.test(d.added) ? d.added : todayS(), covered: str(d.covered, 200),
+    logs: arr(d.logs, 100).filter(l => l && typeof l === 'object').map(l => ({id: str(l.id, 40) || uid(), date: DATE_RE.test(l.date) ? l.date : todayS(), stage: str(l.stage, 30) || 'Other', notes: str(l.notes, 2000), qs: lines(l.qs).slice(0, 40).map(x => x.slice(0, 300)), added: !!l.added})),
+    cards: arr(d.cards, 1500).map(cleanCard).filter(Boolean).filter(c => !seen.has(c.id) && seen.add(c.id))}));
+  if (o.prog && typeof o.prog === 'object') for (const [k, p] of Object.entries(o.prog)) { if (!seen.has(k) || !p || typeof p !== 'object') continue; out.prog[k] = {box: Math.max(0, Math.min(5, int(p.box))), due: DATE_RE.test(p.due) ? p.due : todayS(), seen: Math.max(0, int(p.seen)), ok: Math.max(0, int(p.ok)), bad: Math.max(0, int(p.bad)), last: Math.max(0, int(p.last)), lw: !!p.lw}; }
+  if (o.days && typeof o.days === 'object') for (const [k, v] of Object.entries(o.days)) if (DATE_RE.test(k) && Number.isFinite(v)) out.days[k] = Math.max(0, Math.round(v));
+  out.hist = arr(o.hist, 300).filter(h => h && Number.isFinite(h.t)).map(h => ({t: h.t, deck: str(h.deck, 40), title: str(h.title, 80), mode: ['drill', 'mock', 'recall'].includes(h.mode) ? h.mode : 'drill', n: Math.max(0, int(h.n)), ok: Math.max(0, int(h.ok)), secs: Math.max(0, int(h.secs)), cov: Math.max(0, Math.min(100, int(h.cov)))}));
+  const s = o.set || {}, m = s.mk && typeof s.mk === 'object' ? s.mk : {};
+  out.set = {secs: Math.max(0, Math.min(600, int(s.secs, 90))), mockN: Math.max(3, Math.min(60, int(s.mockN, 10))), mk: {kind: m.kind === 'role' ? 'role' : 'resume', target: str(m.target, 90), level: str(m.level, 20), type: str(m.type, 30), n: str(m.n, 3), opts: arr(m.opts, 12).map(x => str(x, 12))}};
+  out.exp = o.exp && typeof o.exp.n === 'number' ? {date: str(o.exp.date, 10), n: int(o.exp.n)} : {date: '', n: 0};
+  out.dirty = !!o.dirty; out.lastBackup = DATE_RE.test(o.lastBackup) ? o.lastBackup : '';
+  return out;
+}
+function queueSave() { clearTimeout(saveT); saveT = setTimeout(saveNow, 350); }
+let warned = false;
+async function saveNow() { clearTimeout(saveT); const ok = await store.save(S); if (!ok && !warned) { warned = true; toast('Your browser couldn’t save locally. Download a backup to keep your work.', null, null, true); } }
+window.addEventListener('pagehide', () => { store.save(S); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) store.save(S); });
+const touch = () => { S.dirty = true; queueSave(); };
+function commit() { touch(); render(); }
+
+/* ---------- progress ---------- */
+const P = id => S.prog[id];
+const isDue = c => { const p = P(c.id); return !p || p.due <= todayS(); };
+const isMastered = c => (P(c.id) || {}).box >= 4;
+const isMiss = c => !!(P(c.id) || {}).lw;
+function deckStats(d) { let nw = 0, ma = 0, due = 0; d.cards.forEach(c => { if (!P(c.id)) nw++; else if (isMastered(c)) ma++; if (isDue(c)) due++; }); return {n: d.cards.length, nw, ma, le: d.cards.length - nw - ma, due}; }
+function streak() { let n = 0; const d = new Date(); if (!(S.days[todayS()] > 0)) d.setDate(d.getDate() - 1); while (S.days[dstr(d)] > 0) { n++; d.setDate(d.getDate() - 1); } return n; }
+function topicStats(d) {
+  const m = new Map(); d.cards.forEach(c => { const t = m.get(c.topic) || {topic: c.topic, n: 0, ok: 0, bad: 0}; t.n++; const p = P(c.id); if (p) { t.ok += p.ok; t.bad += p.bad; } m.set(c.topic, t); });
+  return [...m.values()].sort((a, b) => a.topic.localeCompare(b.topic));
+}
+function grade(c, rating) {
+  const t = todayS(), ok = rating >= 2, p = S.prog[c.id] || (S.prog[c.id] = {box: 0, due: t, seen: 0, ok: 0, bad: 0, last: 0, lw: false});
+  const box = rating === 1 ? 0 : rating === 2 ? Math.max(1, p.box) : rating === 3 ? Math.min(5, p.box + 1) : Math.min(5, p.box + 2);
+  p.box = box; p.due = addDays(t, rating === 2 ? Math.max(1, INT[box]) : INT[box]);
+  p.seen++; if (ok) p.ok++; else p.bad++; p.last = Date.now(); p.lw = rating === 1; S.days[t] = (S.days[t] || 0) + 1; touch();
+}
+const nextHint = (c, r) => { const b = (P(c.id) || {}).box || 0; const nb = r === 1 ? 0 : r === 2 ? Math.max(1, b) : r === 3 ? Math.min(5, b + 1) : Math.min(5, b + 2); const d = r === 2 ? Math.max(1, INT[nb]) : INT[nb]; return d === 0 ? 'soon' : d + 'd'; };
+
+/* ---------- import / parse ---------- */
+function extractJSON(text) {
+  let t = String(text || '').replace(/^﻿/, '').trim(); if (!t) return {err: 'empty'};
+  const tryP = s => { try { return JSON.parse(s); } catch (e) { return undefined; } };
+  const attempt = s => {
+    let v = tryP(s); if (v !== undefined) return v;
+    s = s.replace(/```(?:json|JSON)?/g, '').trim(); v = tryP(s); if (v !== undefined) return v;
+    const a = s.indexOf('{'), b = s.lastIndexOf('}'), a2 = s.indexOf('['), b2 = s.lastIndexOf(']');
+    const spans = (a >= 0 && (a2 < 0 || a < a2)) ? [[a, b], [a2, b2]] : [[a2, b2], [a, b]];
+    for (const [i, j] of spans) if (i >= 0 && j > i) { v = tryP(s.slice(i, j + 1)); if (v !== undefined) return v; }
+    return undefined;
+  };
+  let v = attempt(t); if (v === undefined) v = attempt(t.replace(/[“”]/g, '"').replace(/[‘’]/g, "'"));
+  return v === undefined ? {err: 'parse'} : {v};
+}
+function parseDeck(text, existing) {
+  const ex = extractJSON(text);
+  if (ex.err === 'empty') return {empty: true, cards: [], issues: []};
+  if (ex.err) return {fatal: 'I couldn’t read that as JSON. Make sure you pasted the AI’s whole answer (it should start with { and end with }).', cards: [], issues: []};
+  let v = ex.v;
+  if (v && v.app === 'cuech4-interview' && v.salt) return {backup: true, cards: [], issues: []};
+  if (Array.isArray(v)) v = {cards: v};
+  const list = v && (v.cards || v.questions || v.items);
+  if (!v || !Array.isArray(list)) return {fatal: 'The JSON doesn’t have a "cards" list. Ask the AI to follow the format exactly.', cards: [], issues: []};
+  const issues = [], cards = [], seen = new Set(existing || []); let dups = 0;
+  list.slice(0, 1000).forEach((c, i) => {
+    const N = 'Card ' + (i + 1) + ': ';
+    if (!c || typeof c !== 'object') return issues.push(N + 'not a card');
+    const q = str(c.question || c.q || c.prompt, 700); if (!q) return issues.push(N + 'no question');
+    const st = c.star || {}, type = String(c.type || '').toLowerCase().trim();
+    const o = {q, type: TYPES[type] ? type : 'behavioral', topic: str(c.topic || c.category || c.role, 60), kp: lines(c.key_points || c.keypoints || c.points), ans: str(c.answer || c.model_answer, 1500),
+      star: {s: st.situation || st.s, t: st.task || st.t, a: st.action || st.a, r: st.result || st.r}, fu: lines(c.follow_ups || c.followups), ref: str(c.source || c.reference, 240), conf: lines(c.confirm || c.verify), diff: int(c.difficulty, 2)};
+    if (o.type === 'recall' && !o.ans) return issues.push(N + 'recall card has no answer');
+    if (o.type !== 'ask' && !o.kp.length && !o.ans) return issues.push(N + 'no key points or answer');
+    const cc = cleanCard(o); if (!cc) return issues.push(N + 'invalid');
+    const k = norm(cc.q); if (seen.has(k)) { dups++; return; } seen.add(k); cards.push(cc);
+  });
+  if (dups) issues.push(dups + ' repeated question' + (dups > 1 ? 's' : '') + ' skipped');
+  const by = {}; cards.forEach(c => { by[c.type] = (by[c.type] || 0) + 1; });
+  return {title: str(v.deck || v.title, 80), kind: v.kind === 'role' ? 'role' : (v.kind === 'resume' ? 'resume' : ''), company: str(v.company, 80), role: str(v.role, 80), covered: str(v.covered_until, 200), cards, issues, by, topics: new Set(cards.map(c => c.topic)).size};
+}
+function exportDeck(d) {
+  return JSON.stringify({deck: d.title, kind: d.kind, company: d.company, role: d.role, cards: d.cards.map(c => ({type: c.type, topic: c.topic, question: c.q, key_points: c.kp, answer: c.ans, star: {situation: c.star.s, task: c.star.t, action: c.star.a, result: c.star.r}, follow_ups: c.fu, source: c.ref, confirm: c.conf, difficulty: c.diff}))}, null, 1);
+}
+
+/* ---------- prompts ---------- */
+const SCHEMA = `{
+  "deck": "short deck title",
+  "kind": "KIND",
+  "company": "COMPANY",
+  "role": "ROLE",
+  "covered_until": "where you stopped, or 'all'",
+  "cards": [
+    {
+      "type": "resume | behavioral | situational | technical | gap | intro | ask | recall",
+      "topic": "the job, project or theme this belongs to (reuse the same names)",
+      "question": "the interview question (or, for recall, a quick fact question about my resume)",
+      "key_points": ["3–5 short points a strong answer should hit"],
+      "answer": "a model answer in the first person, natural spoken English, 60–120 words",
+      "star": { "situation": "", "task": "", "action": "", "result": "" },
+      "follow_ups": ["1–3 follow-up questions an interviewer might ask next"],
+      "source": "the resume line (max 20 words, quoted) or 'job description: …' this is based on",
+      "confirm": ["details I must verify or fill in myself — empty list if none"],
+      "difficulty": 2
+    }
+  ]
+}`;
+function genPrompt(o) {
+  const role = o.kind === 'role', has = x => o.opts.includes(x), lvl = o.level ? ' (' + o.level.toLowerCase() + ')' : '';
+  const intro = role
+    ? `You are an expert interview coach. I have an interview for ${o.role || '[job title]'}${o.company ? ' at ' + o.company : ''}${lvl}${o.itype ? ' — ' + o.itype.toLowerCase() : ''}. I will give you my resume and the job description right after this message (attached or pasted).${o.resume || o.jd ? ' Any text I pasted into this tool is included at the end of this message.' : ''}`
+    : `You are an expert interview coach. I will give you my resume right after this message (attached or pasted)${o.resume ? '; the text is also included at the end of this message' : ''}. ${o.target ? 'I am preparing for ' + o.target + ' roles' + lvl + '.' : 'Help me know my own resume cold and practice for real interviews.'}`;
+  const parts = [];
+  if (!role) {
+    if (has('walk')) parts.push('"resume" cards: for EACH job and major project on my resume, 1–3 questions like "Walk me through your time at X", "What was your biggest impact at X?" or "Why did you leave X?".');
+    if (has('behav')) parts.push('"behavioral" cards: "Tell me about a time you…" questions (deadline, conflict, failure, leadership, learning something fast), each built on a REAL example from my resume, with a full STAR.');
+    if (has('gap')) parts.push('"gap" cards: only for things visible in my resume — employment gaps, short stays, a career change, a missing skill, a demotion — each with an honest, positive way to frame it.');
+    if (has('intro')) parts.push('"intro" cards: "Tell me about yourself" (60–90 seconds), "Why should we hire you?", "Where do you see yourself in 5 years?", and 2 good closing answers.');
+    if (has('recall')) parts.push('"recall" cards: quick fact questions that quiz me on my own resume (employer names, titles, dates, tools, numbers, results). The answer is short; no key points needed.');
+  } else {
+    if (has('tech')) parts.push('"technical" cards: questions about the skills, tools and responsibilities in the job description, with strong answers that connect to what my resume actually shows.');
+    if (has('behav')) parts.push('"behavioral" cards tied to the job description\'s requirements ("Tell me about a time you…"), each built on a REAL example from my resume, with a full STAR.');
+    if (has('gap')) parts.push('"gap" cards: the places where my resume does NOT clearly match the job description (missing skills, years of experience, industry, gaps), each with an honest way to address it. Never pretend I have experience I don\'t.');
+    if (has('intro')) parts.push('"intro" cards: "Tell me about yourself" and "Why this role / why this company?" tailored to this job, and 2 closing answers.');
+    if (has('ask')) parts.push('"ask" cards: smart questions I should ask the interviewer. In "answer" say why each one is a good question to ask.');
+    if (has('recall')) parts.push('"recall" cards: quick fact questions that quiz me on the key facts from my resume that are most relevant to this job.');
+  }
+  const tail = [o.resume ? `\n\n--- MY RESUME ---\n${o.resume}` : '', o.jd ? `\n\n--- JOB DESCRIPTION ---\n${o.jd}` : ''].join('');
+  return `${intro}
+Use ONLY facts that are in what I give you. Never invent employers, titles, dates, tools, results or numbers. When a strong answer would normally need a detail my resume does not contain (a metric, team size, outcome), write a placeholder like [add the number] in the answer and list it in "confirm" so I can fill it in honestly.${role ? ' Do not state facts about the company unless they appear in the text I provided; otherwise keep company questions generic.' : ''}
+
+Create ${o.n} cards${o.sec ? ', focusing on: ' + o.sec : ''}. Use this mix:
+${parts.map(x => '- ' + x).join('\n') || '- A balanced mix of the types below.'}
+
+Return ONLY one JSON object — no introduction, no notes, no markdown code fences — in exactly this shape:
+${SCHEMA.replace('KIND', o.kind).replace('COMPANY', (o.company || '').replace(/"/g, "'")).replace('ROLE', (o.role || '').replace(/"/g, "'"))}
+
+Rules:
+- Write answers the way a real person speaks: first person, plain words, no corporate clichés, no buzzword lists.
+- "key_points" are short and checkable — I will tick them off while practicing out loud.
+- Only "resume" and "behavioral" cards need "star". Leave "star" out (or empty) for other types. "recall" cards need only "question" and "answer".
+- "source" is required on every card so I can check it against my resume${role ? ' or the job description' : ''}.
+- One idea per card, no duplicates, spread the cards across everything I gave you. Reuse the same topic names (at most 15 topics).
+- "difficulty" is 1 (easy), 2 (medium) or 3 (hard).
+- If you cannot cover everything in ${o.n} cards, cover the first part and say where you stopped in "covered_until".
+- Output must be valid JSON (double quotes, no trailing commas).${tail}`;
+}
+const SAMPLE = {deck: 'Sample: Alex Rivera — marketing resume', kind: 'resume', cards: [
+  {type: 'intro', topic: 'Intro & closing', question: 'Tell me about yourself.', key_points: ['Current role and what you do day to day', 'One standout result with a number', 'What you want to do next and why this role'], answer: 'I’m a marketing coordinator with about four years at BrightLeaf, where I run the email program and help plan campaigns. Last year I redesigned our newsletter and raised the open rate from 21% to 34%. I love turning data into simple changes that people actually notice, and that’s why I’m excited about a role where I can own campaigns end to end.', source: 'Summary: "Marketing coordinator, email and campaigns"', difficulty: 1},
+  {type: 'resume', topic: 'BrightLeaf Co.', question: 'Walk me through your time at BrightLeaf Co.', key_points: ['Joined in 2021 as Marketing Assistant', 'Promoted to Coordinator in 2023', 'Own the email program and campaign calendar', 'Newsletter redesign: open rate 21% → 34%'], answer: 'I joined BrightLeaf in 2021 as a marketing assistant, mostly supporting the team with social posts and reports. In 2023 I was promoted to coordinator and took over the email program and the campaign calendar. My biggest project was the newsletter redesign, which lifted open rates from 21% to 34% in six months.', star: {situation: 'Newsletter open rates were flat at 21%.', task: 'Redesign it to get more readers.', action: 'Shortened it, tested subject lines, and segmented the list.', result: 'Open rate rose to 34% in six months.'}, follow_ups: ['What was the hardest part of the redesign?', 'How did you decide what to test?'], source: 'BrightLeaf Co., 2021–present: "Redesigned email newsletter; open rate 21% to 34%"', difficulty: 2},
+  {type: 'behavioral', topic: 'BrightLeaf Co.', question: 'Tell me about a time you worked under a tight deadline.', key_points: ['Name the project and the deadline', 'How you prioritized', 'What you handed off or cut', 'Result and what you learned'], answer: 'Last spring our spring-sale campaign moved up by a week. I listed everything that had to ship, cut the nice-to-haves, and asked design to prioritize two hero images. We launched on time and the campaign finished with [add the result], and now I keep a standard launch checklist so a surprise like that is less stressful.', star: {situation: 'The spring-sale campaign launch moved up by a week.', task: 'Ship all emails and social posts on the new date.', action: 'Prioritized must-haves, cut extras, and agreed on two hero images with design.', result: '[add the result]'}, follow_ups: ['What did you cut and why?'], source: 'BrightLeaf Co.: "Coordinated seasonal campaigns across email and social"', confirm: ['Add the real campaign result (sales, clicks or signups).'], difficulty: 2},
+  {type: 'behavioral', topic: 'Teamwork', question: 'Tell me about a time you disagreed with a coworker.', key_points: ['Keep it about the work, not the person', 'Say how you listened first', 'Show how you reached a decision', 'End with the outcome'], answer: 'A designer and I disagreed about subject-line length for the newsletter. Instead of arguing, I suggested we run an A/B test for two weeks. The shorter version won, the designer saw the data, and we agreed to test one change at a time from then on.', star: {situation: 'Disagreement about subject-line length.', task: 'Settle it without hurting the working relationship.', action: 'Proposed a two-week A/B test.', result: 'Shorter lines won; we now test one change at a time.'}, source: 'BrightLeaf Co.: "Ran A/B tests on subject lines"', difficulty: 2},
+  {type: 'gap', topic: 'Career history', question: 'I see about six months between 2020 and 2021 on your resume. What happened?', key_points: ['Be brief and honest', 'Say what you did with the time', 'Move quickly to what you learned and why you are ready now'], answer: 'After my previous contract ended, I took a few months to finish a digital-marketing certificate and do freelance social media for two local businesses. That’s what led me to BrightLeaf, and I’ve been growing there ever since.', source: 'Resume dates: "2020 – 2021"', confirm: ['Replace with what you really did during that time.'], difficulty: 3},
+  {type: 'situational', topic: 'Campaign analysis', question: 'A campaign got lots of clicks but almost no sales. What would you do?', key_points: ['Check the landing page and the offer', 'Compare traffic sources', 'Look at where users drop off', 'Run one small test before changing everything'], answer: 'I’d first check whether the landing page matches the promise in the ad, then look at which traffic sources convert and where people drop off. Then I’d change one thing — the headline or the offer — and test it before rebuilding the campaign.', source: 'Skills: "Campaign analysis, A/B testing"', difficulty: 2},
+  {type: 'recall', topic: 'Resume facts', question: 'Which company did Alex join in 2021, and in what role?', answer: 'BrightLeaf Co. — Marketing Assistant (promoted to Coordinator in 2023).', source: 'Experience section', difficulty: 1},
+  {type: 'recall', topic: 'Resume facts', question: 'What result did the newsletter redesign deliver?', answer: 'Open rate up from 21% to 34% in six months.', source: 'Experience section', difficulty: 1},
+  {type: 'recall', topic: 'Resume facts', question: 'Name the tools listed under Skills.', answer: 'Mailchimp, Google Analytics, Canva, and Excel.', source: 'Skills section', difficulty: 1},
+  {type: 'ask', topic: 'Questions to ask', question: 'What does success look like in the first 90 days?', answer: 'Shows you think about results and want clear expectations from day one.', key_points: [], source: 'Closing questions', difficulty: 1}
+]};
+
+/* ---------- toast / modals ---------- */
+let toastT;
+function toast(msg, label, fn, isErr) {
+  const t = $('#toast'); t.className = isErr ? 'err' : '';
+  t.innerHTML = '<span>' + esc(msg) + '</span>' + (label ? '<button>' + esc(label) + '</button>' : ''); t.hidden = false;
+  if (label) t.querySelector('button').onclick = () => { t.hidden = true; fn(); };
+  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, label ? 8000 : 3800);
+}
+const dlg = $('#dlg');
+function open(title, bodyHtml, buttons, onKey) {
+  return new Promise(res => {
+    $('#dT').textContent = title; $('#dB').innerHTML = bodyHtml;
+    $('#dF').innerHTML = buttons.map(b => `<button class="${b.primary ? 'btn-main' : 'btn-ghost'} ${b.cls || ''}" data-v="${b.value}">${esc(b.label)}</button>`).join('');
+    const finish = v => { const b = buttons.find(x => x.value === v); if (b && b.check) { const e = b.check(); if (e) { const el = $('#dE'); if (el) el.textContent = e; return; } } dlg.close(); dlg.classList.remove('wide'); res(v); };
+    $('#dF').onclick = e => { const b = e.target.closest('button'); if (b) finish(b.dataset.v); };
+    dlg.onkeydown = e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); const pb = buttons.find(b => b.primary); if (pb) finish(pb.value); } };
+    dlg.oncancel = e => { e.preventDefault(); finish('cancel'); };
+    dlg.showModal(); const f = dlg.querySelector('input,select'); if (f) f.focus();
+  });
+}
+function fieldHtml(f) {
+  const v = f.value == null ? '' : f.value;
+  const fl = f.full ? ' style="grid-column:1/-1"' : '';
+  if (f.type === 'textarea') return `<label${fl}>${esc(f.label)}<textarea id="f_${f.id}" rows="${f.rows || 3}" maxlength="${f.max || 500}">${esc(v)}</textarea></label>`;
+  if (f.type === 'select') return `<label${fl}>${esc(f.label)}<select id="f_${f.id}">${f.options.map(([val, lab]) => `<option value="${esc(val)}"${String(val) === String(v) ? ' selected' : ''}>${esc(lab)}</option>`).join('')}</select></label>`;
+  const bounds = f.type === 'number'
+    ? `${f.min != null ? `min="${f.min}"` : ''} ${f.max != null ? `max="${f.max}"` : ''}`
+    : `maxlength="${f.max || 120}"`;
+  return `<label${fl}>${esc(f.label)}<input id="f_${f.id}" type="${f.type || 'text'}" ${f.step ? `step="${f.step}"` : ''} ${bounds} autocomplete="${f.ac || 'off'}" value="${esc(v)}"></label>`;
+}
+async function modal(o) {
+  const fields = o.fields || [], vals = () => { const r = {}; fields.forEach(f => r[f.id] = $('#f_' + f.id).value); return r; };
+  const btns = o.buttons.map(b => b.primary && o.validate ? {...b, check: () => o.validate(vals())} : b);
+  if (o.wide) dlg.classList.add('wide');
+  const v = await open(o.title, (o.text ? `<p>${esc(o.text)}</p>` : '') + `<div class="${fields.length > 3 ? 'grid2' : ''}">` + fields.map(fieldHtml).join('') + '</div><p class="derr" id="dE">' + esc(o.error || '') + '</p>', btns);
+  return {value: v, vals: v === 'cancel' ? {} : vals()};
+}
+
+const b64 = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const ITER = 250000;
+async function deriveKey(pw, salt, iter) { const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']); return crypto.subtle.deriveKey({name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256'}, km, {name: 'AES-GCM', length: 256}, false, ['encrypt', 'decrypt']); }
+async function encrypt(obj, pw) { const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), key = await deriveKey(pw, salt, ITER); const ct = new Uint8Array(await crypto.subtle.encrypt({name: 'AES-GCM', iv}, key, new TextEncoder().encode(JSON.stringify(obj)))); return JSON.stringify({app: 'cuech4-interview', format: 1, enc: 'AES-GCM-256', kdf: 'PBKDF2-SHA256', iter: ITER, salt: b64(salt), iv: b64(iv), data: b64(ct)}); }
+async function decrypt(file, pw) { const key = await deriveKey(pw, unb64(file.salt), file.iter); return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name: 'AES-GCM', iv: unb64(file.iv)}, key, unb64(file.data)))); }
+const safeName = s => (s || 'Interview').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '').replace(/\s+/g, ' ').trim().replace(/ /g, '_').slice(0, 60) || 'Interview';
+function needCrypto() { if (window.crypto && crypto.subtle) return true; toast('Encryption needs a secure page (https or a local file).', null, null, true); return false; }
+async function askPassword(confirm, error) {
+  const r = await modal({title: confirm ? 'Protect your backup' : 'Enter your password', text: confirm ? 'Your backup is encrypted with this password. There’s no reset — if you lose it, the file can’t be opened.' : 'This backup is encrypted. Enter the password you used when you downloaded it.',
+    fields: confirm ? [{id: 'p1', label: 'Password', type: 'password', ac: 'new-password'}, {id: 'p2', label: 'Confirm password', type: 'password', ac: 'new-password'}] : [{id: 'p1', label: 'Password', type: 'password', ac: 'current-password'}], error,
+    validate: v => confirm ? (v.p1.length < 6 ? 'Use at least 6 characters.' : v.p1 !== v.p2 ? 'The passwords don’t match.' : '') : (v.p1 ? '' : 'Enter the password.'),
+    buttons: [{label: 'Cancel', value: 'cancel'}, {label: confirm ? 'Encrypt & continue' : 'Open', value: 'ok', primary: true}]});
+  return r.value === 'ok' ? r.vals.p1 : null;
+}
+
+/* ---------- render ---------- */
+const deckOf = id => S.decks.find(d => d.id === id), deck = () => deckOf(curDeck);
+function setView(v) { view = v; render(); window.scrollTo(0, 0); }
+function render() {
+  $('#hname').value = S.name;
+  ['home', 'make', 'deck', 'sess', 'sheet'].forEach(k => { $('#v' + k[0].toUpperCase() + k.slice(1)).hidden = view !== k; });
+  if ((view === 'deck' || view === 'sheet') && !deck()) view = 'home', $('#vHome').hidden = false, $('#vDeck').hidden = true, $('#vSheet').hidden = true;
+  $('.top').hidden = view === 'sess' || view === 'sheet';
+  if (view === 'home') home(); else if (view === 'deck') deckView(); else if (view === 'sheet') sheet();
+  chip();
+}
+function chip() {
+  const c = $('#chip'), lb = S.lastBackup ? shortD(S.lastBackup) : '';
+  if (!S.decks.length) { c.className = 'chip idle'; c.textContent = 'Empty · autosaves in this browser'; }
+  else if (S.dirty) { c.className = 'chip dirty'; c.textContent = '● Changes not backed up' + (lb ? ' · last backup ' + lb : ' yet'); }
+  else { c.className = 'chip'; c.textContent = '🔒 Backup up to date · ' + lb; }
+  $('#pwLbl').textContent = sessionPw ? 'Change password' : 'Set password';
+}
+const countdown = d => { const k = daysTo(d); return k < 0 ? 'was ' + (-k) + 'd ago' : k === 0 ? 'today!' : k === 1 ? 'tomorrow' : 'in ' + k + ' days'; };
+function home() {
+  const ds = S.decks, due = ds.reduce((a, d) => a + d.cards.filter(isDue).length, 0), st = streak();
+  const next = ds.filter(d => d.kind === 'role' && d.date && daysTo(d.date) >= 0 && !['Closed', 'Offer'].includes(d.status)).sort((a, b) => a.date.localeCompare(b.date))[0];
+  $('#empty').hidden = ds.length > 0;
+  $('#hk').innerHTML = [['Day streak 🔥', st, st === 1 ? 'day in a row' : 'days in a row', 'hero'], ['Practiced today', S.days[todayS()] || 0, 'questions', ''], ['Due now', due, 'cards to review', ''], ['Next interview', next ? countdown(next.date).replace(/^in /, '') : '—', next ? esc(next.title) : 'add a date on a role deck', '']]
+    .map(([k, v, s, h]) => `<div class="kpi ${h}"><small>${k}</small><b>${v}</b><i>${s}</i></div>`).join('');
+  $('#decks').innerHTML = ds.map(d => {
+    const s = deckStats(d), pm = s.n ? s.ma / s.n * 100 : 0, pl = s.n ? s.le / s.n * 100 : 0;
+    return `<div class="deck" data-d="${esc(d.id)}" tabindex="0" role="button" aria-label="Open ${esc(d.title)}"><div><b>${esc(d.title)}</b><small>${d.kind === 'role' ? '🎯 ' + esc(d.status) + (d.date ? ' · interview ' + countdown(d.date) : '') : '📄 Resume'} · ${s.n} cards</small></div>
+      <div class="mbar" role="img" aria-label="${s.ma} mastered, ${s.le} learning, ${s.nw} new"><i class="m" style="width:${pm}%"></i><i class="l" style="width:${pl}%"></i></div>
+      <div class="mleg">${s.ma} mastered · ${s.le} learning · ${s.nw} new</div>
+      <div class="dfoot">${s.due ? `<span class="due">⏰ ${s.due} due</span>` : '<span class="due ok">✓ All caught up</span>'}<button class="btn-main sm" data-study="${esc(d.id)}">Practice</button></div></div>`;
+  }).join('') || '<p class="nodata">No decks yet.</p>';
+  const days = [...Array(14)].map((_, i) => addDays(todayS(), i - 13)), vals = days.map(d => S.days[d] || 0), mx = Math.max(5, ...vals), W = 460, H = 160, L = 28, B = 22, T = 8, gw = (W - L) / 14, bw = 16, y = v => T + (H - B - T) * (1 - v / mx);
+  let h = `<svg class="chartbar" viewBox="0 0 ${W} ${H}" role="img" aria-label="Questions practiced per day, last 14 days: ${vals.join(', ')}">`;
+  [0, 0.5, 1].forEach(f => { const v = Math.round(mx * f); h += `<line class="grid" x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`; });
+  days.forEach((d, i) => { const cx = L + gw * i + gw / 2, v = vals[i]; h += `<g data-tip="${shortD(d)}|${v} question${v === 1 ? '' : 's'}"><rect x="${cx - gw / 2}" y="${T}" width="${gw}" height="${H - B - T}" fill="transparent"/>${v ? `<rect x="${cx - bw / 2}" y="${y(v)}" width="${bw}" height="${H - B - y(v)}" rx="4" fill="var(--accent)"/>` : ''}</g>` + (i % 2 === 1 || i === 13 ? `<text x="${cx}" y="${H - 6}" text-anchor="middle"${i === 13 ? ' style="fill:var(--text);font-weight:700"' : ''}>${+d.slice(8)}</text>` : ''); });
+  $('#act').innerHTML = h + '</svg>';
+}
+$('#vHome').addEventListener('click', e => {
+  const g = e.target.closest('[data-go]'); if (g) { makeTarget = ''; return openMake('', '', g.dataset.go); }
+  const s = e.target.closest('[data-study]'); if (s) { e.stopPropagation(); curDeck = s.dataset.study; dFilter = {type: 'all', topic: 'all', n: 10, q: '', f: 'all', all: false}; return startMode('drill'); }
+  const d = e.target.closest('[data-d]'); if (d) openDeck(d.dataset.d);
+});
+$('#vHome').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.dataset.d) openDeck(e.target.dataset.d); });
+function openDeck(id) { curDeck = id; dFilter = {type: 'all', topic: 'all', n: 10, q: '', f: 'all', all: false}; setView('deck'); }
+$('#btnSample').onclick = () => { const r = parseDeck(JSON.stringify(SAMPLE), []); const d = {id: uid(), title: r.title, kind: 'resume', company: '', role: '', status: 'Preparing', date: '', notes: '', added: todayS(), covered: '', logs: [], cards: r.cards}; S.decks.push(d); touch(); openDeck(d.id); toast('Sample deck added — a made-up resume, just to try the practice modes.'); };
+$('#btnImportDeck').onclick = () => $('#file').click();
+
+/* ---------- make ---------- */
+let mkP = null, makeSecId = '';
+function openMake(sec, _x, kind) {
+  const m = S.set.mk || {}; mkKind = kind || (makeTarget && deckOf(makeTarget) ? deckOf(makeTarget).kind : m.kind) || 'resume';
+  $('#mkSec').value = sec || ''; $('#mkTarget2').value = m.target || ''; if (m.level) $('#mkLevel').value = m.level; if (m.type) $('#mkIType').value = m.type; if (m.n) $('#mkN').value = m.n;
+  const td = makeTarget && deckOf(makeTarget); $('#mkCompany').value = td ? td.company : ''; $('#mkRole').value = td ? td.role : '';
+  $$('#mkOpts input').forEach(i => { i.checked = i.dataset.def === '1'; });
+  $('#mkTitle').textContent = td ? 'Add cards to “' + td.title + '”' : 'Create a practice deck with AI';
+  $('#mkTarget').innerHTML = '<option value="new">A new deck (named by the AI)</option>' + S.decks.map(d => `<option value="${esc(d.id)}">Add to: ${esc(d.title)}</option>`).join('');
+  $('#mkTarget').value = td ? td.id : 'new';
+  setView('make'); mkKindUI(); mkGen(); mkParse();
+}
+function mkKindUI() { $$('#mkKind button').forEach(b => b.classList.toggle('on', b.dataset.k === mkKind)); $$('[data-for]').forEach(e => { e.hidden = e.dataset.for !== mkKind; }); }
+$('#mkKind').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; mkKind = b.dataset.k; mkKindUI(); mkGen(); });
+const mkOpts = () => ({kind: mkKind, target: $('#mkTarget2').value.trim(), level: $('#mkLevel').value, itype: $('#mkIType').value, company: $('#mkCompany').value.trim(), role: $('#mkRole').value.trim(), sec: $('#mkSec').value.trim(), n: $('#mkN').value, opts: $$('#mkOpts [data-for="' + mkKind + '"] input:checked').map(i => i.value), resume: $('#mkResume').value.trim(), jd: mkKind === 'role' ? $('#mkJD').value.trim() : ''});
+function mkGen() { const o = mkOpts(); $('#mkOut').value = genPrompt(o); S.set.mk = {kind: o.kind, target: o.target, level: o.level, type: o.itype, n: o.n, opts: []}; queueSave(); }
+['#mkTarget2', '#mkCompany', '#mkRole', '#mkSec', '#mkN', '#mkLevel', '#mkIType', '#mkResume', '#mkJD'].forEach(s => $(s).addEventListener('input', mkGen)); $('#mkOpts').addEventListener('change', mkGen);
+function copyText(t, ta) {
+  const done = () => toast('Copied to clipboard.'), fb = () => { const x = ta || Object.assign(document.createElement('textarea'), {value: t}); if (!ta) document.body.appendChild(x); x.select(); try { document.execCommand('copy'); done(); } catch (e) { toast('Select the text and copy it manually.', null, null, true); } if (!ta) x.remove(); };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(done, fb); else fb();
+}
+$('#mkCopy').onclick = () => copyText($('#mkOut').value, $('#mkOut'));
+let mkT; $('#mkIn').addEventListener('input', () => { clearTimeout(mkT); mkT = setTimeout(mkParse, 250); });
+$('#mkTarget').addEventListener('change', mkParse);
+$('#mkFile').onclick = () => $('#file').click();
+$('#mkBack').onclick = () => { $('#mkResume').value = ''; $('#mkJD').value = ''; if (makeTarget && deckOf(makeTarget)) { curDeck = makeTarget; setView('deck'); } else setView('home'); };
+function mkParse() {
+  const tgt = $('#mkTarget').value, dk = tgt !== 'new' ? deckOf(tgt) : null;
+  mkP = parseDeck($('#mkIn').value, dk ? dk.cards.map(c => norm(c.q)) : []);
+  if (!dk && mkP.title && !mkP.fatal) { const same = S.decks.find(d => norm(d.title) === norm(mkP.title)); if (same) { $('#mkTarget').value = same.id; return mkParse(); } }
+  const st = $('#mkStat'), imp = $('#mkImport'), fix = $('#mkFix'); imp.disabled = true; fix.hidden = true; st.className = 'status';
+  const list = a => a.length ? '<ul>' + a.slice(0, 30).map(x => `<li>${esc(x)}</li>`).join('') + '</ul>' : '';
+  if (mkP.empty) st.textContent = 'Waiting for the AI’s answer…';
+  else if (mkP.backup) { st.classList.add('bad'); st.textContent = '✕ That’s an encrypted backup, not a deck. Use “Open backup” at the top instead.'; }
+  else if (mkP.fatal) { st.classList.add('bad'); st.textContent = '✕ ' + mkP.fatal; fix.hidden = false; }
+  else if (!mkP.cards.length) { st.classList.add('bad'); st.innerHTML = '✕ No usable cards found.' + list(mkP.issues); fix.hidden = false; }
+  else {
+    const nc = mkP.cards.filter(c => c.conf.length).length;
+    st.classList.add('ok');
+    st.innerHTML = `✓ <b>${mkP.cards.length} cards</b> ready${mkP.title ? ' — “' + esc(mkP.title) + '”' : ''}<br><span style="color:var(--muted);font-size:13px">${Object.entries(mkP.by).map(([k, v]) => v + ' ' + TYPES[k].toLowerCase()).join(' · ')} · ${mkP.topics} topics</span>`
+      + (nc ? `<br><span style="font-size:13px">⚠ ${nc} card${nc > 1 ? 's need' : ' needs'} your details — marked “confirm” so you can fill them in honestly.</span>` : '')
+      + (mkP.covered && !/^all$/i.test(mkP.covered) ? `<br><span style="font-size:13px">ℹ The AI stopped at: ${esc(mkP.covered)} — run it again for the next part.</span>` : '')
+      + (mkP.issues.length ? `<br><span style="font-size:13px">⚠ ${mkP.issues.length} note${mkP.issues.length > 1 ? 's' : ''}:</span>` + list(mkP.issues) : '');
+    imp.disabled = false; imp.textContent = dk ? 'Add ' + mkP.cards.length + ' cards to “' + dk.title + '”' : 'Create deck “' + (mkP.title || 'Untitled') + '”'; if (mkP.issues.length) fix.hidden = false;
+  }
+}
+$('#mkFix').onclick = () => copyText(mkP && mkP.fatal ? 'Your last reply could not be read as JSON. Please send the COMPLETE deck again as one valid JSON object only (no commentary, no code fences), in the exact format I gave you.' : 'Some cards in your JSON had problems. Please send the COMPLETE corrected deck again as one valid JSON object only (no commentary, no code fences), same format as before. Problems found:\n' + ((mkP && mkP.issues) || []).map(x => '- ' + x).join('\n'));
+$('#mkImport').onclick = () => {
+  if (!mkP || !mkP.cards.length) return; const tgt = $('#mkTarget').value; let d = tgt !== 'new' ? deckOf(tgt) : null;
+  if (d) { d.cards.push(...mkP.cards); d.cards = d.cards.slice(0, 1500); d.covered = mkP.covered || ''; }
+  else { const o = mkOpts(), kind = mkP.kind || mkKind; d = {id: uid(), title: mkP.title || (kind === 'role' ? (o.role || 'Role prep') : 'My resume'), kind, company: kind === 'role' ? (mkP.company || o.company) : '', role: kind === 'role' ? (mkP.role || o.role) : '', status: 'Preparing', date: '', notes: '', added: todayS(), covered: mkP.covered, logs: [], cards: mkP.cards}; S.decks.push(d); }
+  const n = mkP.cards.length; $('#mkIn').value = ''; $('#mkResume').value = ''; $('#mkJD').value = ''; mkP = null; touch(); curDeck = d.id; dFilter = {type: 'all', topic: 'all', n: 10, q: '', f: 'all', all: false}; setView('deck'); toast('Added ' + n + ' cards to “' + d.title + '”.');
+};
+
+/* ---------- deck view ---------- */
+function deckView() {
+  const d = deck(), s = deckStats(d), ts = topicStats(d), role = d.kind === 'role', recall = d.cards.filter(c => c.type === 'recall').length, nonrec = d.cards.filter(c => c.type !== 'recall').length, miss = d.cards.filter(isMiss).length;
+  if (dFilter.topic !== 'all' && !ts.some(t => t.topic === dFilter.topic)) dFilter.topic = 'all';
+  const types = [...new Set(d.cards.map(c => c.type))], hist = S.hist.filter(h => h.deck === d.id).slice(0, 6), ML = {drill: '🃏 Drill', mock: '🎤 Mock interview', recall: '🧠 Resume recall'};
+  const needs = d.cards.filter(c => c.conf.length).length;
+  $('#vDeck').innerHTML = `
+  <div class="crumb"><button class="btn-ghost sm" data-a="back">‹ All decks</button><input id="dtitle" maxlength="80" value="${esc(d.title)}" aria-label="Deck title"><span class="sp"></span>
+    <button class="btn-ghost sm" data-a="more">＋ Add cards with AI</button><button class="btn-ghost sm" data-a="share">⬇ Share deck (.json)</button><button class="btn-ghost sm dg" data-a="del">🗑 Delete</button></div>
+  ${role ? `<section class="card"><div class="form2" style="margin:0"><label>Company<input class="fld" id="dCompany" maxlength="80" value="${esc(d.company)}"></label><label>Job title<input class="fld" id="dRole" maxlength="80" value="${esc(d.role)}"></label>
+    <label>Status<select class="fld" id="dStatus">${STATUS.map(x => `<option${x === d.status ? ' selected' : ''}>${x}</option>`).join('')}</select></label><label>Interview date ${d.date ? '<b style="color:var(--accent-text)">· ' + countdown(d.date) + '</b>' : ''}<input class="fld" type="date" id="dDate" value="${esc(d.date)}"></label></div></section>` : ''}
+  <p class="hint" style="margin-top:-6px">${s.n} cards · ${s.ma} mastered · ${s.due} due${needs ? ` · <span style="color:var(--warn)">⚠ ${needs} need your details</span> <button class="lk" data-a="needs">Show them</button>` : ''}${d.covered && !/^all$/i.test(d.covered) ? ' · AI stopped at: ' + esc(d.covered) + ' <button class="lk" data-a="next">Continue from there →</button>' : ''}</p>
+  <div class="tools2"><label style="color:var(--muted);font-size:13px">Practice
+    <select class="fld" id="dType"><option value="all">All question types</option>${types.map(t => `<option value="${t}"${t === dFilter.type ? ' selected' : ''}>${TYPES[t]}</option>`).join('')}</select></label>
+    <select class="fld" id="dTopic" aria-label="Theme"><option value="all">All themes</option>${ts.map(t => `<option value="${esc(t.topic)}"${t.topic === dFilter.topic ? ' selected' : ''}>${esc(t.topic)} (${t.n})</option>`).join('')}</select>
+    <label style="color:var(--muted);font-size:13px">Per session <select class="fld" id="dCount">${[[5, '5'], [10, '10'], [20, '20'], [0, 'All']].map(([v, l]) => `<option value="${v}"${v === dFilter.n ? ' selected' : ''}>${l}</option>`).join('')}</select></label></div>
+  <div class="tiles">
+    <button class="tile" data-m="mock" ${nonrec >= 3 ? '' : 'disabled'}><span class="ti">🎤</span><b>Mock interview</b><small>${Math.min(S.set.mockN, nonrec)} questions${S.set.secs ? ' · ' + fmtT(S.set.secs) + ' each' : ''}</small><span class="cog" data-cfg title="Mock interview settings" role="button" aria-label="Mock interview settings">⚙</span></button>
+    <button class="tile" data-m="drill" ${s.n ? '' : 'disabled'}><span class="ti">🃏</span><b>Drill</b><small>${s.due} due · spaced repetition</small></button>
+    <button class="tile" data-m="recall" ${recall ? '' : 'disabled'}><span class="ti">🧠</span><b>Know my resume</b><small>${recall ? recall + ' fact cards' : 'No recall cards yet'}</small></button>
+    <button class="tile" data-m="miss" ${miss ? '' : 'disabled'}><span class="ti">🔁</span><b>Weak spots</b><small>${miss ? miss + ' to fix' : 'Nothing missed — nice'}</small></button>
+    <button class="tile" data-m="sheet" ${s.n ? '' : 'disabled'}><span class="ti">📄</span><b>Cheat sheet</b><small>One printable page</small></button>
+  </div>
+  <div class="g2">
+    <section class="card"><h3>By theme <small>self-rated so far</small></h3><div style="overflow-x:auto"><table class="t"><thead><tr><th>Theme</th><th class="hide-s">Cards</th><th>Went well</th><th></th></tr></thead><tbody>${ts.map(t => {
+      const tot = t.ok + t.bad, acc = tot ? Math.round(t.ok / tot * 100) : null, stt = acc === null ? '<span class="st n">not started</span>' : acc < 60 ? '<span class="st w">⚠ Needs work</span>' : acc < 85 ? '<span class="st m">◐ Getting there</span>' : '<span class="st g">✓ Strong</span>';
+      return `<tr><td>${esc(t.topic)}</td><td class="hide-s">${t.n}</td><td>${acc === null ? '—' : `<span class="abar"><i style="width:${acc}%"></i></span>${acc}%`} ${stt}</td><td><button class="lk" data-drill="${esc(t.topic)}">Drill</button></td></tr>`; }).join('')}</tbody></table></div></section>
+    <section class="card"><h3>Recent sessions</h3>${hist.length ? hist.map(h => `<div class="hrow"><span>${ML[h.mode]} <small style="color:var(--muted)">${shortD(dstr(new Date(h.t)))}</small></span><b>${h.ok}/${h.n} good${h.cov ? ' · ' + h.cov + '% points' : ''}</b></div>`).join('') : '<p class="nodata">No sessions yet.</p>'}</section>
+  </div>
+  ${role ? `<section class="card"><h3>Company &amp; role notes <small>what you learned about them</small></h3><textarea class="fld" id="dNotes" rows="4" maxlength="3000" placeholder="Mission, products, recent news, people you’re meeting, why you want this job…">${esc(d.notes)}</textarea></section>` : ''}
+  <section class="card"><h3>Interview log <small>after each real interview</small><button class="btn-ghost sm" data-a="logAdd">＋ Log an interview</button></h3>${d.logs.length ? d.logs.slice().sort((a, b) => b.date.localeCompare(a.date)).map(l => `<div class="log" data-log="${esc(l.id)}" tabindex="0" role="button"><div><b>${esc(l.stage)}</b> <small style="color:var(--muted)">${shortD(l.date)}</small>${l.notes ? `<div class="ml" style="color:var(--muted);font-size:13.5px">${esc(l.notes.slice(0, 160))}${l.notes.length > 160 ? '…' : ''}</div>` : ''}</div><span class="st ${l.added ? 'g' : 'n'}">${l.qs.length} question${l.qs.length === 1 ? '' : 's'}${l.qs.length ? (l.added ? ' · ✓ in your bank' : ' · not added') : ''}</span></div>`).join('') : '<p class="nodata">Log what they asked you — those real questions go straight into your practice bank.</p>'}</section>
+  <section class="card"><h3>All cards <small id="dcount"></small></h3>
+    <div class="tools2"><input class="fld" id="dq" placeholder="🔍  Search cards" aria-label="Search cards" value="${esc(dFilter.q)}"><select class="fld" id="df" aria-label="Filter cards"><option value="all">All cards</option><option value="conf"${dFilter.f === 'conf' ? ' selected' : ''}>⚠ Needs my details</option><option value="miss"${dFilter.f === 'miss' ? ' selected' : ''}>Missed last time</option><option value="fl"${dFilter.f === 'fl' ? ' selected' : ''}>🚩 Flagged</option><option value="new"${dFilter.f === 'new' ? ' selected' : ''}>Not started</option></select></div>
+    <div style="overflow-x:auto"><table class="t"><thead><tr><th>Question</th><th class="hide-s">Type</th><th class="hide-s">Level</th></tr></thead><tbody id="dlist"></tbody></table></div><div style="text-align:center;margin-top:10px"><button class="btn-ghost sm" id="dmore" hidden></button></div></section>`;
+  deckList();
+}
+function deckList() {
+  const d = deck(), q = dFilter.q.toLowerCase();
+  const f = d.cards.filter(c => (dFilter.f === 'all' || (dFilter.f === 'miss' ? isMiss(c) : dFilter.f === 'fl' ? c.fl : dFilter.f === 'conf' ? c.conf.length : !P(c.id))) && (!q || (c.q + ' ' + c.topic + ' ' + c.ans).toLowerCase().includes(q)));
+  $('#dcount').textContent = f.length + ' of ' + d.cards.length; const lim = dFilter.all ? f.length : 80;
+  $('#dlist').innerHTML = f.slice(0, lim).map(c => { const p = P(c.id), lv = !p ? '<span class="st n">new</span>' : p.box >= 4 ? '<span class="st g">✓ mastered</span>' : p.lw ? '<span class="st w">⚠ missed</span>' : '<span class="st m">learning</span>'; return `<tr class="row" data-c="${c.id}" tabindex="0"><td><span class="clip ml">${esc(c.q.split('\n')[0])}</span>${c.conf.length ? '<span class="fl" style="color:var(--warn)">⚠ confirm</span>' : ''}${c.fl ? '<span class="fl">🚩</span>' : ''}</td><td class="hide-s"><span class="tag">${esc(TYPES[c.type])}</span></td><td class="hide-s">${lv}</td></tr>`; }).join('') || '<tr><td colspan="3" class="nodata">No cards match.</td></tr>';
+  const mb = $('#dmore'); mb.hidden = f.length <= lim; mb.textContent = 'Show all ' + f.length;
+}
+$('#vDeck').addEventListener('input', e => { if (e.target.id === 'dq') { dFilter.q = e.target.value; dFilter.all = false; deckList(); } });
+$('#vDeck').addEventListener('change', e => {
+  const t = e.target, d = deck();
+  if (t.id === 'dType') dFilter.type = t.value; else if (t.id === 'dTopic') dFilter.topic = t.value; else if (t.id === 'dCount') dFilter.n = +t.value;
+  else if (t.id === 'df') { dFilter.f = t.value; dFilter.all = false; deckList(); }
+  else if (t.id === 'dtitle') { d.title = t.value.trim().slice(0, 80) || d.title; commit(); }
+  else if (t.id === 'dCompany') { d.company = t.value.trim().slice(0, 80); touch(); } else if (t.id === 'dRole') { d.role = t.value.trim().slice(0, 80); touch(); }
+  else if (t.id === 'dStatus') { d.status = t.value; commit(); } else if (t.id === 'dDate') { d.date = DATE_RE.test(t.value) ? t.value : ''; commit(); }
+  else if (t.id === 'dNotes') { d.notes = t.value.trim().slice(0, 3000); touch(); }
+});
+$('#vDeck').addEventListener('click', async e => {
+  const t = e.target;
+  if (t.id === 'dmore') { dFilter.all = true; return deckList(); }
+  const a = t.closest('[data-a]'); if (a) {
+    const d = deck(), k = a.dataset.a;
+    if (k === 'back') return setView('home');
+    if (k === 'more') { makeTarget = d.id; return openMake(); }
+    if (k === 'next') { makeTarget = d.id; return openMake('Continue right after: ' + d.covered); }
+    if (k === 'needs') { dFilter.f = 'conf'; $('#df').value = 'conf'; deckList(); return $('#dlist').scrollIntoView({behavior: 'smooth', block: 'center'}); }
+    if (k === 'logAdd') return editLog(null);
+    if (k === 'share') { const x = document.createElement('a'); x.href = URL.createObjectURL(new Blob([exportDeck(d)], {type: 'application/json'})); x.download = safeName(d.title) + '.json'; document.body.appendChild(x); x.click(); x.remove(); setTimeout(() => URL.revokeObjectURL(x.href), 4000); return toast('Deck file downloaded.'); }
+    if (k === 'del') { const r = await modal({title: 'Delete this deck?', text: '“' + d.title + '”, its interview log and your progress on its ' + d.cards.length + ' cards will be removed from this browser.', buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Delete deck', value: 'ok', primary: true}]}); if (r.value === 'ok') { d.cards.forEach(c => delete S.prog[c.id]); S.decks = S.decks.filter(x => x !== d); touch(); setView('home'); } return; }
+  }
+  if (t.closest('[data-cfg]')) { e.stopPropagation(); return mockSettings(); }
+  const m = t.closest('[data-m]'); if (m && !m.disabled) return m.dataset.m === 'sheet' ? setView('sheet') : startMode(m.dataset.m);
+  const dr = t.closest('[data-drill]'); if (dr) { dFilter.topic = dr.dataset.drill; dFilter.type = 'all'; return startMode('drill'); }
+  const lg = t.closest('[data-log]'); if (lg) return editLog(lg.dataset.log);
+  const c = t.closest('tr[data-c]'); if (c) editCard(c.dataset.c);
+});
+$('#vDeck').addEventListener('keydown', e => { if (e.key === 'Enter') { const r = e.target.closest('tr[data-c]'); if (r) return editCard(r.dataset.c); const l = e.target.closest('[data-log]'); if (l) editLog(l.dataset.log); } });
+async function mockSettings() {
+  const r = await modal({title: 'Mock interview settings', fields: [{id: 'n', label: 'Number of questions', type: 'number', value: S.set.mockN, min: 3, max: 60}, {id: 's', label: 'Target time per answer in seconds (0 = no timer)', type: 'number', value: S.set.secs, min: 0, max: 600}],
+    validate: v => !(+v.n >= 3 && +v.n <= 60) ? 'Questions: 3 to 60.' : !(+v.s >= 0 && +v.s <= 600) ? 'Seconds: 0 to 600.' : '', buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Save', value: 'ok', primary: true}]});
+  if (r.value === 'ok') { S.set.mockN = Math.round(+r.vals.n); S.set.secs = Math.round(+r.vals.s); commit(); }
+}
+async function editCard(id) {
+  const d = deck(), c = d.cards.find(x => x.id === id); if (!c) return;
+  const r = await modal({title: 'Edit card', wide: true, fields: [
+    {id: 'q', label: 'Question', type: 'textarea', rows: 2, value: c.q, max: 700, full: 1}, {id: 'type', label: 'Type', type: 'select', options: Object.entries(TYPES), value: c.type}, {id: 'topic', label: 'Theme (job / project / topic)', value: c.topic, max: 60},
+    {id: 'kp', label: 'Key points (one per line)', type: 'textarea', rows: 4, value: c.kp.join('\n'), max: 1600, full: 1}, {id: 'ans', label: 'Model answer', type: 'textarea', rows: 5, value: c.ans, max: 1500, full: 1},
+    {id: 's', label: 'STAR · Situation', value: c.star.s, max: 400}, {id: 't', label: 'Task', value: c.star.t, max: 400}, {id: 'a', label: 'Action', value: c.star.a, max: 500}, {id: 'r', label: 'Result', value: c.star.r, max: 400},
+    {id: 'fu', label: 'Likely follow-ups (one per line)', type: 'textarea', rows: 2, value: c.fu.join('\n'), max: 1000, full: 1}, {id: 'ref', label: 'Source', value: c.ref, max: 240, full: 1},
+    {id: 'conf', label: '⚠ Details to confirm (one per line) — delete the lines once you’ve filled them in and checked them', type: 'textarea', rows: 2, value: c.conf.join('\n'), max: 1600, full: 1},
+    {id: 'mine', label: 'Your own version (in your words)', type: 'textarea', rows: 4, value: c.mine, max: 2000, full: 1}, {id: 'fl', label: 'Flag as possibly wrong?', type: 'select', options: [['0', 'No'], ['1', 'Yes 🚩']], value: c.fl ? '1' : '0'}],
+    validate: v => !v.q.trim() ? 'The question can’t be empty.' : '', buttons: [{label: 'Delete', value: 'del', cls: 'danger'}, {label: 'Cancel', value: 'cancel'}, {label: 'Save', value: 'ok', primary: true}]});
+  if (r.value === 'del') { const idx = d.cards.indexOf(c), p = S.prog[c.id]; d.cards.splice(idx, 1); delete S.prog[c.id]; commit(); toast('Card deleted', 'Undo', () => { d.cards.splice(idx, 0, c); if (p) S.prog[c.id] = p; commit(); }); }
+  else if (r.value === 'ok') { const v = r.vals; Object.assign(c, {q: v.q.trim(), type: v.type, topic: v.topic.trim() || 'General', kp: lines(v.kp).slice(0, 8), ans: v.ans.trim(), star: {s: v.s.trim(), t: v.t.trim(), a: v.a.trim(), r: v.r.trim()}, fu: lines(v.fu).slice(0, 5), ref: v.ref.trim(), conf: lines(v.conf).slice(0, 8), mine: v.mine.trim(), fl: v.fl === '1'}); commit(); }
+}
+async function editLog(id) {
+  const d = deck(), l = id ? d.logs.find(x => x.id === id) : null;
+  const r = await modal({title: l ? 'Edit interview log' : 'Log an interview', wide: true, fields: [{id: 'date', label: 'Date', type: 'date', value: l ? l.date : todayS()}, {id: 'stage', label: 'Stage', type: 'select', options: STAGES.map(x => [x, x]), value: l ? l.stage : 'Phone screen'},
+    {id: 'notes', label: 'How it went / notes', type: 'textarea', rows: 3, value: l ? l.notes : '', max: 2000, full: 1}, {id: 'qs', label: 'Questions they asked (one per line)', type: 'textarea', rows: 5, value: l ? l.qs.join('\n') : '', max: 6000, full: 1}],
+    validate: v => !DATE_RE.test(v.date) ? 'Pick a date.' : '', buttons: (l ? [{label: 'Delete', value: 'del', cls: 'danger'}] : []).concat([{label: 'Cancel', value: 'cancel'}, {label: 'Save', value: 'ok', primary: true}])});
+  if (r.value === 'del') { d.logs = d.logs.filter(x => x !== l); return commit(); }
+  if (r.value !== 'ok') return;
+  const v = r.vals, o = {date: v.date, stage: v.stage, notes: v.notes.trim(), qs: lines(v.qs).slice(0, 40).map(x => x.slice(0, 300))}; let e = l; if (l) Object.assign(l, o); else { e = {id: uid(), added: false, ...o}; d.logs.push(e); }
+  commit();
+  if (e.qs.length && !e.added) { const ask = await modal({title: 'Add these questions to your practice bank?', text: e.qs.length + ' real question' + (e.qs.length > 1 ? 's' : '') + ' from this interview. They’ll appear as cards you can write your own answers for (or ask the AI to draft answers).', buttons: [{label: 'Not now', value: 'cancel'}, {label: 'Add to bank', value: 'ok', primary: true}]}); if (ask.value === 'ok') addLogQs(d, e); }
+}
+function addLogQs(d, e) {
+  const have = new Set(d.cards.map(c => norm(c.q))); let n = 0;
+  e.qs.forEach(q => { if (have.has(norm(q))) return; have.add(norm(q)); const type = /time when|tell me about a time|describe a time|give (me )?an example/i.test(q) ? 'behavioral' : /how would you|what would you do|what if/i.test(q) ? 'situational' : /tell me about yourself|why (do you want|this)|where do you see/i.test(q) ? 'intro' : 'behavioral'; d.cards.push(cleanCard({q, type, topic: 'Real interview · ' + e.stage, diff: 3})); n++; });
+  e.added = true; commit(); toast(n + ' question' + (n === 1 ? '' : 's') + ' added to your bank. Open one to write your answer.');
+}
+
+/* ---------- sessions ---------- */
+const cur = () => sess.cards[sess.i];
+function startMode(m) {
+  const d = deck(), n = dFilter.n || Infinity; let cards = d.cards.filter(c => (dFilter.type === 'all' || c.type === dFilter.type) && (dFilter.topic === 'all' || c.topic === dFilter.topic));
+  const dueQ = list => list.filter(isDue).sort((a, b) => (P(a.id) ? 0 : 1) - (P(b.id) ? 0 : 1) || ((P(a.id) || {}).due || '').localeCompare((P(b.id) || {}).due || '')).slice(0, n);
+  if (m === 'recall') { cards = d.cards.filter(c => c.type === 'recall'); let q = dueQ(cards); if (!q.length) { q = shuffle(cards.slice()).slice(0, n); if (q.length) toast('Nothing due right now — practicing a random mix.'); } return q.length ? begin('recall', d, q) : toast('No recall cards yet.', null, null, true); }
+  if (m === 'drill') { let q = dueQ(cards); if (!q.length) { q = shuffle(cards.slice()).slice(0, n); if (q.length) toast('Nothing due right now — practicing a random mix.'); } return q.length ? begin('drill', d, q) : toast('No cards in this selection.', null, null, true); }
+  if (m === 'miss') { const q = shuffle(cards.filter(isMiss)).slice(0, n); return q.length ? begin('drill', d, q, 'Weak spots') : toast('No weak spots in this selection.'); }
+  if (m === 'mock') { const pool = shuffle(d.cards.filter(c => c.type !== 'recall')), intro = pool.filter(c => c.type === 'intro').slice(0, 1), rest = pool.filter(c => !intro.includes(c)); return begin('mock', d, intro.concat(rest).slice(0, S.set.mockN)); }
+}
+function begin(mode, d, cards, label) {
+  if (sess) clearInterval(sess.timer);
+  sess = {mode, d: d.id, title: d.title, label: label || '', cards: cards.slice(), i: 0, res: {}, again: {}, revealed: false, ticks: [], qStart: Date.now(), t0: Date.now(), done: false, timer: setInterval(tick, 1000), restart: () => begin(mode, d, mode === 'mock' ? shuffle(d.cards.filter(c => c.type !== 'recall')).slice(0, S.set.mockN) : shuffle(cards.slice()), label)};
+  sess.ticks = cur().kp.map(() => false); view = 'sess'; render(); renderQ(); window.scrollTo(0, 0);
+}
+function tick() { if (!sess || sess.done || sess.revealed) return; const el = $('#tm'); if (!el) return; const s = Math.floor((Date.now() - sess.qStart) / 1000), tg = S.set.secs; el.textContent = '⏱ ' + fmtT(s) + (tg ? ' / ' + fmtT(tg) : ''); el.classList.toggle('low', !!tg && s > tg); }
+const suggest = () => { const c = cur(), k = c.kp.length; if (!k) return 0; const cov = sess.ticks.filter(Boolean).length / k; return cov >= .8 ? 3 : cov >= .4 ? 2 : 1; };
+function renderQ() {
+  const s = sess, c = cur(), hasKp = c.kp.length > 0;
+  let h = `<div class="sess"><div class="stop"><button class="btn-ghost sm" data-s="exit">✕ Exit</button><div class="prog" role="progressbar" aria-valuenow="${s.i}" aria-valuemax="${s.cards.length}"><i style="width:${s.i / s.cards.length * 100}%"></i></div><span class="cnt">${s.i + 1} / ${s.cards.length}</span>${S.set.secs && c.type !== 'recall' && !s.revealed ? '<span class="timer" id="tm"></span>' : ''}</div>`;
+  h += `<div class="qcard"><div><span class="tag">${esc(TYPES[c.type])}</span> <span class="tag">${esc(c.topic)}</span>${s.label ? ' <span class="tag">' + esc(s.label) + '</span>' : ''}</div><p class="qtext ml" ${!s.revealed ? 'data-s="reveal" style="cursor:pointer"' : ''}>${esc(c.q)}</p>`;
+  if (!s.revealed) h += `<p class="hint" style="text-align:center;margin:26px 0 8px">${c.type === 'recall' ? 'Think of the answer, then' : 'Say your answer out loud, then'} press <b>Space</b> or tap the button</p><div class="actions" style="justify-content:center"><button class="btn-main" data-s="reveal">Show ${c.type === 'recall' ? 'answer' : 'model answer'}</button></div></div>`;
+  else {
+    h += '<div class="back">';
+    if (c.conf.length) h += `<div class="warnbox">⚠ <b>Confirm before you use this:</b><ul>${c.conf.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+    if (c.type === 'recall') h += `<div class="ans ml">${esc(c.ans)}</div>`;
+    else {
+      if (hasKp) h += `<div class="kph">Key points — tick the ones you covered</div><div class="kp">${c.kp.map((k, i) => `<label class="kpi2"><input type="checkbox" data-s="tick" data-i="${i}" ${s.ticks[i] ? 'checked' : ''}><span>${esc(k)}</span></label>`).join('')}</div>`;
+      if (c.ans) h += `<div class="kph">Model answer</div><p class="ml mans">${esc(c.ans)}</p>`;
+      else if (!hasKp) h += '<p class="hint">No model answer yet — write your own below, or ask your AI to draft one.</p>';
+      const st = c.star; if (st.s || st.t || st.a || st.r) h += `<details class="star"><summary>STAR breakdown</summary>${[['Situation', st.s], ['Task', st.t], ['Action', st.a], ['Result', st.r]].filter(x => x[1]).map(([k, v]) => `<p><b>${k}:</b> <span class="ml">${esc(v)}</span></p>`).join('')}</details>`;
+      if (c.fu.length) h += `<details class="star"><summary>Likely follow-ups</summary><ul>${c.fu.map(x => `<li>${esc(x)}</li>`).join('')}</ul></details>`;
+      h += `<div class="kph">Your version <small style="color:var(--muted);font-weight:400">(saved on this card)</small></div><textarea class="fld" id="mine" rows="3" maxlength="2000" placeholder="Rewrite it in your own words…">${esc(c.mine)}</textarea>`;
+    }
+    if (c.ref) h += `<p class="src">Source: ${esc(c.ref)}</p>`;
+    h += `<button class="lk" data-s="flag">${c.fl ? '🚩 Flagged — tap to unflag' : '🚩 This looks wrong'}</button></div></div>`;
+    const sg = suggest();
+    h += `<div class="rate" id="rate">${[[1, '✕ Again'], [2, 'Hard'], [3, 'Good'], [4, 'Easy']].map(([k, l]) => `<button data-s="rate" data-r="${k}" class="${sg === k ? 'sug' : ''}">${l}<small>${nextHint(c, k)} · key ${k}</small></button>`).join('')}</div><p class="hint" style="text-align:center">How did that go? ${hasKp ? 'Your ticks suggest the highlighted one.' : ''}</p>`;
+  }
+  $('#vSess').innerHTML = h + '</div>'; tick();
+}
+function reveal() { if (!sess.revealed) { sess.revealed = true; sess.secs = Math.floor((Date.now() - sess.qStart) / 1000); renderQ(); } }
+function rate(r) {
+  const c = cur(), s = sess; if (!s.revealed) return; const mine = $('#mine'); if (mine) c.mine = mine.value.trim().slice(0, 2000);
+  const cov = c.kp.length ? Math.round(s.ticks.filter(Boolean).length / c.kp.length * 100) : null; grade(c, r);
+  if (!s.res[c.id]) s.res[c.id] = {r, secs: s.secs || 0, cov};
+  if (r === 1 && (s.again[c.id] || 0) < 1 && s.mode !== 'mock') { s.again[c.id] = 1; s.cards.push(c); }
+  advance();
+}
+function advance() { if (sess.i >= sess.cards.length - 1) return finish(); sess.i++; sess.revealed = false; sess.qStart = Date.now(); sess.ticks = cur().kp.map(() => false); renderQ(); window.scrollTo(0, 0); }
+function finish() {
+  const s = sess; if (!s || s.done) return; s.done = true; clearInterval(s.timer);
+  const uniq = [...new Map(s.cards.map(c => [c.id, c])).values()].filter(c => s.res[c.id]), good = uniq.filter(c => s.res[c.id].r >= 3).length, covs = uniq.map(c => s.res[c.id].cov).filter(x => x != null), cov = covs.length ? Math.round(covs.reduce((a, b) => a + b, 0) / covs.length) : 0, secs = Math.round((Date.now() - s.t0) / 1000);
+  s.R = {n: uniq.length, good, cov, secs, uniq, avg: uniq.length ? Math.round(uniq.reduce((a, c) => a + (s.res[c.id].secs || 0), 0) / uniq.length) : 0};
+  S.hist.unshift({t: Date.now(), deck: s.d, title: s.title, mode: s.mode, n: uniq.length, ok: good, secs, cov}); S.hist = S.hist.slice(0, 300); touch(); renderResults();
+}
+function renderResults() {
+  const s = sess, R = s.R, pct = R.n ? Math.round(R.good / R.n * 100) : 0, C = 2 * Math.PI * 60, weak = R.uniq.filter(c => s.res[c.id].r <= 2), ML = {drill: 'Drill', mock: 'Mock interview', recall: 'Resume recall'};
+  let h = `<div class="sess"><div class="stop"><button class="btn-ghost sm" data-s="back">‹ Back to deck</button></div><section class="card"><h3>${s.label || ML[s.mode]} · results</h3>
+  <div class="resh"><svg class="ring" viewBox="0 0 150 150" role="img" aria-label="${pct} percent went well"><circle cx="75" cy="75" r="60" fill="none" stroke="#241a38" stroke-width="14"/><circle cx="75" cy="75" r="60" fill="none" stroke="var(--accent)" stroke-width="14" stroke-linecap="round" stroke-dasharray="${C * pct / 100} ${C}" transform="rotate(-90 75 75)"/><text x="75" y="84" text-anchor="middle" font-size="30">${pct}%</text></svg>
+  <div><div style="font-size:20px;font-weight:700">${R.good} of ${R.n} answers went well</div><div style="color:var(--muted);margin:4px 0 10px">${R.cov ? 'Key points covered: ' + R.cov + '% · ' : ''}${R.avg && s.mode !== 'recall' ? 'Avg. time per answer: ' + fmtT(R.avg) + ' · ' : ''}Total: ${fmtT(R.secs)}</div>${pct >= 80 ? '<span class="badge p">✓ Interview-ready on these</span>' : '<span class="badge f">◐ Keep practicing — repetition builds confidence</span>'}</div></div>
+  <div style="overflow-x:auto"><table class="t"><thead><tr><th>Question</th><th class="hide-s">Points</th><th>Result</th></tr></thead><tbody>${R.uniq.map(c => { const r = s.res[c.id]; return `<tr><td><span class="clip ml">${esc(c.q)}</span></td><td class="hide-s">${r.cov == null ? '—' : r.cov + '%'}</td><td>${r.r >= 3 ? '<span class="st g">✓ Good</span>' : r.r === 2 ? '<span class="st m">◐ Hard</span>' : '<span class="st w">✕ Again</span>'}</td></tr>`; }).join('')}</tbody></table></div>
+  <div class="actions"><span></span><span style="display:flex;gap:10px;flex-wrap:wrap">${weak.length ? '<button class="btn-main" data-s="weak">Practice the ' + weak.length + ' weaker ones</button>' : ''}<button class="btn-ghost" data-s="retry">${s.mode === 'mock' ? 'Another mock with new questions' : 'Go again'}</button></span></div></section>`;
+  if (weak.length) h += '<section class="card"><h3>Review the weaker answers <small>' + weak.length + '</small></h3>' + weak.map(c => `<details class="miss"><summary class="ml">${esc(c.q)}</summary>${c.kp.length ? `<p><b>Key points:</b></p><ul>${c.kp.map(k => `<li>${esc(k)}</li>`).join('')}</ul>` : ''}${c.ans ? `<p class="ml"><b>Model answer:</b> ${esc(c.ans)}</p>` : ''}</details>`).join('') + '</section>';
+  $('#vSess').innerHTML = h + '</div>'; window.scrollTo(0, 0);
+}
+async function exitSess() { const s = sess; if (!s) return setView('deck'); clearInterval(s.timer); s.done = true; curDeck = s.d; setView(deckOf(s.d) ? 'deck' : 'home'); }
+$('#vSess').addEventListener('click', e => {
+  const b = e.target.closest('[data-s]'); if (!b || !sess) return; const a = b.dataset.s;
+  if (a === 'tick') { return; }
+  if (a === 'exit') return exitSess();
+  if (a === 'back') { clearInterval(sess.timer); curDeck = sess.d; return setView(deckOf(sess.d) ? 'deck' : 'home'); }
+  if (a === 'reveal') return reveal();
+  if (a === 'rate') return rate(+b.dataset.r);
+  if (a === 'flag') { const c = cur(); c.fl = !c.fl; touch(); const mine = $('#mine'), v = mine ? mine.value : ''; renderQ(); if ($('#mine')) $('#mine').value = v; return toast(c.fl ? 'Flagged — fix or remove it from the deck later.' : 'Flag removed.'); }
+  if (a === 'retry') return sess.restart();
+  if (a === 'weak') { const d = deckOf(sess.d); return begin('drill', d, shuffle(sess.R.uniq.filter(c => sess.res[c.id].r <= 2)), 'Weaker answers'); }
+});
+$('#vSess').addEventListener('change', e => {
+  const t = e.target; if (t.dataset.s === 'tick') { sess.ticks[+t.dataset.i] = t.checked; const sg = suggest(); $$('#rate button').forEach(x => x.classList.toggle('sug', +x.dataset.r === sg)); }
+  else if (t.id === 'mine' && sess) { cur().mine = t.value.trim().slice(0, 2000); touch(); }
+});
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); return doSave(); }
+  if (view !== 'sess' || !sess || sess.done || $('#dlg').open || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+  if (e.key === 'Escape') return exitSess();
+  if (!sess.revealed) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); reveal(); } return; }
+  if ('1234'.includes(e.key) && e.key.length === 1) rate(+e.key);
+});
+
+/* ---------- cheat sheet ---------- */
+function sheet() {
+  const d = deck(), by = t => d.cards.filter(c => c.type === t), intro = d.cards.find(c => c.type === 'intro' && /yourself|introduce/i.test(c.q)) || by('intro')[0];
+  const stories = d.cards.filter(c => (c.type === 'resume' || c.type === 'behavioral') && (c.kp.length || c.star.a)).slice(0, 8);
+  const sec = (t, inner) => inner ? `<section class="sh"><h2>${t}</h2>${inner}</section>` : '';
+  $('#vSheet').innerHTML = `<div class="noprint stop"><button class="btn-ghost sm" data-a="back">‹ Back to deck</button><span class="sp"></span><button class="btn-main" data-a="print">🖨 Print / Save as PDF</button></div>
+  <article class="sheet"><h1>${esc(d.title)}</h1><p class="shm">${[d.role, d.company].filter(Boolean).map(esc).join(' · ')}${d.date ? ' · Interview ' + shortD(d.date) : ''}</p>
+  ${sec('My intro', intro ? `<p class="ml"><b>${esc(intro.q)}</b><br>${esc(intro.mine || intro.ans)}</p>` : '')}
+  ${sec('Key stories', stories.map(c => `<div class="st1"><b class="ml">${esc(c.q)}</b>${c.star.s || c.star.a ? `<div><b>S</b> ${esc(c.star.s)} <b>T</b> ${esc(c.star.t)} <b>A</b> ${esc(c.star.a)} <b>R</b> ${esc(c.star.r)}</div>` : `<ul>${c.kp.slice(0, 4).map(k => `<li>${esc(k)}</li>`).join('')}</ul>`}</div>`).join(''))}
+  ${sec('Facts &amp; numbers', by('recall').length ? `<table class="shT">${by('recall').slice(0, 30).map(c => `<tr><td>${esc(c.q)}</td><td>${esc(c.ans)}</td></tr>`).join('')}</table>` : '')}
+  ${sec('Watch-outs (be ready)', by('gap').slice(0, 6).map(c => `<div class="st1"><b>${esc(c.q)}</b><div>${esc((c.kp[0] || c.ans || '').slice(0, 200))}</div></div>`).join(''))}
+  ${sec('Questions to ask them', by('ask').length ? `<ul>${by('ask').slice(0, 8).map(c => `<li>${esc(c.q)}</li>`).join('')}</ul>` : '')}
+  ${sec('Notes', d.notes ? `<p class="ml">${esc(d.notes)}</p>` : '')}</article>`;
+}
+$('#vSheet').addEventListener('click', e => { const a = e.target.closest('[data-a]'); if (!a) return; if (a.dataset.a === 'back') setView('deck'); else if (a.dataset.a === 'print') window.print(); });
+
+/* ---------- top bar ---------- */
+$('#hname').addEventListener('change', e => { S.name = e.target.value.trim().slice(0, 60) || 'My Interview Prep'; commit(); });
+const tip = $('#tip');
+document.addEventListener('mouseover', e => { const t = e.target.closest('[data-tip]'); if (!t) { tip.hidden = true; return; } const [a, b] = t.dataset.tip.split('|'); tip.innerHTML = `<b>${esc(a)}</b>${esc(b)}`; tip.hidden = false; });
+document.addEventListener('mousemove', e => { tip.style.left = e.clientX + 'px'; tip.style.top = e.clientY + 'px'; });
+
+function backupData() { const {name, decks, prog, hist, days, set} = S; return {name, decks, prog, hist, days, set}; }
+async function doSave() {
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  if (!needCrypto()) return; if (!S.decks.length) return toast('Nothing to back up yet.', null, null, true);
+  if (!sessionPw) { const pw = await askPassword(true); if (!pw) return; sessionPw = pw; }
+  const date = todayS(), n = S.exp.date === date ? S.exp.n + 1 : 1;
+  let text; try { text = await encrypt({app: 'cuech4-interview', v: 1, ...backupData(), exportedAt: new Date().toISOString(), date, version: n}, sessionPw); } catch (e) { return toast('Couldn’t encrypt the backup in this browser.', null, null, true); }
+  const fname = safeName(S.name) + '_' + date + (n > 1 ? '_v' + n : '') + '.txt';
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type: 'text/plain'})); a.download = fname; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  S.exp = {date, n}; S.dirty = false; S.lastBackup = date; saveNow(); chip(); toast('Backup downloaded: ' + fname);
+}
+async function openFile(file) {
+  if (!file) return; const text = await file.text(); let obj; try { obj = JSON.parse(text); } catch (e) {}
+  if (obj && obj.app === 'cuech4-interview' && obj.salt && obj.iv && obj.data) return openBackup(obj);
+  if (view !== 'make') { makeTarget = ''; openMake(); }
+  $('#mkIn').value = text; mkParse();
+  if (!mkP || !mkP.cards.length) toast('That file doesn’t look like a deck or a backup.', null, null, true);
+}
+async function openBackup(obj) {
+  if (!needCrypto()) return;
+  let err = '', data = null, pw = null;
+  while (!data) { pw = await askPassword(false, err); if (!pw) return; try { data = await decrypt(obj, pw); } catch (e) { err = 'Wrong password, or the file was changed.'; } }
+  const inc = clean(data); if (!inc || !inc.decks.length) return toast('The backup opened but has no decks in it.', null, null, true);
+  const nc = inc.decks.reduce((a, d) => a + d.cards.length, 0); let mode = 'replace';
+  if (S.decks.length) { const r = await modal({title: 'Open this backup', text: `It has ${inc.decks.length} deck${inc.decks.length > 1 ? 's' : ''} and ${nc} cards. Merge adds anything missing to what you have now (nothing is overwritten). Replace swaps your current interview prep for the backup.`, buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Replace', value: 'replace'}, {label: 'Merge', value: 'merge', primary: true}]}); if (r.value === 'cancel') return; mode = r.value; }
+  if (mode === 'replace') S = {...inc, exp: {date: String(data.date || ''), n: Number.isFinite(data.version) ? data.version : 0}, dirty: false, lastBackup: DATE_RE.test(data.date) ? data.date : ''};
+  else {
+    for (const d of inc.decks) { const m = S.decks.find(x => x.id === d.id); if (!m) S.decks.push(d); else { const ids = new Set(m.cards.map(c => c.id)); d.cards.forEach(c => { if (!ids.has(c.id)) m.cards.push(c); }); } }
+    for (const [k, p] of Object.entries(inc.prog)) { const e = S.prog[k]; if (!e || p.last > e.last) S.prog[k] = p; }
+    for (const [k, v] of Object.entries(inc.days)) S.days[k] = Math.max(S.days[k] || 0, v);
+    const hk = new Set(S.hist.map(h => h.t + h.deck)); inc.hist.forEach(h => { if (!hk.has(h.t + h.deck)) S.hist.push(h); }); S.hist = S.hist.sort((a, b) => b.t - a.t).slice(0, 300); S.dirty = true;
+  }
+  sessionPw = pw; curDeck = null; saveNow(); setView('home'); toast(mode === 'merge' ? 'Merged the backup into your interview prep' : 'Opened ' + S.name);
+}
+$('#btnSave').onclick = doSave; $('#btnOpen').onclick = () => $('#file').click();
+$('#file').onchange = e => { const f = e.target.files[0]; e.target.value = ''; openFile(f); };
+$('#btnPw').onclick = async () => { if (!needCrypto()) return; const pw = await askPassword(true); if (pw) { sessionPw = pw; chip(); toast('Password set. Your next backup will use it.'); } };
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => { e.preventDefault(); const f = e.dataTransfer && e.dataTransfer.files[0]; if (f && /\.(txt|json)$/i.test(f.name)) openFile(f); });
+$('#newBtn').onclick = async () => {
+  if (S.decks.length) {
+    const btns = S.dirty ? [{label: 'Cancel', value: 'cancel'}, {label: 'Discard & start new', value: 'discard'}, {label: 'Backup first', value: 'save', primary: true}] : [{label: 'Cancel', value: 'cancel'}, {label: 'Start new', value: 'discard', primary: true}];
+    const r = await modal({title: 'Start a new interview prep?', text: S.dirty ? 'You have changes that aren’t in a backup yet. Starting new clears this browser’s copy.' : 'Your latest backup has everything. Starting new clears this browser’s copy.', buttons: btns});
+    if (r.value === 'cancel') return; if (r.value === 'save') { await doSave(); if (S.dirty) return; }
+  }
+  clearInterval(sess && sess.timer); S = fresh(); sessionPw = null; curDeck = null; sess = null; saveNow(); setView('home');
+};
+
+/* ---------- boot ---------- */
+(async () => {
+  const st = await store.load(); const c = clean(st); if (c && st) S = c;
+  render(); window.__iv = {get S() { return S; }, get sess() { return sess; }, ready: true, parseDeck, genPrompt, SAMPLE, cleanCard};
+})();
+})();
+</script>
+</body>
+</html>
