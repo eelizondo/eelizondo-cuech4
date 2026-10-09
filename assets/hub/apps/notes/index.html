@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Notes — Cuech4 Hub</title>
+<link rel="icon" type="image/svg+xml" href="assets/notes-icon.svg">
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  header.app { display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,.08); background: rgba(16,15,13,.7); backdrop-filter: blur(6px); flex: none; }
+  .title { font-size: 20px; font-weight: 700; background: linear-gradient(90deg, var(--accent-2), #ffb86b 70%); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0; }
+  .hub-breadcrumb { color: var(--muted); font-size: 13px; text-decoration: none; }
+  .hub-breadcrumb:hover { color: var(--accent-text); }
+  button { font-family: inherit; }
+  .btn-ghost { background: rgba(30,27,23,.85); border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+  .btn-ghost:hover { border-color: var(--accent-2); }
+  .btn-main { background: linear-gradient(180deg, #ffd666, #e0a100); border: 0; color: #261b00; font-weight: 700; font-size: 14px; padding: 9px 18px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 22px rgba(245,197,66,.25); }
+  .btn-main:hover { filter: brightness(1.07); } .btn-main:disabled { opacity: .5; cursor: not-allowed; }
+  .sm { padding: 6px 12px !important; font-size: 13px !important; }
+  .ibtn { background: none; border: 0; color: var(--muted); cursor: pointer; width: 30px; height: 30px; border-radius: 8px; font-size: 15px; display: inline-grid; place-items: center; flex: none; }
+  .ibtn:hover { background: rgba(255,255,255,.1); color: var(--text); } .ibtn.on { color: #f5cd47; }
+  .lk { background: none; border: 0; color: var(--accent-2); cursor: pointer; font-size: 13px; padding: 0; } .lk:hover { text-decoration: underline; }
+  .top .sp, .sp { flex: 1; }
+  #hname { font: 700 18px/1.2 inherit; font-family: inherit; color: var(--text); background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 6px 10px; min-width: 200px; }
+  #hname:hover { border-color: var(--line); } #hname:focus { outline: none; border-color: var(--accent-2); background: #100f0d; }
+  .chip { font-size: 12.5px; font-weight: 600; border-radius: 999px; padding: 4px 12px; border: 1px solid rgba(75,206,151,.3); color: var(--good); background: rgba(75,206,151,.08); white-space: nowrap; }
+  .chip.dirty { color: #fbbf24; border-color: rgba(251,191,36,.35); background: rgba(251,191,36,.08); }
+  .chip.idle { color: var(--muted); border-color: var(--line); background: transparent; }
+  .fld, select.fld { background: #121110; color: var(--text); border: 1px solid var(--line); border-radius: 8px; height: 36px; padding: 0 10px; font: 14px inherit; font-family: inherit; }
+  textarea.fld { height: auto; padding: 8px 10px; resize: vertical; line-height: 1.4; width: 100%; }
+  .fld:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(245,197,66,.2); }
+  .nodata { color: var(--muted); font-size: 14px; padding: 14px 6px; text-align: center; }
+  .pop { position: fixed; z-index: 70; width: 300px; max-width: calc(100vw - 16px); background: #25221d; border: 1px solid #4a443a; border-radius: 12px; box-shadow: 0 16px 50px rgba(0,0,0,.55); max-height: 80vh; overflow: auto; }
+  .pop .ph { display: flex; align-items: center; justify-content: center; padding: 10px 40px 4px; position: relative; font-size: 13.5px; color: var(--muted); } .pop .ph .ibtn { position: absolute; right: 6px; top: 6px; }
+  .pop .pb { padding: 8px 14px 14px; font-size: 14px; } .pop label.f { display: block; font-size: 12px; color: var(--muted); font-weight: 600; margin: 8px 0 4px; } .pop .fld { width: 100%; }
+  .pop .mi { display: block; width: 100%; text-align: left; background: none; border: 0; color: var(--text); padding: 8px 8px; border-radius: 8px; font-size: 14px; cursor: pointer; } .pop .mi:hover { background: rgba(255,255,255,.1); } .pop .mi.dg { color: #fca5a5; }
+  .pop .lrow { display: flex; align-items: center; gap: 8px; margin: 4px 0; cursor: pointer; } .pop .lrow input { accent-color: var(--accent); width: 16px; height: 16px; } .pop .lrow .lb { flex: 1; }
+  .pop .row2 { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .swatch { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 6px 0; } .swatch button { height: 32px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; } .swatch button.on { border-color: #fff; }
+  #toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: #25221d; border: 1px solid var(--line); color: var(--text); padding: 10px 16px; border-radius: 12px; font-size: 14px; display: flex; gap: 14px; align-items: center; z-index: 95; box-shadow: 0 10px 40px rgba(0,0,0,.5); max-width: 92vw; }
+  #toast.err { border-color: rgba(248,113,113,.5); } #toast button { background: transparent; border: 0; color: var(--accent-2); font-weight: 600; cursor: pointer; font-size: 14px; }
+  dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 16px; padding: 0; width: min(460px, 94vw); max-height: 92vh; }
+  dialog.wide { width: min(700px, 96vw); } dialog::backdrop { background: rgba(0,0,0,.65); }
+  .dh { font-size: 17px; font-weight: 700; padding: 18px 22px 4px; } .db { padding: 6px 22px 4px; font-size: 14px; color: var(--muted); max-height: 62vh; overflow: auto; } .db p { margin: 6px 0 10px; }
+  .db label { display: block; font-size: 13px; color: var(--text); margin: 10px 0 0; }
+  .db input, .db select { display: block; width: 100%; margin-top: 6px; height: 40px; background: #100f0d; border: 1px solid var(--line); border-radius: 10px; color: var(--text); padding: 0 12px; font: 15px inherit; font-family: inherit; }
+  .db input:focus, .db select:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(245,197,66,.2); }
+  .derr { color: #f87171; min-height: 18px; font-size: 13px; }
+  .df { display: flex; justify-content: flex-end; gap: 10px; padding: 8px 22px 18px; flex-wrap: wrap; } .df .btn-main { padding: 9px 18px; } .df .danger { color: #fca5a5; border-color: rgba(248,113,113,.4); margin-right: auto; }
+  .arow { display: flex; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px solid #2e2a23; color: var(--text); } .arow span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .arow small { color: var(--muted); }
+  .note { color: var(--muted); font-size: 12.5px; text-align: center; margin-top: 18px; }
+  :root { color-scheme: dark; --bg:#141311; --panel:#1c1a17; --panel-2:#161513; --line:#332f28; --card:#26231f; --card-h:#2f2b26; --text:#efeae0; --muted:#a29a8a; --accent:#f5c542; --accent-2:#ffd666; --accent-text:#ffe7a0; --dim:rgba(245,197,66,.14); --good:#4bce97; --bad:#f87168; }
+  body { margin: 0; background: radial-gradient(1100px 520px at 70% -10%, #3a2e0e 0%, var(--bg) 60%) fixed; color: var(--text); font-family: Inter, system-ui, -apple-system, sans-serif; line-height: 1.4; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+  .title { background: linear-gradient(90deg, var(--accent-2), #ffb86b 70%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 16px; flex: none; }
+  .btn-main { background: linear-gradient(180deg, #ffd666, #e0a100); color: #261b00; box-shadow: 0 6px 22px rgba(245,197,66,.2); }
+  #app { flex: 1; min-height: 0; display: grid; grid-template-columns: 230px 330px 1fr; margin: 0 16px 16px; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: var(--panel-2); }
+  #app > * { min-height: 0; min-width: 0; display: flex; flex-direction: column; }
+  #pF { background: #171512; border-right: 1px solid var(--line); padding: 12px 10px; overflow-y: auto; }
+  #pL { border-right: 1px solid var(--line); background: var(--panel); }
+  .fh { display: flex; align-items: center; justify-content: space-between; padding: 2px 8px 8px; font-weight: 700; font-size: 15px; }
+  .fi { display: flex; align-items: center; gap: 6px; width: 100%; background: none; border: 0; color: var(--text); padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 14.5px; text-align: left; }
+  .fi:hover { background: rgba(255,255,255,.06); } .fi.on { background: var(--dim); color: var(--accent-2); }
+  .fi .fn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .fi i { font-style: normal; color: var(--muted); font-size: 13px; }
+  .fi .fm { opacity: 0; width: 24px; height: 24px; font-size: 13px; } .fi:hover .fm, .fi .fm:focus { opacity: 1; }
+  .fgap { height: 10px; } .fsec { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; padding: 8px 10px 4px; font-weight: 600; }
+  .lh2 { display: flex; align-items: center; gap: 4px; padding: 12px 12px 4px 16px; }
+  .lh2 h2 { margin: 0; font-size: 17px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .lh2 small { display: block; color: var(--muted); font-size: 12.5px; font-weight: 400; }
+  .ibtn.ac { color: var(--accent-2); } .ibtn.ac:hover { background: var(--dim); }
+  .sr { margin: 6px 12px 8px; display: block; } .sr input { width: 100%; height: 36px; padding: 0 12px; border-radius: 10px; background: #100f0d; border: 1px solid var(--line); color: var(--text); font: 14px system-ui; font-family: inherit; } .sr input:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(245,197,66,.18); }
+  .nl { flex: 1; overflow-y: auto; padding: 0 0 10px; }
+  .sec { font-weight: 700; font-size: 13.5px; padding: 12px 18px 5px; color: var(--text); }
+  .ni { margin: 2px 8px; padding: 9px 12px; border-radius: 10px; cursor: pointer; border: 0; display: block; width: calc(100% - 16px); text-align: left; background: none; color: var(--text); font-family: inherit; }
+  .ni:hover { background: rgba(255,255,255,.06); } .ni.on { background: var(--accent); color: #261b00; } .ni:focus-visible { outline: 2px solid var(--accent-2); }
+  .ni .nt { font-weight: 700; font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ni .ns { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; } .ni .ns b { font-weight: 500; color: var(--text); margin-right: 6px; }
+  .ni .nf { font-size: 12.5px; color: var(--muted); margin-top: 2px; } .ni.on .ns, .ni.on .nf, .ni.on .ns b { color: rgba(38,27,0,.78); }
+  .ni mark { background: rgba(245,197,66,.4); color: inherit; border-radius: 3px; }
+  .eh { display: flex; align-items: center; gap: 2px; padding: 8px 12px; flex: none; }
+  .back { display: none !important; }
+  .tb { display: flex; align-items: center; gap: 2px; padding: 4px 12px 8px; border-bottom: 1px solid var(--line); overflow-x: auto; flex: none; scrollbar-width: thin; }
+  .tbn { flex: none; min-width: 34px; height: 32px; padding: 0 8px; border-radius: 8px; background: none; border: 0; color: var(--text); cursor: pointer; font-size: 14.5px; display: inline-grid; place-items: center; }
+  .tbn:hover { background: rgba(255,255,255,.1); } .tbn.on { background: var(--dim); color: var(--accent-2); } .tbn:disabled { opacity: .35; }
+  .tbs { width: 1px; height: 20px; background: var(--line); margin: 0 6px; flex: none; }
+  .tbt { display: flex; gap: 6px; padding: 6px 14px; background: rgba(245,197,66,.07); border-bottom: 1px solid var(--line); flex: none; overflow-x: auto; align-items: center; font-size: 13px; color: var(--muted); }
+  .tbt button { flex: none; background: var(--card); border: 1px solid var(--line); color: var(--text); border-radius: 7px; padding: 4px 10px; cursor: pointer; font-size: 13px; } .tbt button:hover { border-color: var(--accent-2); }
+  .banner { margin: 0 14px 10px; padding: 10px 14px; border-radius: 10px; background: rgba(248,113,104,.1); border: 1px solid rgba(248,113,104,.35); font-size: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; } .banner span { flex: 1; min-width: 160px; }
+  .edate { text-align: center; color: var(--muted); font-size: 12.5px; padding: 10px 0 0; flex: none; }
+  #edw { flex: 1; overflow-y: auto; min-height: 0; }
+  #ed { max-width: 780px; margin: 0 auto; padding: 10px 30px 80px; outline: none; font-size: 16px; line-height: 1.55; overflow-wrap: anywhere; min-height: 60%; caret-color: var(--accent-2); }
+  #ed > :first-child { font-size: 28px; font-weight: 700; line-height: 1.25; }
+  #ed h1 { font-size: 26px; margin: .7em 0 .25em; line-height: 1.25; } #ed h2 { font-size: 21px; margin: .7em 0 .25em; line-height: 1.3; } #ed h3 { font-size: 17.5px; margin: .6em 0 .2em; line-height: 1.3; }
+  #ed > :first-child:is(h1,h2,h3) { margin-top: 0; }
+  #ed p, #ed div { margin: 0; } #ed ul, #ed ol { margin: .3em 0; padding-left: 26px; } #ed li { margin: .1em 0; }
+  #ed pre { background: #100f0d; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: 14px/1.5 ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; margin: .4em 0; }
+  #ed code { background: #100f0d; padding: 1px 5px; border-radius: 4px; font: .9em ui-monospace, Menlo, Consolas, monospace; }
+  #ed blockquote { margin: .5em 0; padding: 2px 0 2px 14px; border-left: 3px solid var(--accent); color: #d8d1c2; }
+  #ed hr { border: 0; border-top: 1px solid #4a443a; margin: 1em 0; } #ed a { color: var(--accent-2); text-decoration: underline; cursor: pointer; }
+  #ed img { max-width: 100%; height: auto; border-radius: 8px; display: block; margin: .4em 0; }
+  #ed table { border-collapse: collapse; width: 100%; margin: .6em 0; table-layout: fixed; } #ed td, #ed th { border: 1px solid #4a443a; padding: 6px 10px; vertical-align: top; min-width: 40px; overflow-wrap: anywhere; } #ed th { background: rgba(255,255,255,.05); }
+  #ed ul.ck { list-style: none; padding-left: 2px; }
+  #ed ul.ck li { position: relative; padding-left: 30px; min-height: 1.55em; }
+  #ed ul.ck li::before { content: ''; position: absolute; left: 4px; top: .3em; width: 18px; height: 18px; border: 2px solid #8a8272; border-radius: 50%; box-sizing: border-box; cursor: pointer; }
+  #ed ul.ck li:hover::before { border-color: var(--accent-2); }
+  #ed ul.ck li.done::before { background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.3l2.4 2.4 4.6-5' fill='none' stroke='%23261b00' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat; border-color: var(--accent); }
+  #ed ul.ck li.done { color: var(--muted); }
+  #ed[contenteditable=false] { cursor: default; }
+  .ef { display: flex; justify-content: space-between; gap: 10px; padding: 7px 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; flex: none; } .ef button { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 12.5px; padding: 0; } .ef button:hover { color: var(--accent-2); }
+  .blank { flex: 1; display: grid; place-items: center; text-align: center; color: var(--muted); padding: 30px; font-size: 14.5px; } .blank b { display: block; font-size: 17px; color: var(--text); margin-bottom: 6px; } .blank .btn-main, .blank .btn-ghost { margin: 12px 4px 0; }
+  .pop .mi.on::after { content: '✓'; float: right; color: var(--accent-2); }
+  .pop .mi.dg { color: #fca5a5; }
+  #lb { position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 90; display: grid; place-items: center; cursor: zoom-out; } #lb img { max-width: 94vw; max-height: 92vh; border-radius: 8px; }
+  .db label { display: block; font-size: 13px; color: var(--text); margin: 10px 0 0; }
+  .db input, .db select { display: block; width: 100%; margin-top: 6px; height: 40px; background: #100f0d; border: 1px solid var(--line); border-radius: 10px; color: var(--text); padding: 0 12px; font: 15px system-ui; font-family: inherit; }
+  .db input:focus, .db select:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(245,197,66,.2); }
+  @media (max-width: 1000px) {
+    #app { grid-template-columns: 1fr; margin: 0; border-radius: 0; border-width: 1px 0 0; }
+    #app > * { display: none; } #app.v-folders #pF, #app.v-list #pL, #app.v-note #pE { display: flex; }
+    .back { display: inline-flex !important; } #pF { border-right: 0; } #pL { border-right: 0; }
+    body.vnote .top { display: none; }
+    #ed { padding: 10px 16px 80px; } .ni .nt { font-size: 15.5px; }
+  }
+  @media (max-width: 560px) { header.app { padding: 10px 14px; } .top { padding: 8px 14px; } #hname { flex: 1 1 100%; min-width: 0; } }
+  @media print {
+    body { background: #fff !important; color: #000 !important; height: auto; overflow: visible; display: block; }
+    header.app, .top, #pF, #pL, .eh, .tb, .tbt, .ef, .edate, #toast, .banner { display: none !important; }
+    #app { display: block !important; border: 0; margin: 0; background: #fff; } #pE { display: block !important; } #edw { overflow: visible; } #ed { color: #000; max-width: none; padding: 0; caret-color: #000; }
+    #ed a { color: #000; } #ed pre, #ed code { background: #f1f1f1; color: #000; border-color: #ccc; } #ed td, #ed th { border-color: #999; } #ed ul.ck li::before { border-color: #555; }
+  }
+
+</style>
+</head>
+<body>
+<header class="app">
+  <div><h1 class="title">📝 Notes</h1><a class="hub-breadcrumb" href="../../hub.html#latest-builds">← Cuech4 Hub</a></div>
+  <button class="btn-ghost" id="newBtn">＋ New</button>
+</header>
+<div class="top">
+  <input id="hname" maxlength="60" aria-label="Workspace name">
+  <span class="chip" id="chip"></span><span class="sp"></span>
+  <button class="btn-ghost" id="btnOpen">⬆ Open backup</button>
+  <button class="btn-ghost" id="btnPw">🔑 <span id="pwLbl">Set password</span></button>
+  <button class="btn-main" id="btnSave">⬇ Download backup</button>
+</div>
+<div id="app" class="v-list">
+  <aside id="pF" aria-label="Folders"></aside>
+  <section id="pL" aria-label="Notes"></section>
+  <main id="pE" aria-label="Editor"></main>
+</div>
+<div id="lb" hidden></div>
+<div id="toast" hidden></div>
+<dialog id="dlg"><div class="dh" id="dT"></div><div class="db" id="dB"></div><div class="df" id="dF"></div></dialog>
+<input type="file" id="file" accept=".txt,.md,.markdown,.json,text/plain,text/markdown,application/json" multiple hidden>
+<input type="file" id="imgIn" accept="image/*" hidden>
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const p2 = n => String(n).padStart(2, '0');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const dstr = d => d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+const todayS = () => dstr(new Date());
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const DOW = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const shortD = s => { const d = new Date(s + 'T00:00:00'); return MON[d.getMonth()] + ' ' + d.getDate(); };
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const str = (v, n) => String(v == null ? '' : v).replace(/\r\n?/g, '\n').trim().slice(0, n);
+const int = (v, d = 0) => Number.isFinite(+v) && v !== '' && v !== null ? Math.round(+v) : d;
+const DAY = 864e5, TRASH_DAYS = 30, EMPTY = '<div><br></div>';
+const fmtT = ts => { const d = new Date(ts), h = d.getHours(); return ((h + 11) % 12 + 1) + ':' + p2(d.getMinutes()) + ' ' + (h < 12 ? 'AM' : 'PM'); };
+const fmtLong = ts => { const d = new Date(ts); return MONL[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear() + ' at ' + fmtT(ts); };
+const sod = ts => { const d = new Date(ts); d.setHours(0, 0, 0, 0); return +d; };
+function dateShort(ts) { const k = Math.round((sod(Date.now()) - sod(ts)) / DAY), d = new Date(ts); return k <= 0 ? fmtT(ts) : k === 1 ? 'Yesterday' : k < 7 ? DOW[d.getDay()] : (d.getMonth() + 1) + '/' + d.getDate() + '/' + String(d.getFullYear()).slice(2); }
+function secOf(ts) { const k = Math.round((sod(Date.now()) - sod(ts)) / DAY), d = new Date(ts), y = new Date().getFullYear(); return k <= 0 ? 'Today' : k === 1 ? 'Yesterday' : k < 7 ? 'Previous 7 Days' : k < 30 ? 'Previous 30 Days' : d.getFullYear() === y ? MONL[d.getMonth()] : String(d.getFullYear()); }
+
+/* ---------- storage ---------- */
+const store = {
+  db: null,
+  async open() { if (this.db) return this.db; this.db = await new Promise((res, rej) => { const r = indexedDB.open('cuech4-notes', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); return this.db; },
+  async load() { try { const db = await this.open(); return await new Promise((res, rej) => { const q = db.transaction('kv').objectStore('kv').get('state'); q.onsuccess = () => res(q.result || null); q.onerror = () => rej(q.error); }); } catch (e) { try { return JSON.parse(localStorage.getItem('notes_state') || 'null'); } catch (_) { return null; } } },
+  async save(obj) { try { const db = await this.open(); await new Promise((res, rej) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(obj, 'state'); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); return true; } catch (e) { try { localStorage.setItem('notes_state', JSON.stringify(obj)); return true; } catch (_) { return false; } } }
+};
+
+/* ---------- html helpers ---------- */
+const OK_TAGS = new Set(['div', 'p', 'br', 'b', 'strong', 'i', 'em', 'u', 's', 'strike', 'del', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'a', 'blockquote', 'pre', 'code', 'hr', 'img', 'table', 'thead', 'tbody', 'tr', 'td', 'th', 'sub', 'sup']);
+const DROP_TAGS = new Set(['script', 'style', 'iframe', 'object', 'embed', 'link', 'meta', 'title', 'head', 'svg', 'math', 'form', 'input', 'button', 'textarea', 'select', 'noscript', 'template', 'audio', 'video', 'canvas', 'base']);
+function sanitize(html) {
+  const doc = new DOMParser().parseFromString('<body>' + String(html == null ? '' : html) + '</body>', 'text/html');
+  const walk = (src, dst) => {
+    src.childNodes.forEach(n => {
+      if (n.nodeType === 3) { dst.appendChild(document.createTextNode(n.textContent)); return; }
+      if (n.nodeType !== 1) return;
+      const t = n.tagName.toLowerCase();
+      if (DROP_TAGS.has(t)) return;
+      if (!OK_TAGS.has(t)) { walk(n, dst); return; }
+      const e = document.createElement(t === 'strong' ? 'b' : t === 'em' ? 'i' : t === 'strike' || t === 'del' ? 's' : t);
+      if (t === 'a') { const h = n.getAttribute('href') || ''; if (/^(https?:|mailto:)/i.test(h.trim())) { e.setAttribute('href', h.trim()); e.setAttribute('target', '_blank'); e.setAttribute('rel', 'noopener noreferrer'); } }
+      else if (t === 'img') { const s = n.getAttribute('src') || ''; if (!/^data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+/=]+$/i.test(s)) return; e.setAttribute('src', s); }
+      else if (t === 'ul' && n.classList.contains('ck')) e.className = 'ck';
+      else if (t === 'li' && n.classList.contains('done')) e.className = 'done';
+      walk(n, e); dst.appendChild(e);
+    });
+  };
+  const out = document.createElement('div'); walk(doc.body, out); return out.innerHTML;
+}
+function plain(html) {
+  const t = document.createElement('template');
+  t.innerHTML = String(html).replace(/<\/(div|p|h[1-6]|li|tr|blockquote|pre|ul|ol|table)>|<br\s*\/?>|<hr\s*\/?>/gi, m => m + '\n');
+  return t.content.textContent.replace(/ /g, ' ').replace(/\n{3,}/g, '\n\n');
+}
+function derive(n) {
+  const ls = plain(n.html).split('\n').map(s => s.trim()).filter(Boolean);
+  n.t = (ls[0] || '').slice(0, 120) || 'New Note';
+  n.p = ls.slice(1, 4).join(' ').slice(0, 160) || (/<img/i.test(n.html) ? '🖼 Image' : (ls[0] ? 'No additional text' : ''));
+}
+const XC = new WeakMap();
+function ptext(n) { let e = XC.get(n); if (!e || e.h !== n.html) { e = {h: n.html, x: plain(n.html).toLowerCase()}; XC.set(n, e); } return e.x; }
+const isEmpty = n => !plain(n.html).trim() && !/<(img|table|hr)/i.test(n.html);
+
+/* ---------- state ---------- */
+const fresh = () => ({name: 'My Notes', folders: [{id: 'f0', name: 'Notes', created: Date.now()}], notes: [], set: {sort: 'mod'}, exp: {date: '', n: 0}, dirty: false, lastBackup: ''});
+let S = fresh(), view = 'list', curF = 'all', curN = null, q = '', sessionPw = null, saveT = null;
+
+function cleanNote(o, folders) {
+  if (!o || typeof o !== 'object') return null;
+  const html = sanitize(String(o.html == null ? '' : o.html).slice(0, 8e6)) || EMPTY;
+  const n = {id: str(o.id, 40) || uid(), html, folder: folders.has(o.folder) ? o.folder : 'f0', pin: !!o.pin, created: int(o.created, Date.now()), mod: int(o.mod, Date.now()), del: int(o.del, 0)};
+  derive(n); return n;
+}
+function clean(o) {
+  if (!o || typeof o !== 'object') return null;
+  const out = fresh(); out.name = str(o.name, 60) || out.name;
+  const fs = new Map(); fs.set('f0', {id: 'f0', name: str((arr(o.folders, 200).find(f => f && f.id === 'f0') || {}).name, 60) || 'Notes', created: Date.now()});
+  arr(o.folders, 200).forEach(f => { if (f && typeof f === 'object' && str(f.id, 40) && !fs.has(f.id) && str(f.name, 60)) fs.set(f.id, {id: str(f.id, 40), name: str(f.name, 60), created: int(f.created, Date.now())}); });
+  out.folders = [...fs.values()];
+  const ids = new Set(), now = Date.now();
+  out.notes = arr(o.notes, 5000).map(n => cleanNote(n, fs)).filter(Boolean).filter(n => !ids.has(n.id) && ids.add(n.id)).filter(n => !n.del || now - n.del < TRASH_DAYS * DAY);
+  out.set = {sort: ['mod', 'created', 'title'].includes((o.set || {}).sort) ? o.set.sort : 'mod'};
+  out.exp = o.exp && typeof o.exp.n === 'number' ? {date: str(o.exp.date, 10), n: int(o.exp.n)} : {date: '', n: 0};
+  out.dirty = !!o.dirty; out.lastBackup = DATE_RE.test(o.lastBackup) ? o.lastBackup : '';
+  return out;
+}
+const arr = (v, n) => Array.isArray(v) ? v.slice(0, n) : [];
+function queueSave() { clearTimeout(saveT); saveT = setTimeout(saveNow, 350); }
+let warned = false;
+async function saveNow() { clearTimeout(saveT); const ok = await store.save(S); if (!ok && !warned) { warned = true; toast('Your browser couldn’t save locally (storage may be full). Download a backup to keep your work.', null, null, true); } }
+window.addEventListener('pagehide', () => { store.save(S); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) store.save(S); });
+const touch = () => { S.dirty = true; queueSave(); };
+const cur = () => S.notes.find(n => n.id === curN) || null;
+const folderOf = id => S.folders.find(f => f.id === id) || S.folders[0];
+
+function mkNote(html, folder) { const now = Date.now(), n = {id: uid() + Math.random().toString(36).slice(2, 4), html: html || EMPTY, folder: S.folders.some(f => f.id === folder) ? folder : 'f0', pin: false, created: now, mod: now, del: 0}; derive(n); return n; }
+
+/* ---------- markdown ---------- */
+function toMd(html) {
+  const doc = new DOMParser().parseFromString('<body>' + sanitize(html) + '</body>', 'text/html'), out = [];
+  const one = c => {
+    if (c.nodeType === 3) return c.textContent.replace(/ /g, ' ');
+    if (c.nodeType !== 1) return ''; const t = c.tagName.toLowerCase(), k = inl(c);
+    if (t === 'b') return k.trim() ? '**' + k + '**' : k; if (t === 'i') return k.trim() ? '*' + k + '*' : k; if (t === 's') return '~~' + k + '~~';
+    if (t === 'code') return '`' + k + '`'; if (t === 'br') return '\n'; if (t === 'a') return '[' + k + '](' + c.getAttribute('href') + ')'; if (t === 'img') return '![image]()'; return k;
+  };
+  const inl = n => [...n.childNodes].map(one).join('');
+  const list = (ul, depth) => {
+    const ord = ul.tagName === 'OL', ck = ul.classList.contains('ck'); let i = 1;
+    [...ul.children].forEach(li => {
+      if (li.tagName !== 'LI') return; let txt = ''; const subs = [];
+      li.childNodes.forEach(c => { if (c.nodeType === 1 && /^(UL|OL)$/.test(c.tagName)) subs.push(c); else txt += one(c); });
+      out.push('  '.repeat(depth) + (ord ? (i++) + '. ' : '- ') + (ck ? (li.classList.contains('done') ? '[x] ' : '[ ] ') : '') + txt.replace(/\n+$/, '').trim()); subs.forEach(s => list(s, depth + 1));
+    });
+  };
+  const walk = n => n.childNodes.forEach(c => {
+    if (c.nodeType === 3) { if (c.textContent.trim()) out.push(c.textContent.trim(), ''); return; } if (c.nodeType !== 1) return;
+    const t = c.tagName.toLowerCase();
+    if (t === 'h1') out.push('# ' + inl(c).trim(), ''); else if (t === 'h2') out.push('## ' + inl(c).trim(), ''); else if (t === 'h3') out.push('### ' + inl(c).trim(), '');
+    else if (t === 'ul' || t === 'ol') { list(c, 0); out.push(''); }
+    else if (t === 'blockquote') out.push(inl(c).trim().split('\n').map(x => '> ' + x).join('\n'), '');
+    else if (t === 'pre') out.push('```', c.textContent.replace(/\n$/, ''), '```', '');
+    else if (t === 'hr') out.push('---', '');
+    else if (t === 'table') { [...c.querySelectorAll('tr')].forEach((tr, i) => { const cells = [...tr.children].map(td => inl(td).replace(/\n/g, ' ').replace(/\|/g, '\\|').trim()); out.push('| ' + cells.join(' | ') + ' |'); if (i === 0) out.push('|' + cells.map(() => ' --- |').join('')); }); out.push(''); }
+    else if ((t === 'div' || t === 'p') && c.querySelector('ul,ol,table,h1,h2,h3,pre,blockquote,hr,div,p')) walk(c);
+    else out.push(inl(c).replace(/\n+$/, ''), '');
+  });
+  walk(doc.body); return out.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+}
+function mdToHtml(src) {
+  const inl = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<i>$2</i>').replace(/~~([^~]+)~~/g, '<s>$1</s>').replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>');
+  const L = String(src).replace(/\r\n?/g, '\n').split('\n'); let out = '', i = 0, m;
+  while (i < L.length) {
+    const ln = L[i];
+    if (/^```/.test(ln)) { const b = []; i++; while (i < L.length && !/^```/.test(L[i])) b.push(L[i++]); i++; out += '<pre>' + esc(b.join('\n')) + '</pre>'; continue; }
+    if ((m = /^(#{1,3})\s+(.*)$/.exec(ln))) { out += `<h${m[1].length}>${inl(m[2])}</h${m[1].length}>`; i++; continue; }
+    if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(ln)) { out += '<hr>'; i++; continue; }
+    if (/^>\s?/.test(ln)) { const b = []; while (i < L.length && /^>\s?/.test(L[i])) b.push(L[i++].replace(/^>\s?/, '')); out += '<blockquote>' + b.map(inl).join('<br>') + '</blockquote>'; continue; }
+    if (/^\s*[-*+]\s+\[[ xX]\]\s/.test(ln)) { out += '<ul class="ck">'; while (i < L.length && (m = /^\s*[-*+]\s+\[([ xX])\]\s+(.*)$/.exec(L[i]))) { out += `<li${m[1] !== ' ' ? ' class="done"' : ''}>${inl(m[2])}</li>`; i++; } out += '</ul>'; continue; }
+    if (/^\s*[-*+]\s+/.test(ln)) { out += '<ul>'; while (i < L.length && (m = /^\s*[-*+]\s+(.*)$/.exec(L[i]))) { out += '<li>' + inl(m[1]) + '</li>'; i++; } out += '</ul>'; continue; }
+    if (/^\s*\d+[.)]\s+/.test(ln)) { out += '<ol>'; while (i < L.length && (m = /^\s*\d+[.)]\s+(.*)$/.exec(L[i]))) { out += '<li>' + inl(m[1]) + '</li>'; i++; } out += '</ol>'; continue; }
+    if (/^\s*\|.*\|\s*$/.test(ln)) { const rows = []; while (i < L.length && /^\s*\|.*\|\s*$/.test(L[i])) rows.push(L[i++]); const cells = r => r.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map(c => c.trim().replace(/\\\|/g, '|')); out += '<table><tbody>' + rows.filter(r => !/^\s*\|?[\s:|-]+\|?\s*$/.test(r) || !/-/.test(r)).map(r => '<tr>' + cells(r).map(c => '<td>' + (inl(c) || '<br>') + '</td>').join('') + '</tr>').join('') + '</tbody></table><div><br></div>'; continue; }
+    if (!ln.trim()) { i++; continue; }
+    out += '<div>' + inl(ln) + '</div>'; i++;
+  }
+  return out || EMPTY;
+}
+const textToHtml = t => String(t).replace(/\r\n?/g, '\n').split('\n').map(l => '<div>' + (esc(l) || '<br>') + '</div>').join('');
+
+function sampleNotes() {
+  const t = Date.now(), a = mkNote(`<h1>Welcome to Notes</h1><div>Everything you write stays in this browser. Use the toolbar above, or type shortcuts:</div><ul><li><b>-</b> then space → bullet list</li><li><b>1.</b> then space → numbered list</li><li><b>[]</b> then space → checklist</li><li><b>#</b>, <b>##</b>, <b>###</b> then space → headings</li><li><b>&gt;</b> then space → quote</li></ul><h2>Try the checklist</h2><ul class="ck"><li class="done">Open the app</li><li>Tap a circle to check it off</li><li>Press Enter for the next item</li></ul><h2>Back it up</h2><div>Use <b>Download backup</b> at the top to save one password-encrypted .txt file you can reopen later.</div>`);
+  const b = mkNote(`<h1>Groceries</h1><ul class="ck"><li>Eggs</li><li class="done">Coffee</li><li>Tortillas</li><li>Limes</li></ul>`);
+  const c = mkNote(`<h1>Project meeting</h1><div>Decisions and next steps</div><table><tbody><tr><th>Task</th><th>Owner</th><th>Due</th></tr><tr><td>Draft proposal</td><td>Ana</td><td>Fri</td></tr><tr><td>Review budget</td><td>Luis</td><td>Next week</td></tr></tbody></table><div><br></div>`);
+  a.mod = t; b.mod = t - 3 * 3600e3; c.mod = t - 2 * DAY; b.created = b.mod; c.created = c.mod; a.pin = true; return [a, b, c];
+}
+
+/* ---------- toast / modals ---------- */
+let toastT;
+function toast(msg, label, fn, isErr) {
+  const t = $('#toast'); t.className = isErr ? 'err' : '';
+  t.innerHTML = '<span>' + esc(msg) + '</span>' + (label ? '<button>' + esc(label) + '</button>' : ''); t.hidden = false;
+  if (label) t.querySelector('button').onclick = () => { t.hidden = true; fn(); };
+  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, label ? 8000 : 3800);
+}
+const dlg = $('#dlg');
+function open(title, bodyHtml, buttons, onKey) {
+  return new Promise(res => {
+    $('#dT').textContent = title; $('#dB').innerHTML = bodyHtml;
+    $('#dF').innerHTML = buttons.map(b => `<button class="${b.primary ? 'btn-main' : 'btn-ghost'} ${b.cls || ''}" data-v="${b.value}">${esc(b.label)}</button>`).join('');
+    const finish = v => { const b = buttons.find(x => x.value === v); if (b && b.check) { const e = b.check(); if (e) { const el = $('#dE'); if (el) el.textContent = e; return; } } dlg.close(); dlg.classList.remove('wide'); res(v); };
+    $('#dF').onclick = e => { const b = e.target.closest('button'); if (b) finish(b.dataset.v); };
+    dlg.onkeydown = e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); const pb = buttons.find(b => b.primary); if (pb) finish(pb.value); } };
+    dlg.oncancel = e => { e.preventDefault(); finish('cancel'); };
+    dlg.showModal(); const f = dlg.querySelector('input,select'); if (f) f.focus();
+  });
+}
+function fieldHtml(f) {
+  const v = f.value == null ? '' : f.value;
+  const fl = f.full ? ' style="grid-column:1/-1"' : '';
+  if (f.type === 'textarea') return `<label${fl}>${esc(f.label)}<textarea id="f_${f.id}" rows="${f.rows || 3}" maxlength="${f.max || 500}">${esc(v)}</textarea></label>`;
+  if (f.type === 'select') return `<label${fl}>${esc(f.label)}<select id="f_${f.id}">${f.options.map(([val, lab]) => `<option value="${esc(val)}"${String(val) === String(v) ? ' selected' : ''}>${esc(lab)}</option>`).join('')}</select></label>`;
+  return `<label${fl}>${esc(f.label)}<input id="f_${f.id}" type="${f.type || 'text'}" ${f.step ? `step="${f.step}"` : ''} ${f.min != null ? `min="${f.min}"` : ''} maxlength="${f.max || 120}" autocomplete="${f.ac || 'off'}" value="${esc(v)}"></label>`;
+}
+async function modal(o) {
+  const fields = o.fields || [], vals = () => { const r = {}; fields.forEach(f => r[f.id] = $('#f_' + f.id).value); return r; };
+  const btns = o.buttons.map(b => b.primary && o.validate ? {...b, check: () => o.validate(vals())} : b);
+  const v = await open(o.title, (o.text ? `<p>${esc(o.text)}</p>` : '') + `<div class="${fields.length > 3 ? 'grid2' : ''}">` + fields.map(fieldHtml).join('') + '</div><p class="derr" id="dE">' + esc(o.error || '') + '</p>', btns);
+  return {value: v, vals: v === 'cancel' ? {} : vals()};
+}
+
+const b64 = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const ITER = 250000;
+async function deriveKey(pw, salt, iter) { const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']); return crypto.subtle.deriveKey({name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256'}, km, {name: 'AES-GCM', length: 256}, false, ['encrypt', 'decrypt']); }
+async function encrypt(obj, pw) { const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), key = await deriveKey(pw, salt, ITER); const ct = new Uint8Array(await crypto.subtle.encrypt({name: 'AES-GCM', iv}, key, new TextEncoder().encode(JSON.stringify(obj)))); return JSON.stringify({app: 'cuech4-notes', format: 1, enc: 'AES-GCM-256', kdf: 'PBKDF2-SHA256', iter: ITER, salt: b64(salt), iv: b64(iv), data: b64(ct)}); }
+async function decrypt(file, pw) { const key = await deriveKey(pw, unb64(file.salt), file.iter); return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name: 'AES-GCM', iv: unb64(file.iv)}, key, unb64(file.data)))); }
+const safeName = s => (s || 'Notes').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '').replace(/\s+/g, ' ').trim().replace(/ /g, '_').slice(0, 60) || 'Notes';
+function needCrypto() { if (window.crypto && crypto.subtle) return true; toast('Encryption needs a secure page (https or a local file).', null, null, true); return false; }
+async function askPassword(confirm, error) {
+  const r = await modal({title: confirm ? 'Protect your backup' : 'Enter your password', text: confirm ? 'Your backup is encrypted with this password. There’s no reset — if you lose it, the file can’t be opened.' : 'This backup is encrypted. Enter the password you used when you downloaded it.',
+    fields: confirm ? [{id: 'p1', label: 'Password', type: 'password', ac: 'new-password'}, {id: 'p2', label: 'Confirm password', type: 'password', ac: 'new-password'}] : [{id: 'p1', label: 'Password', type: 'password', ac: 'current-password'}], error,
+    validate: v => confirm ? (v.p1.length < 6 ? 'Use at least 6 characters.' : v.p1 !== v.p2 ? 'The passwords don’t match.' : '') : (v.p1 ? '' : 'Enter the password.'),
+    buttons: [{label: 'Cancel', value: 'cancel'}, {label: confirm ? 'Encrypt & continue' : 'Open', value: 'ok', primary: true}]});
+  return r.value === 'ok' ? r.vals.p1 : null;
+}
+
+
+/* ---------- view ---------- */
+const mobile = () => window.matchMedia('(max-width: 1000px)').matches;
+const scopeNotes = () => S.notes.filter(n => curF === 'trash' ? n.del : !n.del && (curF === 'all' || n.folder === curF));
+function visible() {
+  let a = scopeNotes(); const t = q.trim().toLowerCase();
+  if (t) a = a.filter(n => n.t.toLowerCase().includes(t) || ptext(n).includes(t));
+  const key = S.set.sort, f = curF === 'trash' ? () => 0 : (x, y) => (y.pin - x.pin);
+  return a.sort((x, y) => f(x, y) || (key === 'title' ? x.t.localeCompare(y.t) : (key === 'created' ? y.created - x.created : y.mod - x.mod)));
+}
+function chip() {
+  const c = $('#chip'), lb = S.lastBackup ? shortD(S.lastBackup) : '', live = S.notes.filter(n => !n.del).length;
+  if (!live) { c.className = 'chip idle'; c.textContent = 'Empty · autosaves in this browser'; }
+  else if (S.dirty) { c.className = 'chip dirty'; c.textContent = '● Changes not backed up' + (lb ? ' · last backup ' + lb : ' yet'); }
+  else { c.className = 'chip'; c.textContent = '🔒 Backup up to date · ' + lb; }
+  $('#pwLbl').textContent = sessionPw ? 'Change password' : 'Set password';
+}
+function setView(v) { view = v; $('#app').className = 'v-' + v; document.body.classList.toggle('vnote', v === 'note'); }
+function render() {
+  if (curN && !cur()) curN = null;
+  setView(view); renderFolders(); renderList(); chip();
+}
+function renderFolders() {
+  const live = S.notes.filter(n => !n.del), cnt = id => live.filter(n => n.folder === id).length, trash = S.notes.filter(n => n.del).length;
+  const row = (id, icon, name, n, menu) => `<button class="fi${curF === id ? ' on' : ''}" data-f="${id}"><span>${icon}</span><span class="fn">${esc(name)}</span>${menu ? '<span class="ibtn fm" data-a="fmenu" role="button" tabindex="0" aria-label="Folder actions">⋯</span>' : ''}<i>${n}</i></button>`;
+  $('#pF').innerHTML = `<div class="fh"><span>Folders</span><button class="ibtn ac" data-a="nf" title="New folder" aria-label="New folder">＋</button></div>${row('all', '🗂', 'All Notes', live.length)}<div class="fsec">Folders</div>${S.folders.map(f => row(f.id, '📁', f.name, cnt(f.id), f.id !== 'f0' || true)).join('')}<div class="fgap"></div>${row('trash', '🗑', 'Recently Deleted', trash)}`;
+}
+const hl = (s, t) => { s = esc(s); if (!t) return s; const i = s.toLowerCase().indexOf(esc(t).toLowerCase()); return i < 0 ? s : s.slice(0, i) + '<mark>' + s.slice(i, i + esc(t).length) + '</mark>' + s.slice(i + esc(t).length); };
+function renderList() {
+  const pl = $('#pL'), old = pl.querySelector('.nl'), sc = old ? old.scrollTop : 0, hadSearch = document.activeElement && document.activeElement.id === 'sq';
+  const items = visible(), t = q.trim(), title = curF === 'all' ? 'All Notes' : curF === 'trash' ? 'Recently Deleted' : folderOf(curF).name, key = S.set.sort;
+  let html = '', last = null;
+  items.forEach(n => {
+    const sec = n.pin && curF !== 'trash' ? '📌 Pinned' : key === 'title' ? '' : secOf(key === 'created' ? n.created : n.mod);
+    if (sec !== last) { if (sec) html += `<div class="sec">${esc(sec)}</div>`; last = sec; }
+    const showF = curF === 'all' || t, left = n.del ? Math.max(1, Math.ceil((n.del + TRASH_DAYS * DAY - Date.now()) / DAY)) : 0;
+    html += `<button class="ni${n.id === curN ? ' on' : ''}" data-id="${n.id}"><div class="nt">${hl(n.t, t)}</div><div class="ns"><b>${esc(dateShort(key === 'created' ? n.created : n.mod))}</b>${hl(n.p, t)}</div>${n.del ? `<div class="nf">🗑 Deletes in ${left} day${left > 1 ? 's' : ''}</div>` : showF ? `<div class="nf">📁 ${esc(folderOf(n.folder).name)}</div>` : ''}</button>`;
+  });
+  if (!items.length) html = t ? `<div class="blank"><div><b>No results</b>No notes match “${esc(t)}”.</div></div>` : curF === 'trash' ? '<div class="blank"><div><b>Nothing here</b>Deleted notes stay for 30 days.</div></div>' : `<div class="blank"><div><b>No notes yet</b>Create your first note, or look around with a few samples.<br><button class="btn-main" data-a="new">＋ New note</button>${S.notes.length ? '' : '<button class="btn-ghost" data-a="sample">Try sample notes</button>'}</div></div>`;
+  pl.innerHTML = `<div class="lh2"><button class="btn-ghost sm back" data-a="tofolders">‹ Folders</button><h2>${esc(title)}<small>${items.length} note${items.length === 1 ? '' : 's'}</small></h2><button class="ibtn ac" data-a="lmenu" title="More" aria-label="More">⋯</button>${curF === 'trash' ? '' : '<button class="ibtn ac" data-a="new" title="New note" aria-label="New note">✎</button>'}</div>
+    <label class="sr"><input id="sq" type="search" placeholder="Search" aria-label="Search notes" value="${esc(q)}"></label><div class="nl">${html}</div>`;
+  pl.querySelector('.nl').scrollTop = sc; if (hadSearch) { const s = $('#sq'); s.focus(); s.setSelectionRange(s.value.length, s.value.length); }
+  chip();
+}
+
+/* ---------- note navigation ---------- */
+function dropIfEmpty() { const n = cur(); if (n && !n.del && isEmpty(n)) { S.notes.splice(S.notes.indexOf(n), 1); curN = null; touch(); } }
+function openNote(id) { if (id !== curN) dropIfEmpty(); curN = id; loadEditor(); if (mobile()) setView('note'); renderList(); }
+function selectFirst() { const v = visible(); if (!mobile() && v.length) openNote(v[0].id); else if (!v.length) { curN = null; loadEditor(); } }
+function newNote() {
+  dropIfEmpty(); if (curF === 'trash') curF = 'all'; q = '';
+  const n = mkNote(EMPTY, curF === 'all' ? 'f0' : curF); S.notes.push(n); touch(); curN = n.id; renderFolders(); loadEditor(true); if (mobile()) setView('note'); renderList();
+}
+function goFolder(f) { dropIfEmpty(); curF = f; q = ''; curN = null; renderFolders(); renderList(); if (mobile()) setView('list'); selectFirst(); }
+
+/* ---------- popover ---------- */
+let popEl = null, popAnchor = null;
+function closePop() { if (popEl) { popEl.remove(); popEl = null; document.removeEventListener('pointerdown', popOut, true); document.removeEventListener('keydown', popKey, true); } }
+function popOut(e) { if (popEl && !popEl.contains(e.target) && !(popAnchor && popAnchor.contains(e.target)) && !$('#dlg').contains(e.target)) closePop(); }
+function popKey(e) { if (e.key === 'Escape' && popEl && !$('#dlg').open) { e.stopPropagation(); e.preventDefault(); closePop(); } }
+function pop(anchor, title, build) {
+  closePop();
+  const el = document.createElement('div'); el.className = 'pop'; el.innerHTML = '<div class="ph"><span></span><button class="ibtn" data-x aria-label="Close">✕</button></div><div class="pb"></div>';
+  document.body.appendChild(el); popEl = el; popAnchor = anchor;
+  const api = {close: closePop, body: el.querySelector('.pb'), el, title: t => { el.querySelector('.ph span').textContent = t; }, place() {
+    const r = anchor && anchor.isConnected ? anchor.getBoundingClientRect() : (api.rect || {left: 20, bottom: 60}); api.rect = {left: r.left, bottom: r.bottom};
+    const w = el.offsetWidth, h = el.offsetHeight; let left = Math.max(8, Math.min(r.left, innerWidth - w - 8)), top = r.bottom + 6;
+    if (top + h > innerHeight - 8) top = Math.max(8, innerHeight - h - 8); el.style.left = left + 'px'; el.style.top = top + 'px';
+  }};
+  api.title(title); el.querySelector('[data-x]').onclick = closePop; build(api); api.place();
+  document.addEventListener('pointerdown', popOut, true); document.addEventListener('keydown', popKey, true);
+  return api;
+}
+function download(name, text, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type: type || 'text/plain'})); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+
+/* ---------- folders / list actions ---------- */
+async function newFolder() {
+  const r = await modal({title: 'New folder', fields: [{id: 'n', label: 'Name', max: 60}], validate: v => v.n.trim() ? '' : 'Give the folder a name.', buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Create', value: 'ok', primary: true}]});
+  if (r.value !== 'ok') return; const f = {id: uid(), name: r.vals.n.trim().slice(0, 60), created: Date.now()}; S.folders.push(f); touch(); goFolder(f.id);
+}
+function folderMenu(anchor, id) {
+  const f = folderOf(id);
+  pop(anchor, f.name, api => {
+    api.body.innerHTML = '<button class="mi" data-k="ren">✎ Rename</button>' + (id === 'f0' ? '' : '<button class="mi dg" data-k="del">🗑 Delete folder</button>');
+    api.body.onclick = async e => {
+      const k = (e.target.closest('.mi') || {}).dataset; if (!k) return; closePop();
+      if (k.k === 'ren') { const r = await modal({title: 'Rename folder', fields: [{id: 'n', label: 'Name', value: f.name, max: 60}], validate: v => v.n.trim() ? '' : 'Enter a name.', buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Save', value: 'ok', primary: true}]}); if (r.value === 'ok') { f.name = r.vals.n.trim().slice(0, 60); touch(); render(); if (cur()) loadEditor(); } }
+      else { const n = S.notes.filter(x => x.folder === id && !x.del).length; const r = await modal({title: 'Delete this folder?', text: n ? `“${f.name}” has ${n} note${n > 1 ? 's' : ''}. They will be moved to Recently Deleted for 30 days.` : `“${f.name}” is empty.`, buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Delete', value: 'ok', primary: true}]});
+        if (r.value !== 'ok') return; const now = Date.now(); S.notes.forEach(x => { if (x.folder === id) { if (!x.del) x.del = now; x.folder = 'f0'; } }); S.folders = S.folders.filter(x => x.id !== id); if (curF === id) { curF = 'all'; curN = null; } touch(); render(); selectFirst(); }
+    };
+  });
+}
+function listMenu(anchor) {
+  pop(anchor, 'Options', api => {
+    const sort = S.set.sort, mi = (k, label, on) => `<button class="mi${on ? ' on' : ''}" data-k="${k}">${label}</button>`;
+    api.body.innerHTML = curF === 'trash' ? '<button class="mi" data-k="restoreall">↩ Restore all</button><button class="mi dg" data-k="emptytrash">🗑 Delete all permanently</button>'
+      : `<div class="fsec" style="padding-left:8px">Sort by</div>${mi('s-mod', 'Date Edited', sort === 'mod')}${mi('s-created', 'Date Created', sort === 'created')}${mi('s-title', 'Title', sort === 'title')}<div class="fsec" style="padding-left:8px">Notes</div><button class="mi" data-k="imp">⬆ Import .txt / .md files…</button><button class="mi" data-k="expall">⬇ Export all as one .md file</button>`;
+    api.body.onclick = async e => {
+      const k = ((e.target.closest('.mi') || {}).dataset || {}).k; if (!k) return; closePop();
+      if (k.startsWith('s-')) { S.set.sort = k.slice(2); touch(); renderList(); }
+      else if (k === 'imp') $('#file').click();
+      else if (k === 'expall') { const ns = S.notes.filter(n => !n.del).sort((a, b) => b.mod - a.mod); if (!ns.length) return toast('No notes to export.', null, null, true); download('Notes_' + todayS() + '.md', ns.map(n => toMd(n.html)).join('\n---\n\n'), 'text/markdown'); toast('Exported ' + ns.length + ' notes (images are not included in Markdown).'); }
+      else if (k === 'restoreall') { S.notes.forEach(n => { n.del = 0; }); touch(); render(); }
+      else if (k === 'emptytrash') { const r = await modal({title: 'Delete all permanently?', text: 'Every note in Recently Deleted will be erased. This can’t be undone.', buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Delete all', value: 'ok', primary: true}]}); if (r.value === 'ok') { S.notes = S.notes.filter(n => !n.del); curN = null; touch(); render(); loadEditor(); } }
+    };
+  });
+}
+
+/* ---------- editor ---------- */
+let savedRange = null, lt = null;
+const edEl = () => $('#ed');
+const exec = (c, v) => document.execCommand(c, false, v == null ? null : v);
+try { document.execCommand('defaultParagraphSeparator', false, 'div'); document.execCommand('styleWithCSS', false, false); } catch (_) {}
+const TB = [['fmt', 'Aa', 'Text style'], ['bold', '<b>B</b>', 'Bold (Ctrl/⌘ B)'], ['italic', '<i>I</i>', 'Italic (Ctrl/⌘ I)'], ['underline', '<u>U</u>', 'Underline (Ctrl/⌘ U)'], ['strike', '<s>S</s>', 'Strikethrough'], '|',
+  ['ul', '• ≡', 'Bulleted list'], ['ol', '1. ≡', 'Numbered list'], ['check', '☑', 'Checklist'], ['quote', '❝', 'Quote'], '|', ['link', '🔗', 'Link (Ctrl/⌘ K)'], ['table', '▦', 'Table'], ['image', '🖼', 'Insert image'], ['hr', '―', 'Divider'], '|', ['undo', '↶', 'Undo'], ['redo', '↷', 'Redo']];
+function loadEditor(focus) {
+  const n = cur(), pe = $('#pE');
+  if (!n) { pe.innerHTML = '<div class="blank"><div><b>No note selected</b>Pick a note from the list, or start a new one.' + (curF === 'trash' ? '' : '<br><button class="btn-main" data-a="new">✎ New note</button>') + '</div></div>'; return; }
+  const ro = !!n.del;
+  pe.innerHTML = `<div class="eh"><button class="btn-ghost sm back" data-a="toList">‹ Notes</button><span style="flex:1"></span>${ro ? '' : `<button class="ibtn${n.pin ? ' on' : ''}" data-a="pin" title="${n.pin ? 'Unpin' : 'Pin note'}" aria-label="Pin">📌</button><button class="ibtn" data-a="move" title="Move to folder" aria-label="Move to folder">📁</button><button class="ibtn" data-a="share" title="Export or print" aria-label="Export">⇪</button><button class="ibtn" data-a="del" title="Delete note" aria-label="Delete">🗑</button>`}</div>
+    ${ro ? `<div class="banner"><span>This note is in <b>Recently Deleted</b>. Restore it to edit.</span><button class="btn-main sm" data-a="restore">Restore</button><button class="btn-ghost sm" data-a="purge" style="color:#fca5a5">Delete permanently</button></div>`
+      : `<div class="tb" id="tb">${TB.map(t => t === '|' ? '<span class="tbs"></span>' : `<button class="tbn" data-c="${t[0]}" title="${t[2]}" aria-label="${t[2]}">${t[1]}</button>`).join('')}</div><div class="tbt" id="tbt" hidden><span>Table:</span><button data-c="rowA">+ Row</button><button data-c="colA">+ Column</button><button data-c="rowD">− Row</button><button data-c="colD">− Column</button><button data-c="tblD">Delete table</button></div>`}
+    <div class="edate" id="edate" title="Created ${esc(fmtLong(n.created))}">${esc(fmtLong(n.mod))}</div>
+    <div id="edw"><div id="ed" contenteditable="${ro ? 'false' : 'true'}" spellcheck="true" role="textbox" aria-multiline="true" aria-label="Note"></div></div>
+    <div class="ef"><span id="efc"></span><button data-a="move" title="Move to folder">📁 <span id="eff"></span></button></div>`;
+  edEl().innerHTML = n.html || EMPTY; updFooter();
+  if (focus && !ro) { const e = edEl(); e.focus(); const r = document.createRange(); r.selectNodeContents(e.firstElementChild || e); r.collapse(true); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+}
+function updFooter() {
+  const n = cur(); if (!n || !$('#efc')) return; const t = plain(n.html).trim(), w = t ? t.split(/\s+/).length : 0;
+  $('#efc').textContent = w + ' word' + (w === 1 ? '' : 's') + ' · ' + t.length + ' characters'; $('#eff').textContent = folderOf(n.folder).name; $('#edate').textContent = fmtLong(n.mod);
+}
+function onEdit() {
+  const n = cur(), e = edEl(); if (!n || n.del || !e) return;
+  if (e.firstChild && e.firstChild.nodeType === 3) exec('formatBlock', 'div');
+  n.html = e.innerHTML; n.mod = Date.now(); derive(n); touch(); updFooter(); clearTimeout(lt); lt = setTimeout(renderList, 160);
+}
+const selNode = () => { const s = getSelection(); return s.rangeCount && edEl() && edEl().contains(s.anchorNode) ? s.anchorNode : null; };
+const closestEl = (n, sel) => { const el = n && (n.nodeType === 1 ? n : n.parentElement); const r = el && el.closest(sel); return r && edEl().contains(r) ? r : null; };
+const curList = () => closestEl(selNode(), 'ul,ol');
+function updateTools() {
+  const tb = $('#tb'); if (!tb || !edEl() || !selNode()) return;
+  const on = (c, v) => { const b = tb.querySelector(`[data-c="${c}"]`); if (b) b.classList.toggle('on', !!v); }, q2 = c => { try { return document.queryCommandState(c); } catch (_) { return false; } };
+  const l = curList(), blk = closestEl(selNode(), 'h1,h2,h3,pre');
+  on('bold', q2('bold')); on('italic', q2('italic')); on('underline', q2('underline')); on('strike', q2('strikeThrough'));
+  on('ul', l && l.tagName === 'UL' && !l.classList.contains('ck')); on('ol', l && l.tagName === 'OL'); on('check', l && l.classList.contains('ck')); on('quote', closestEl(selNode(), 'blockquote')); on('fmt', blk);
+  $('#tbt').hidden = !closestEl(selNode(), 'td,th');
+}
+document.addEventListener('selectionchange', () => { const s = getSelection(); if (s.rangeCount && edEl() && edEl().contains(s.anchorNode)) { savedRange = s.getRangeAt(0).cloneRange(); updateTools(); } });
+function restoreSel() { const e = edEl(); e.focus(); if (savedRange) { const s = getSelection(); s.removeAllRanges(); s.addRange(savedRange); } }
+
+function applyListKind(ck) {
+  const s = getSelection(); if (!s.rangeCount) return; const rg = s.getRangeAt(0), l = curList(); if (!l || l.tagName !== 'UL') return;
+  const items = [...l.children].filter(x => x.tagName === 'LI'), sel = items.filter(li => rg.intersectsNode(li)); if (!sel.length) return;
+  const i0 = items.indexOf(sel[0]), i1 = items.indexOf(sel[sel.length - 1]), was = l.classList.contains('ck');
+  const mk = (a, c) => { if (!a.length) return null; const u = document.createElement('ul'); if (c) u.className = 'ck'; a.forEach(x => u.appendChild(x)); return u; };
+  const mid = items.slice(i0, i1 + 1), parts = [mk(items.slice(0, i0), was), mk(mid, ck), mk(items.slice(i1 + 1), was)].filter(Boolean);
+  parts.forEach(u => l.parentNode.insertBefore(u, l)); l.remove(); placeCaret(mid[mid.length - 1]);
+}
+function tableOp(c) {
+  const cell = closestEl(selNode(), 'td,th'), tbl = cell && cell.closest('table'); if (!cell) return; const row = cell.parentElement, idx = [...row.children].indexOf(cell), tb = tbl.tBodies[0] || tbl;
+  const mk = () => { const d = document.createElement('td'); d.innerHTML = '<br>'; return d; };
+  if (c === 'rowA') { const r = document.createElement('tr'); [...row.children].forEach(() => r.appendChild(mk())); row.after(r); }
+  else if (c === 'colA') tbl.querySelectorAll('tr').forEach(r => { const x = mk(); const ref = r.children[idx]; ref ? ref.after(x) : r.appendChild(x); });
+  else if (c === 'rowD') { if (tbl.rows.length <= 1) tbl.remove(); else row.remove(); }
+  else if (c === 'colD') { if (row.children.length <= 1) tbl.remove(); else tbl.querySelectorAll('tr').forEach(r => r.children[idx] && r.children[idx].remove()); }
+  else if (c === 'tblD') tbl.remove();
+  if (!edEl().firstElementChild) edEl().innerHTML = EMPTY; onEdit(); updateTools();
+}
+async function command(c, anchor) {
+  if (c === 'fmt') return fmtPop(anchor);
+  if (['rowA', 'colA', 'rowD', 'colD', 'tblD'].includes(c)) return tableOp(c);
+  restoreSel();
+  if (c === 'bold' || c === 'italic' || c === 'underline') exec(c);
+  else if (c === 'strike') exec('strikeThrough');
+  else if (c === 'undo' || c === 'redo') exec(c);
+  else if (c === 'ul') { const l = curList(); if (!(l && l.tagName === 'UL' && l.classList.contains('ck'))) exec('insertUnorderedList'); applyListKind(false); }
+  else if (c === 'ol') exec('insertOrderedList');
+  else if (c === 'check') { let l = curList(); if (!l || l.tagName !== 'UL') { exec('insertUnorderedList'); applyListKind(true); } else applyListKind(!l.classList.contains('ck')); }
+  else if (c === 'quote') exec('formatBlock', closestEl(selNode(), 'blockquote') ? 'div' : 'blockquote');
+  else if (c === 'hr') exec('insertHTML', '<hr><div><br></div>');
+  else if (c === 'table') { const before = new Set(edEl().querySelectorAll('table')); exec('insertHTML', '<table><tbody>' + '<tr><td><br></td><td><br></td><td><br></td></tr>'.repeat(3) + '</tbody></table><div><br></div>'); const t = [...edEl().querySelectorAll('table')].find(x => !before.has(x)); if (t) placeCaret(t.querySelector('td')); }
+  else if (c === 'image') { $('#imgIn').click(); return; }
+  else if (c === 'link') return linkDlg();
+  onEdit(); updateTools();
+}
+function fmtPop(anchor) {
+  const sel = {savedRange};
+  pop(anchor, 'Text style', api => {
+    api.body.innerHTML = [['h1', 'Title', 'font-size:22px;font-weight:700'], ['h2', 'Heading', 'font-size:18px;font-weight:700'], ['h3', 'Subheading', 'font-size:16px;font-weight:700'], ['div', 'Body', ''], ['pre', 'Monospaced', 'font-family:ui-monospace,Menlo,monospace']].map(x => `<button class="mi" data-t="${x[0]}" style="${x[2]}">${x[1]}</button>`).join('');
+    api.body.onclick = e => { const b = e.target.closest('.mi'); if (!b) return; closePop(); restoreSel(); exec('formatBlock', b.dataset.t); onEdit(); updateTools(); };
+  });
+}
+async function linkDlg() {
+  const s = getSelection(), hasSel = s.rangeCount && !s.isCollapsed, a = closestEl(selNode(), 'a'), keep = savedRange;
+  const r = await modal({title: 'Add link', text: 'Tip: Ctrl/⌘ + click a link in a note to open it.', fields: [{id: 'u', label: 'Web address', value: a ? a.getAttribute('href') : 'https://', max: 1500}], buttons: [{label: 'Cancel', value: 'cancel'}, ...(a ? [{label: 'Remove link', value: 'rm'}] : []), {label: 'Add', value: 'ok', primary: true}]});
+  savedRange = keep; restoreSel(); if (r.value === 'cancel') return;
+  if (r.value === 'rm') exec('unlink');
+  else { let u = r.vals.u.trim(); if (!u) return; if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = 'https://' + u; if (!/^(https?:|mailto:)/i.test(u)) return toast('Only web (http/https) and email links are allowed.', null, null, true); if (hasSel || a) exec('createLink', u); else exec('insertHTML', `<a href="${esc(u)}">${esc(u)}</a>&nbsp;`); }
+  onEdit();
+}
+async function shrink(file) {
+  const bmp = await createImageBitmap(file), M = 1400, s = Math.min(1, M / Math.max(bmp.width, bmp.height)), cv = document.createElement('canvas');
+  cv.width = Math.max(1, Math.round(bmp.width * s)); cv.height = Math.max(1, Math.round(bmp.height * s)); const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(bmp, 0, 0, cv.width, cv.height);
+  return cv.toDataURL('image/jpeg', .82);
+}
+async function insertImage(file) {
+  try { const d = await shrink(file); if (d.length > 2.6e6) return toast('That image is too large even after shrinking.', null, null, true); restoreSel(); exec('insertHTML', `<img src="${d}" alt=""><div><br></div>`); onEdit(); }
+  catch (e) { toast('Couldn’t read that file as an image.', null, null, true); }
+}
+$('#imgIn').onchange = async e => { const f = [...e.target.files]; e.target.value = ''; for (const x of f.slice(0, 8)) await insertImage(x); };
+
+/* markdown-style shortcuts, checklist behaviour */
+function blockBeforeCaret() {
+  const s = getSelection(); if (!s.rangeCount || !s.isCollapsed) return null; const n = selNode(); if (!n) return null;
+  const b = closestEl(n, 'div,p,li,h1,h2,h3,blockquote,pre,td,th'); if (!b) return null;
+  const r = document.createRange(); r.setStart(b, 0); r.setEnd(s.anchorNode, s.anchorOffset);
+  const pre = document.createRange(); pre.setStart(edEl(), 0); pre.setEnd(b, 0);
+  return {b, r, text: r.toString().replace(/\u00a0/g, ' '), first: !pre.toString().trim()};
+}
+function mdShortcut() {
+  const x = blockBeforeCaret(); if (!x || x.first || !/^(DIV|P)$/.test(x.b.tagName) || x.b.querySelector('ul,ol,table')) return false;
+  const T = x.text, m = {'-': 'ul', '*': 'ul', '1.': 'ol', '[]': 'ck', '[ ]': 'ck', '#': 'h1', '##': 'h2', '###': 'h3', '>': 'bq'}[T]; if (!m) return false;
+  const s = getSelection(); s.removeAllRanges(); s.addRange(x.r); exec('delete');
+  if (m === 'ul') { exec('insertUnorderedList'); applyListKind(false); } else if (m === 'ol') exec('insertOrderedList'); else if (m === 'ck') { exec('insertUnorderedList'); applyListKind(true); }
+  else if (m === 'bq') exec('formatBlock', 'blockquote'); else exec('formatBlock', m);
+  onEdit(); return true;
+}
+function bindEditor() {
+  const pe = $('#pE');
+  pe.addEventListener('input', e => { if (e.target.id === 'ed') onEdit(); });
+  pe.addEventListener('keydown', e => {
+    if (e.target.id !== 'ed') return; const mod = e.ctrlKey || e.metaKey;
+    if (e.key === ' ' && !mod && !e.altKey) { if (mdShortcut()) e.preventDefault(); }
+    else if (e.key === 'Enter' && !mod) { setTimeout(() => { const li = closestEl(selNode(), 'li'); if (li && li.classList.contains('done') && !li.textContent.trim()) { li.classList.remove('done'); onEdit(); } }, 0); }
+    else if (e.key === 'Tab') {
+      const cell = closestEl(selNode(), 'td,th');
+      if (cell) { e.preventDefault(); const cells = [...cell.closest('table').querySelectorAll('td,th')], i = cells.indexOf(cell) + (e.shiftKey ? -1 : 1); if (i >= cells.length) { tableOp('rowA'); const c2 = [...cell.closest('table').querySelectorAll('td,th')][i]; if (c2) placeCaret(c2); } else if (i >= 0) placeCaret(cells[i]); }
+      else if (curList()) { e.preventDefault(); exec(e.shiftKey ? 'outdent' : 'indent'); onEdit(); }
+    }
+    else if (mod && e.key.toLowerCase() === 'k') { e.preventDefault(); savedRange = getSelection().getRangeAt(0).cloneRange(); linkDlg(); }
+    else if (mod && e.shiftKey && e.key.toLowerCase() === 'x') { e.preventDefault(); command('strike'); }
+  });
+  pe.addEventListener('click', e => {
+    const ed = e.target.closest('#ed'); if (!ed) return; const n = cur();
+    const a = e.target.closest('a'); if (a && (e.metaKey || e.ctrlKey || (n && n.del))) { window.open(a.href, '_blank', 'noopener'); e.preventDefault(); return; }
+    if (e.target.tagName === 'IMG') { $('#lb').innerHTML = `<img src="${e.target.src}" alt="">`; $('#lb').hidden = false; return; }
+    const li = e.target.closest('li'); if (li && li.parentElement.classList.contains('ck') && !(n && n.del) && e.target === li) { const r = li.getBoundingClientRect(); if (e.clientX - r.left < 28 && e.clientY - r.top < 30) { li.classList.toggle('done'); onEdit(); } }
+  });
+  pe.addEventListener('paste', e => {
+    if (e.target.id !== 'ed' || (cur() && cur().del)) return; const cd = e.clipboardData, f = [...(cd.files || [])].find(x => /^image\//.test(x.type));
+    if (f) { e.preventDefault(); insertImage(f); return; }
+    const h = cd.getData('text/html'); if (h) { e.preventDefault(); exec('insertHTML', sanitize(h)); onEdit(); }
+  });
+  pe.addEventListener('drop', e => { const f = e.dataTransfer && [...e.dataTransfer.files].find(x => /^image\//.test(x.type)); if (e.target.closest('#ed') && f) { e.preventDefault(); e.stopPropagation(); insertImage(f); } });
+  pe.addEventListener('mousedown', e => { if (e.target.closest('.tbn,.tbt button')) e.preventDefault(); });
+  pe.addEventListener('click', e => { const b = e.target.closest('[data-c]'); if (b) { e.stopPropagation(); command(b.dataset.c, b); } });
+  pe.addEventListener('focusout', e => { if (e.target.id === 'ed') { const n = cur(); if (n && !n.del) { n.html = e.target.innerHTML; derive(n); queueSave(); } } });
+}
+function placeCaret(el) { const r = document.createRange(); r.selectNodeContents(el); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+
+/* ---------- note actions ---------- */
+function exportPop(anchor) {
+  const n = cur(); if (!n) return;
+  pop(anchor, 'Export', api => {
+    api.body.innerHTML = '<button class="mi" data-k="md">Markdown (.md)</button><button class="mi" data-k="txt">Plain text (.txt)</button><button class="mi" data-k="print">🖨 Print / save as PDF</button>';
+    api.body.onclick = e => { const k = ((e.target.closest('.mi') || {}).dataset || {}).k; if (!k) return; closePop(); const nm = safeName(n.t);
+      if (k === 'md') { download(nm + '.md', toMd(n.html), 'text/markdown'); toast('Exported ' + nm + '.md' + (/<img/i.test(n.html) ? ' (images are not included)' : '')); }
+      else if (k === 'txt') { download(nm + '.txt', plain(n.html).trim() + '\n'); toast('Exported ' + nm + '.txt'); }
+      else window.print(); };
+  });
+}
+async function moveDlg() {
+  const n = cur(); if (!n) return;
+  const r = await modal({title: 'Move note', fields: [{id: 'f', label: 'Folder', type: 'select', options: S.folders.map(f => [f.id, f.name]), value: n.folder}], buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Move', value: 'ok', primary: true}]});
+  if (r.value !== 'ok' || r.vals.f === n.folder) return; n.folder = r.vals.f; touch(); render(); updFooter();
+  if (curF !== 'all' && curF !== n.folder) { curN = null; loadEditor(); if (mobile()) setView('list'); selectFirst(); }
+}
+function deleteNote() {
+  const n = cur(); if (!n) return; const v = visible(), i = v.indexOf(n), next = v[i + 1] || v[i - 1];
+  n.del = Date.now(); n.pin = false; touch(); curN = null; renderFolders();
+  if (mobile()) { setView('list'); loadEditor(); renderList(); } else { if (next) openNote(next.id); else { loadEditor(); renderList(); } }
+  toast('Note moved to Recently Deleted', 'Undo', () => { n.del = 0; touch(); render(); openNote(n.id); });
+}
+async function purgeNote() {
+  const n = cur(); if (!n) return; const r = await modal({title: 'Delete permanently?', text: 'This note will be erased and can’t be recovered.', buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Delete', value: 'ok', primary: true}]});
+  if (r.value !== 'ok') return; S.notes.splice(S.notes.indexOf(n), 1); curN = null; touch(); render(); loadEditor(); if (mobile()) setView('list'); else selectFirst();
+}
+
+/* ---------- pane events ---------- */
+$('#pF').addEventListener('click', e => {
+  const a = e.target.closest('[data-a]');
+  if (a && a.dataset.a === 'nf') return newFolder();
+  if (a && a.dataset.a === 'fmenu') { e.stopPropagation(); return folderMenu(a, a.closest('.fi').dataset.f); }
+  const f = e.target.closest('.fi'); if (f) goFolder(f.dataset.f);
+});
+$('#pF').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.dataset.a === 'fmenu') { e.preventDefault(); e.target.click(); } });
+$('#pL').addEventListener('click', e => {
+  const a = e.target.closest('[data-a]'), k = a && a.dataset.a;
+  if (k === 'new') return newNote(); if (k === 'sample') { S.notes.push(...sampleNotes()); touch(); render(); selectFirst(); return toast('Added 3 sample notes — edit or delete them freely.'); }
+  if (k === 'lmenu') return listMenu(a); if (k === 'tofolders') { dropIfEmpty(); setView('folders'); return; }
+  const ni = e.target.closest('.ni'); if (ni) openNote(ni.dataset.id);
+});
+$('#pL').addEventListener('input', e => { if (e.target.id === 'sq') { q = e.target.value; renderList(); } });
+$('#pE').addEventListener('click', e => {
+  const a = e.target.closest('[data-a]'); if (!a) return; const k = a.dataset.a, n = cur();
+  if (k === 'new') newNote();
+  else if (k === 'toList') { dropIfEmpty(); setView('list'); renderList(); }
+  else if (k === 'pin' && n) { n.pin = !n.pin; touch(); loadEditor(); renderList(); toast(n.pin ? 'Pinned to the top of the list' : 'Unpinned'); }
+  else if (k === 'move') moveDlg();
+  else if (k === 'share') exportPop(a);
+  else if (k === 'del') deleteNote();
+  else if (k === 'restore' && n) { n.del = 0; touch(); render(); loadEditor(); toast('Note restored to ' + folderOf(n.folder).name); }
+  else if (k === 'purge') purgeNote();
+});
+$('#lb').onclick = () => { $('#lb').hidden = true; };
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#lb').hidden) $('#lb').hidden = true; });
+bindEditor();
+function backupData() { const {name, folders, notes, set} = S; return {name, folders, notes, set}; }
+async function doSave() {
+  if (document.activeElement && document.activeElement.blur && document.activeElement.id !== 'ed') document.activeElement.blur();
+  const n = cur(); if (n && !n.del && edEl()) { n.html = edEl().innerHTML; derive(n); }
+  if (!needCrypto()) return; if (!S.notes.length) return toast('Nothing to back up yet.', null, null, true);
+  if (!sessionPw) { const pw = await askPassword(true); if (!pw) return; sessionPw = pw; }
+  const date = todayS(), n2 = S.exp.date === date ? S.exp.n + 1 : 1;
+  let text; try { text = await encrypt({app: 'cuech4-notes', v: 1, ...backupData(), exportedAt: new Date().toISOString(), date, version: n2}, sessionPw); } catch (e) { return toast('Couldn’t encrypt the backup in this browser.', null, null, true); }
+  const fname = safeName(S.name) + '_' + date + (n2 > 1 ? '_v' + n2 : '') + '.txt';
+  download(fname, text); S.exp = {date, n: n2}; S.dirty = false; S.lastBackup = date; saveNow(); chip(); toast('Backup downloaded: ' + fname);
+}
+async function importText(file) {
+  const text = await file.text(), md = /\.(md|markdown)$/i.test(file.name);
+  let html = md ? mdToHtml(text) : textToHtml(text);
+  const first = (plain(html).split('\n').map(s => s.trim()).filter(Boolean)[0] || '');
+  const base = file.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
+  if (base && !/^<h1>/i.test(html) && (!first || first.length > 80)) html = '<h1>' + esc(base) + '</h1>' + html;
+  const n = mkNote(html, curF === 'all' || curF === 'trash' ? 'f0' : curF); S.notes.push(n); return n;
+}
+async function openFile(files) {
+  files = [...files].filter(Boolean); if (!files.length) return; const made = [];
+  for (const file of files) {
+    const text = await file.text(); let obj; try { obj = JSON.parse(text); } catch (e) {}
+    if (obj && obj.app === 'cuech4-notes' && obj.salt && obj.iv && obj.data) { await openBackup(obj); continue; }
+    if (obj && typeof obj === 'object' && !/\.(txt|md|markdown)$/i.test(file.name)) { toast('That JSON file isn’t a Notes backup.', null, null, true); continue; }
+    made.push(await importText(file));
+  }
+  if (made.length) { touch(); if (curF === 'trash') curF = 'all'; q = ''; render(); openNote(made[0].id); toast('Imported ' + made.length + ' note' + (made.length > 1 ? 's' : '')); }
+}
+async function openBackup(obj) {
+  if (!needCrypto()) return;
+  let err = '', data = null, pw = null;
+  while (!data) { pw = await askPassword(false, err); if (!pw) return; try { data = await decrypt(obj, pw); } catch (e) { err = 'Wrong password, or the file was changed.'; } }
+  const inc = clean(data); if (!inc || !inc.notes.length) return toast('The backup opened but has no notes in it.', null, null, true);
+  let mode = 'replace';
+  if (S.notes.length) { const r = await modal({title: 'Open this backup', text: `It has ${inc.notes.length} note${inc.notes.length > 1 ? 's' : ''} in ${inc.folders.length} folder${inc.folders.length > 1 ? 's' : ''}. Merge adds anything missing to what you have now (when a note exists in both, the most recently edited copy wins). Replace swaps your current notes for the backup.`, buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Replace', value: 'replace'}, {label: 'Merge', value: 'merge', primary: true}]}); if (r.value === 'cancel') return; mode = r.value; }
+  dropIfEmpty();
+  if (mode === 'replace') S = {...inc, exp: {date: String(data.date || ''), n: Number.isFinite(data.version) ? data.version : 0}, dirty: false, lastBackup: DATE_RE.test(data.date) ? data.date : ''};
+  else {
+    const fids = new Set(S.folders.map(f => f.id)); inc.folders.forEach(f => { if (!fids.has(f.id)) S.folders.push(f); });
+    for (const n of inc.notes) { const m = S.notes.find(x => x.id === n.id); if (!m) S.notes.push(n); else if (n.mod > m.mod) Object.assign(m, n); }
+    S.dirty = true;
+  }
+  sessionPw = pw; curN = null; curF = 'all'; q = ''; saveNow(); render(); loadEditor(); selectFirst(); toast(mode === 'merge' ? 'Merged the backup into your notes' : 'Opened ' + S.name);
+}
+$('#btnSave').onclick = doSave; $('#btnOpen').onclick = () => $('#file').click();
+$('#file').onchange = e => { const f = [...e.target.files]; e.target.value = ''; openFile(f); };
+$('#btnPw').onclick = async () => { if (!needCrypto()) return; const pw = await askPassword(true); if (pw) { sessionPw = pw; chip(); toast('Password set. Your next backup will use it.'); } };
+$('#hname').addEventListener('change', e => { S.name = e.target.value.trim().slice(0, 60) || 'My Notes'; e.target.value = S.name; touch(); chip(); });
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => { e.preventDefault(); const fs = [...(e.dataTransfer ? e.dataTransfer.files : [])].filter(f => /\.(txt|md|markdown|json)$/i.test(f.name)); if (fs.length) openFile(fs); });
+$('#newBtn').onclick = async () => {
+  if (S.notes.length) {
+    const btns = S.dirty ? [{label: 'Cancel', value: 'cancel'}, {label: 'Discard & start new', value: 'discard'}, {label: 'Backup first', value: 'save', primary: true}] : [{label: 'Cancel', value: 'cancel'}, {label: 'Start new', value: 'discard', primary: true}];
+    const r = await modal({title: 'Start a new notebook?', text: S.dirty ? 'You have changes that aren’t in a backup yet. Starting new clears this browser’s copy.' : 'Your latest backup has everything. Starting new clears this browser’s copy.', buttons: btns});
+    if (r.value === 'cancel') return; if (r.value === 'save') { await doSave(); if (S.dirty) return; }
+  }
+  S = fresh(); sessionPw = null; curN = null; curF = 'all'; q = ''; saveNow(); render(); loadEditor(); setView('list');
+};
+$('#app').addEventListener('keydown', e => { if (e.key === 'Escape' && document.activeElement && document.activeElement.id === 'sq') { q = ''; renderList(); } });
+document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.altKey && e.key.toLowerCase() === 'n') { e.preventDefault(); newNote(); } });
+
+/* ---------- boot ---------- */
+(async () => {
+  const st = await store.load(); const c = clean(st); if (c && st) S = c;
+  $('#hname').value = S.name; render(); loadEditor(); selectFirst();
+  window.__notes = {get S() { return S; }, get cur() { return cur(); }, get curF() { return curF; }, ready: true, sanitize, toMd, mdToHtml, plain};
+})();
+})();
+</script>
+</body>
+</html>
