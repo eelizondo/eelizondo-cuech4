@@ -82,6 +82,7 @@
   .crow { display: flex; gap: 10px; align-items: baseline; margin: 7px 0; } .ck { width: 78px; flex: none; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; } .clabel { font-size: 13px; margin-bottom: 4px; }
   .cch { flex: 1; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; } .cpill { display: inline-flex; align-items: center; gap: 4px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 99px; padding: 3px 4px 3px 11px; font-size: 13.5px; } .cpill button { background: none; border: 0; color: var(--muted); cursor: pointer; width: 20px; height: 20px; border-radius: 50%; font-size: 11px; } .cpill button:hover { background: rgba(255,255,255,.12); color: var(--text); }
   .cin { flex: 1; min-width: 110px; max-width: 200px; margin: 0 !important; padding: 0 10px !important; height: 30px !important; font-size: 13.5px !important; } .crow { margin: 4px 0 !important; }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; margin: 0; } input[type=number] { -moz-appearance: textfield; appearance: textfield; }
   .stg .car { margin-left: 5px; opacity: .6; white-space: nowrap; }
   .stg { display: inline-block; padding: 2px 10px; border-radius: 99px; background: rgba(255,255,255,.08); font-weight: 600; font-size: 12.5px; } .stg.hold { background: rgba(245,197,66,.16); color: #f5d77a; }
   .ptitle small.pcode { font-size: 12.5px; font-weight: 600; color: var(--accent-text); }
@@ -105,6 +106,9 @@
   .formg { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; } .formg label { font-size: 12.5px; color: var(--muted); font-weight: 600; display: block; } .formg .fld { display: block; width: 100%; margin-top: 4px; font-weight: 400; } .formg .full { grid-column: 1 / -1; }
   .chk { display: flex; flex-wrap: wrap; gap: 6px; } .chk label { display: inline-flex; align-items: center; gap: 6px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 13px; color: var(--text); font-weight: 400; margin: 0; } .chk label:has(input:checked) { border-color: var(--accent); background: var(--dim); } .chk input { accent-color: var(--accent); }
   .brief { background: #0c0d0f; border: 1px solid var(--line); border-radius: 12px; padding: 14px; white-space: pre-wrap; overflow-wrap: anywhere; font: 13.5px/1.55 ui-monospace, Menlo, Consolas, monospace; min-height: 220px; }
+  .qrow { display: grid; grid-template-columns: 120px 1fr; gap: 4px 10px; font-size: 12.5px; } .qrow span { color: var(--muted); } .qrow b { font-weight: 500; white-space: pre-wrap; overflow-wrap: anywhere; } .muted { color: var(--muted); }
+  .sug { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; } .sug .chip { background: var(--panel-2); border: 1px dashed var(--line); color: var(--text); border-radius: 999px; padding: 4px 10px; font-size: 12px; cursor: pointer; font-family: inherit; } .sug .chip:hover { border-color: var(--accent); }
+  .rtl td { vertical-align: top; font-size: 13px; } .stt2.qReady { background: rgba(120,140,255,.18); color: #aab6ff; } .stt2.qInProgress { background: rgba(245,197,66,.16); color: #f5d77a; } .stt2.qOnHold { background: rgba(160,160,160,.18); color: #bbbec8; } .stt2.qCompleted { background: rgba(75,206,151,.16); color: #4bce97; } .rtl td, .rtl th { white-space: normal; } .tin { padding: 5px 8px !important; font-size: 12.5px !important; }
   .row2 { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
   .dg { color: #fca5a5 !important; }
   .stt2 { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 6px; } .stt2.Pending { background: rgba(245,197,66,.16); color: #f5d77a; } .stt2.Completed { background: rgba(75,206,151,.16); color: #4bce97; }
@@ -161,7 +165,7 @@
 </head>
 <body>
 <header class="app">
-  <div><h1 class="title">🧭 Project Control</h1><a class="hub-breadcrumb" href="../../hub.html">← Cuech4 Hub</a></div>
+  <div><h1 class="title">🧭 Project Control</h1><a class="hub-breadcrumb" href="../../hub.html#latest-builds">← Cuech4 Hub</a></div>
   <button class="btn-ghost" id="newBtn">＋ New</button>
 </header>
 <div class="wrap">
@@ -201,7 +205,13 @@ const nextBiz = s => { let x = s; while (isWk(x)) x = addD(x, 1); return x; };
 const addBiz = (s, n) => { let x = s; while (n > 0) { x = addD(x, 1); if (!isWk(x)) n--; } return x; };
 const diffD = (a, b) => Math.round((pd(b) - pd(a)) / 864e5);
 function bizBetween(a, b) { let n = 0, x = a; if (b < a) return 1; while (x <= b) { if (!isWk(x)) n++; x = addD(x, 1); } return Math.max(1, n); }
-const endFrom = (start, dur) => dur <= 1 ? start : addBiz(start, dur - 1);
+const EPOCH = '2000-01-03';
+const bizIdx = d => { const n = diffD(EPOCH, d), w = Math.floor(n / 7); return w * 5 + Math.min(n - w * 7, 5); };
+const bizDate = i => { const w = Math.floor(i / 5); return addD(EPOCH, w * 7 + (i - w * 5)); };
+const halfR = n => Math.round(n * 2) / 2;
+const sTime = t => bizIdx(t.start) + (t.sf || 0);
+const eTime = t => sTime(t) + t.dur;
+const endFrom = (start, dur, sf = 0) => dur === 0 ? start : bizDate(Math.ceil(bizIdx(start) + sf + dur - 1e-9) - 1);
 const fmtMD = s => s ? s.slice(5, 7) + '/' + s.slice(8, 10) : '';
 const fmtMDY = s => s ? s.slice(5, 7) + '/' + s.slice(8, 10) + '/' + s.slice(2, 4) : '';
 const fmtNice = s => { if (!s) return ''; const d = pd(s); return MON[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear(); };
@@ -214,9 +224,16 @@ const ST = {ns: 'Not Started', ip: 'In Progress', done: 'Complete', hold: 'On Ho
 const CLIENT_COLORS = ['#7c83f7', '#4bce97', '#f5c542', '#f472b6', '#38bdf8', '#c084fc', '#e8895a', '#a3e635'];
 const ACCENTS = {indigo: ['Indigo', '#7c83f7'], teal: ['Teal', '#2bb5a8'], sky: ['Sky', '#4aa8e8'], violet: ['Violet', '#a67cf0'], rose: ['Rose', '#ef6f91'], amber: ['Amber', '#e0a63a'], slate: ['Slate', '#8fa3b8'], copper: ['Copper', '#e8895a']};
 const OLD_STAGES = ['Planning / Discovery', 'Kickoff', 'Creative Development', 'On Hold', 'CMLR Review', 'AFD + Print', 'Deployment', 'Complete'];
-const DEF_DEPTS = ['PM', 'CE', 'Strat', 'Copy', 'Art', 'WPP', 'Print Prod'];
+const DEF_DEPTS = ['PM', 'CE', 'Strat', 'Editorial', 'Copy', 'Art', 'WPPp', 'Print Prod'];
 const DEF_STAGES = ['Upcoming', 'Pre-KO', 'Creative Development', 'Marketing Review', 'CMLR Review', 'Dev/Prod', 'AFD', 'Deployment'];
 const DEF_EDITS = [['Check changes', 'Check Changes to both copy and annos + do follow-up FC'], ['Cold read', 'Edit: Cold Read'], ['Initial edit (includes FC)', 'Edit: Initial Edit / FC'], ['Initial edit (no FC)', 'Edit: Initial Edit / No FC'], ['SFC', 'Edit: Cx / slug / Sup FC'], ['Proofread (W4W)', 'Edit: W4W against ...'], ['Slug check', 'Edit: Slug Check'], ['Route clean', 'Edit: Route Clean'], ['Editorial review', 'Edit: Editorial Review']];
+function cleanDraft(d) {
+  if (!d || typeof d !== 'object') return null;
+  const s = (k, n) => str(d[k], n), nn = (k, n) => d[k] == null ? null : str(d[k], n);
+  return {kind: s('kind', 60), file: s('file', 240), ver: s('ver', 20), edits: arr(d.edits, 20).map(x => str(x, 60)).filter(Boolean), team: d.team !== false, recips: arr(d.recips, 20).map(x => str(x, 40)).filter(Boolean), vendorOn: !!d.vendorOn, vendor: s('vendor', 60), instr: s('instr', 2000), note: s('note', 400), steps: s('steps', 2000), refs: s('refs', 2000), email: s('email', 120), qStatus: QSTAT.includes(d.qStatus) ? d.qStatus : 'Ready', dueD: DATE_RE.test(d.dueD) ? d.dueD : '', dueT: s('dueT', 20), editor: s('editor', 80), qNote: s('qNote', 600), client: nn('client', 120), pname: nn('pname', 240), wcode: nn('wcode', 40), task: nn('task', 240)};
+}
+const QSTAT = ['Ready', 'In Progress', 'On Hold'];
+const DEF_RECIPS = ['Copy', 'Art', 'WPPp', 'Studio', 'UX'];
 const DEF_NOTE = 'Please make sure all queries are answered before pushing your route';
 
 /* ---------- storage ---------- */
@@ -228,26 +245,26 @@ const store = {
 };
 
 /* ---------- state ---------- */
-const fresh = () => ({name: 'My Projects', clients: [], projects: [], links: [], templates: [], people: [], set: {depts: DEF_DEPTS.slice(), first: false, accent: 'indigo', slots: ['Initial Timeline', 'Brief', 'Sharepoint'], me: '', stages: DEF_STAGES.slice(), edits: DEF_EDITS.map(x => x.slice()), note: DEF_NOTE, rowsPer: 0}, exp: {date: '', n: 0}, dirty: false, lastBackup: ''});
+const fresh = () => ({name: 'My Projects', clients: [], projects: [], links: [], templates: [], people: [], set: {mig: 1, depts: DEF_DEPTS.slice(), first: false, accent: 'indigo', slots: ['Initial Timeline', 'Brief', 'Sharepoint'], me: '', stages: DEF_STAGES.slice(), edits: DEF_EDITS.map(x => x.slice()), note: DEF_NOTE, rowsPer: 0, email: '', recips: DEF_RECIPS.slice(), vendors: ['TriStar']}, exp: {date: '', n: 0}, dirty: false, lastBackup: ''});
 let S = fresh(), sessionPw = null, saveT = null;
 let ui = {view: 'home', client: 'all', pid: null, tab: 'overview', zoom: 22, full: false, q: '', fStage: '', fPrio: '', fNeed: false, sort: 'code', closedQ: '', rq: '', rClient: '', rStatus: '', lq: '', lKey: '', lProj: '', lClient: '', nq: '', upd: null, route: null};
 
 function cleanTask(t) {
   if (!t || typeof t !== 'object') return null; const name = str(t.name, 200); if (!name) return null;
-  const start = DATE_RE.test(t.start) ? t.start : todayS(), dur = Math.max(0, Math.min(999, int(t.dur, 1)));
-  return {id: str(t.id, 40) || uid(), phase: str(t.phase, 80), name, start, dur, end: dur === 0 ? start : (DATE_RE.test(t.end) && t.end >= start ? t.end : endFrom(start, dur)), pred: arr(t.pred, 10).map(x => str(x, 40)).filter(Boolean), lag: Math.max(0, Math.min(60, int(t.lag))), st: ST[t.st] ? t.st : 'ns', owner: str(t.owner, 30), cmt: str(t.cmt, 300)};
+  const start = DATE_RE.test(t.start) ? t.start : todayS(), dur = Number.isFinite(+t.dur) ? Math.max(0, Math.min(999, halfR(+t.dur))) : 1, sf = +t.sf === 0.5 && dur > 0 ? 0.5 : 0;
+  return {id: str(t.id, 40) || uid(), phase: str(t.phase, 80), name, start, sf, dur, end: endFrom(start, dur, sf), pred: arr(t.pred, 10).map(x => str(x, 40)).filter(Boolean), lag: Math.max(0, Math.min(60, halfR(+t.lag || 0))), st: ST[t.st] ? t.st : 'ns', owner: str(t.owner, 30), cmt: str(t.cmt, 300)};
 }
 function cleanRoute(r) {
   if (!r || typeof r !== 'object') return null;
-  return {id: str(r.id, 40) || uid(), date: DATE_RE.test(r.date) ? r.date : todayS(), time: /^\d{2}:\d{2}$/.test(r.time) ? r.time : '', kind: str(r.kind, 60), file: str(r.file, 240), ver: str(r.ver, 20), proof: str(r.proof, 1500), status: r.status === 'Completed' ? 'Completed' : 'Pending', brief: str(r.brief, 6000), edits: arr(r.edits, 20).map(x => str(x, 60)), req: str(r.req, 80), due: DATE_RE.test(r.due) ? r.due : '', dueT: /^\d{2}:\d{2}$/.test(r.dueT) ? r.dueT : ''};
+  return {id: str(r.id, 40) || uid(), date: DATE_RE.test(r.date) ? r.date : todayS(), time: /^\d{2}:\d{2}$/.test(r.time) ? r.time : '', kind: str(r.kind, 60), file: str(r.file, 240), ver: str(r.ver, 20), proof: str(r.proof, 1500), status: r.status === 'Completed' ? 'Completed' : 'Pending', brief: str(r.brief, 6000), edits: arr(r.edits, 20).map(x => str(x, 60)), req: str(r.req, 80), due: DATE_RE.test(r.due) ? r.due : '', dueT: str(r.dueT, 20), o: r.o && typeof r.o === 'object' ? ['client', 'pname', 'wcode', 'task'].reduce((a, k) => (a[k] = r.o[k] == null ? null : str(r.o[k], 240), a), {}) : null, qs: QSTAT.includes(r.qs) ? r.qs : 'Ready', editor: str(r.editor, 80), qnote: str(r.qnote, 600), done: DATE_RE.test(r.done) ? r.done : '', actual: str(r.actual, 20), rcp: arr(r.rcp, 12).map(x => str(x, 60)).filter(Boolean)};
 }
 function cleanProject(p, cids) {
   if (!p || typeof p !== 'object') return null; const seen = new Set();
   const tasks = arr(p.tasks, 600).map(cleanTask).filter(Boolean).filter(t => !seen.has(t.id) && seen.add(t.id));
   tasks.forEach(t => { t.pred = t.pred.filter(x => seen.has(x) && x !== t.id); });
   const col = {}; if (p.collapsed && typeof p.collapsed === 'object') Object.keys(p.collapsed).slice(0, 100).forEach(k => { col[str(k, 80)] = !!p.collapsed[k]; });
-  return {id: str(p.id, 40) || uid(), client: cids.has(p.client) ? p.client : '', code: str(p.code, 40), prj: str(p.prj, 40), title: str(p.title, 200) || 'Untitled project', prio: PRIO.includes(p.prio) ? p.prio : 'Medium', pm: str(p.pm, 60), ce: str(p.ce, 60), team: str(p.team, 600), crew: p.crew && typeof p.crew === 'object' && !Array.isArray(p.crew) ? p.crew : null, stage: str(p.stage, 60), veeva: str(p.veeva, 60), pnote: str(p.pnote, 600),
-    closed: DATE_RE.test(p.closed) ? p.closed : '', tasks, collapsed: col, auto: p.auto !== false,
+  return {rdraft: cleanDraft(p.rdraft), id: str(p.id, 40) || uid(), client: cids.has(p.client) ? p.client : '', code: str(p.code, 40), prj: str(p.prj, 40), title: str(p.title, 200) || 'Untitled project', prio: PRIO.includes(p.prio) ? p.prio : 'Medium', pm: str(p.pm, 60), ce: str(p.ce, 60), team: str(p.team, 600), crew: p.crew && typeof p.crew === 'object' && !Array.isArray(p.crew) ? p.crew : null, stage: str(p.stage, 60), veeva: str(p.veeva, 60), pnote: str(p.pnote, 600),
+    closed: DATE_RE.test(p.closed) ? p.closed : '', tasks, collapsed: col, autoSet: !!p.autoSet, auto: p.autoSet ? p.auto !== false : true,
     log: arr(p.log, 800).filter(l => l && (str(l.s, 4000) || str(l.n, 4000))).map(l => ({id: str(l.id, 40) || uid(), date: DATE_RE.test(l.date) ? l.date : todayS(), s: str(l.s, 4000), n: str(l.n, 4000)})),
     notes: arr(p.notes, 800).filter(n => n && (str(n.text, 20000) || str(n.title, 200))).map(n => ({id: str(n.id, 40) || uid(), ts: int(n.ts, Date.now()), title: str(n.title, 200), text: str(n.text, 20000), pin: !!n.pin})),
     routes: arr(p.routes, 800).map(cleanRoute).filter(Boolean), created: int(p.created, Date.now())};
@@ -266,8 +283,15 @@ function clean(o) {
   out.templates = arr(o.templates, 30).filter(t => t && str(t.name, 60)).map(t => ({id: str(t.id, 40) || uid(), name: str(t.name, 60), rows: arr(t.rows, 300).filter(r => r && str(r.n, 200)).map(r => ({ph: str(r.ph, 80), n: str(r.n, 200), d: Math.max(0, Math.min(999, int(r.d, 1))), o: str(r.o, 30), pr: arr(r.pr, 5).map(x => int(x, -1)).filter(x => x >= 0), lag: Math.max(0, int(r.lag))}))}));
   const s = o.set || {};
   out.set = {slots: Array.isArray(s.slots) ? s.slots.map(x => str(x, 40)).filter(Boolean).slice(0, 12) : ['Initial Timeline', 'Brief', 'Sharepoint'], accent: ACCENTS[s.accent] ? s.accent : 'indigo', me: str(s.me, 60), stages: arr(s.stages, 40).map(x => str(x, 60)).filter(Boolean).length ? arr(s.stages, 40).map(x => str(x, 60)).filter(Boolean) : DEF_STAGES.slice(),
-    edits: arr(s.edits, 30).filter(x => Array.isArray(x) && str(x[0], 60)).map(x => [str(x[0], 60), str(x[1], 200)]).length ? arr(s.edits, 30).filter(x => Array.isArray(x) && str(x[0], 60)).map(x => [str(x[0], 60), str(x[1], 200)]) : DEF_EDITS.map(x => x.slice()), note: s.note === undefined ? DEF_NOTE : str(s.note, 400), rowsPer: 0};
+    edits: arr(s.edits, 30).filter(x => Array.isArray(x) && str(x[0], 60)).map(x => [str(x[0], 60), str(x[1], 200)]).length ? arr(s.edits, 30).filter(x => Array.isArray(x) && str(x[0], 60)).map(x => [str(x[0], 60), str(x[1], 200)]) : DEF_EDITS.map(x => x.slice()), note: s.note === undefined ? DEF_NOTE : str(s.note, 400), rowsPer: 0, email: str(s.email, 120), recips: Array.isArray(s.recips) ? [...new Set(arr(s.recips, 20).map(x => str(x, 40) === 'WPP' ? 'WPPp' : str(x, 40)).filter(Boolean))] : DEF_RECIPS.slice(), vendors: Array.isArray(s.vendors) ? [...new Set(arr(s.vendors, 40).map(x => str(x, 60)).filter(Boolean))] : ['TriStar']};
   out.set.depts = arr(s.depts, 20).map(x => str(x, 40)).filter(Boolean); if (!out.set.depts.length) out.set.depts = DEF_DEPTS.slice(); out.set.first = !!s.first;
+  if (int(s.mig) < 1) { /* one-time: add Editorial after Strat, WPP -> WPPp */
+    const D = out.set.depts, w = D.indexOf('WPP'); if (w >= 0 && !D.includes('WPPp')) D[w] = 'WPPp'; else if (w >= 0) D.splice(w, 1);
+    if (!D.some(d => d.toLowerCase() === 'editorial')) { let i = D.findIndex(d => d.toLowerCase() === 'strat'); if (i < 0) i = D.findIndex(d => d.toLowerCase() === 'copy') - 1; D.splice(i < -1 ? D.length : i + 1, 0, 'Editorial'); }
+    arr(o.people, 800).forEach(x => { if (x && x.dept === 'WPP') x.dept = 'WPPp'; });
+    out.projects.forEach(p => { if (p && p.crew && p.crew.WPP) { p.crew.WPPp = (p.crew.WPPp || []).concat(p.crew.WPP); delete p.crew.WPP; } });
+  }
+  out.set.mig = 1;
   { const pid = new Set(); out.people = arr(o.people, 800).filter(x => x && str(x.name, 60) && str(x.dept, 40)).map(x => ({id: str(x.id, 40) || uid(), name: str(x.name, 60), dept: str(x.dept, 40)})).filter(x => !pid.has(x.id) && pid.add(x.id)); }
   out.projects.forEach(p => sanitizeCrew(out, p));
   if (out.set.stages.join('|') === OLD_STAGES.join('|')) out.set.stages = DEF_STAGES.slice();
@@ -296,17 +320,21 @@ const taskPh = t => t.phase || 'Tasks';
 
 /* ---------- scheduling ---------- */
 function reschedule(p) {
-  if (!p.auto) return; const by = new Map(p.tasks.map(t => [t.id, t]));
+  /* Times are in business-day units, so a half day (0.5) can end mid-day and let the next task start that afternoon.
+     auto ON: linked tasks always follow their predecessors. OFF: they are only pushed later, never pulled earlier. */
+  const auto = p.auto, by = new Map(p.tasks.map(t => [t.id, t])), moved = new Set();
   for (let pass = 0; pass < p.tasks.length + 2; pass++) {
     let ch = false;
     for (const t of p.tasks) {
-      const ps = t.pred.map(id => by.get(id)).filter(Boolean); if (!ps.length) continue;
-      const base = ps.reduce((m, x) => x.end > m ? x.end : m, '0000-00-00'); let s = nextBiz(addD(base, 1)); if (t.lag) s = addBiz(s, t.lag);
-      const e = t.dur === 0 ? s : endFrom(s, t.dur);
-      if (t.start !== s || t.end !== e) { t.start = s; t.end = e; ch = true; }
+      const ps = t.pred.map(id => by.get(id)).filter(Boolean); if (!ps.length || t.st === 'done') continue;
+      const T = halfR(ps.reduce((m, x) => Math.max(m, eTime(x)), -1) + (t.lag || 0));
+      if (!auto && T <= sTime(t)) continue;
+      const fl = Math.floor(T), s = bizDate(fl), sf = T - fl, e = endFrom(s, t.dur, t.dur > 0 ? sf : 0);
+      if (t.start !== s || (t.sf || 0) !== (t.dur > 0 ? sf : 0) || t.end !== e) { t.start = s; t.sf = t.dur > 0 ? sf : 0; t.end = e; ch = true; moved.add(t.id); }
     }
     if (!ch) break;
   }
+  return auto ? 0 : moved.size;
 }
 const predText = (p, t) => t.pred.map(id => p.tasks.findIndex(x => x.id === id) + 1).filter(n => n > 0).join(', ') + (t.lag ? ' +' + t.lag : '');
 function parsePred(p, t, text) {
@@ -343,7 +371,7 @@ const BUILTIN_TPL = [
 const allTemplates = () => BUILTIN_TPL.concat(S.templates);
 function applyTemplate(p, tpl, startDate) {
   const ids = []; p.tasks = [];
-  tpl.rows.forEach((r, i) => { const t = {id: uid() + i, phase: r.ph, name: r.n, start: nextBiz(startDate), dur: r.d, end: r.d === 0 ? nextBiz(startDate) : endFrom(nextBiz(startDate), r.d), pred: [], lag: r.lag || 0, st: 'ns', owner: r.o, cmt: ''}; ids.push(t.id); p.tasks.push(t); });
+  tpl.rows.forEach((r, i) => { const t = {id: uid() + i, phase: r.ph, name: r.n, start: nextBiz(startDate), sf: 0, dur: r.d, end: endFrom(nextBiz(startDate), r.d), pred: [], lag: r.lag || 0, st: 'ns', owner: r.o, cmt: ''}; ids.push(t.id); p.tasks.push(t); });
   tpl.rows.forEach((r, i) => { p.tasks[i].pred = (r.pr || []).map(x => ids[x]).filter(Boolean); }); reschedule(p);
 }
 function templateFrom(p, name) { return {id: uid(), name, rows: p.tasks.map(t => ({ph: t.phase, n: t.name, d: t.dur, o: t.owner, pr: t.pred.map(id => p.tasks.findIndex(x => x.id === id)).filter(x => x >= 0), lag: t.lag}))}; }
@@ -659,7 +687,7 @@ async function deleteProject(p) { if (!await askConfirm('Delete this project?', 
 /* ---------- project page ---------- */
 function viewProject(m) {
   const p = proj(ui.pid), c = client(p.client), pr = projProgress(p);
-  const tabs = [['overview', 'Overview', 0], ['timeline', '📅 Timeline', p.tasks.length], ['status', '📝 Status log', p.log.length], ['notes', '🗒 Notes', p.notes.length], ['routes', '🛣 Routes', p.routes.length], ['links', '🔗 Links', projLinks(p).length]];
+  const tabs = [['overview', 'Overview', 0], ['timeline', '📅 Timeline', p.tasks.length], ['status', '📝 Status log', p.log.length], ['notes', '🗒 Notes', p.notes.length], ['routes', '🛣 Routes', p.routes.length], ['links', '🔗 Links', S.links.filter(l => l.pid === p.id).length]];
   m.innerHTML = `<button class="crumb" data-act="go" data-v="${p.closed ? 'closed' : 'home'}">← ${p.closed ? 'Closed projects' : 'Portfolio'}</button>
   <div class="hd"><div style="flex:1;min-width:240px"><h2>${esc(label(p))}</h2><div class="sub">${c ? `<span class="cl" style="background:${c.color}"></span>${esc(c.name)} · ` : ''}${esc([p.prj, p.stage].filter(Boolean).join(' · '))}${p.closed ? ' · <b>Closed ' + fmtNice(p.closed) + '</b>' : ''}</div></div>
     <span class="pr ${p.prio}">${p.prio}</span><button class="btn-ghost" data-act="editProj">✎ Edit details</button>${p.closed ? '<button class="btn-ghost" data-act="reopen" data-pid="' + p.id + '">↺ Reopen</button>' : '<button class="btn-ghost" data-act="closeProj">✔ Close project</button>'}<button class="ibtn" data-act="delProj" title="Delete project" aria-label="Delete project">🗑</button></div>
@@ -756,7 +784,8 @@ async function editLink(l, def = {}) {
   const isNew = !l, o = l || {key: def.key || '', name: def.name || '', desc: '', url: '', client: def.client || '', pid: def.pid || ''};
   const cur = o.pid ? 'p:' + o.pid : o.client ? 'c:' + o.client : 'g';
   const opts = [['g', 'Everything (all clients)']].concat(S.clients.map(c => ['c:' + c.id, 'Client: ' + c.name]), S.projects.filter(p => !p.closed || p.id === o.pid).map(p => ['p:' + p.id, 'Project: ' + label(p)]));
-  const rp = modal({title: isNew ? 'New link' : 'Edit link', fields: [{id: 'key', label: 'Key (a tag to find it by — a brand code or a topic)', value: o.key, max: 40}, {id: 'scope', label: 'Belongs to', type: 'select', options: opts, value: cur}, {id: 'name', label: 'Name', value: o.name, max: 200}, {id: 'desc', label: 'Description', value: o.desc, max: 300}, {id: 'url', label: 'Link', value: o.url, max: 2000, full: true}],
+  dlgWide();
+  const rp = modal({title: isNew ? 'New link' : 'Edit link', fields: [{id: 'scope', label: 'Belongs to', type: 'select', options: opts, value: cur}, {id: 'key', label: 'Key — a tag to find it by (e.g. GNE, Finance)', value: o.key, max: 40}, {id: 'name', label: 'Name', value: o.name, max: 200, full: true}, {id: 'desc', label: 'Description (optional)', type: 'textarea', rows: 2, value: o.desc, max: 300, full: true}, {id: 'url', label: 'Link', value: o.url, max: 2000, full: true}],
     buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Save link', value: 'ok', primary: true}], validate: v => !str(v.url, 2000) ? 'Paste the link.' : ''});
   { const ki = $('#f_key'); if (ki) { const keys = [...new Set(S.links.map(x => x.key).filter(Boolean))].sort(); ki.setAttribute('list', 'keyList'); ki.insertAdjacentHTML('afterend', '<datalist id="keyList">' + keys.map(k => '<option value="' + esc(k) + '">').join('') + '</datalist>'); } }
   const r = await rp; if (r.value !== 'ok') return; let u = str(r.vals.url, 2000); if (!/^(https?:\/\/|mailto:)/i.test(u)) u = 'https://' + u;
@@ -765,8 +794,8 @@ async function editLink(l, def = {}) {
 }
 const linkProj = l => { const p = l.pid ? proj(l.pid) : null; return p ? `<span class="tag" style="background:rgba(var(--ar),.28)" title="${esc(label(p))}">${esc(p.code || p.title.slice(0, 14))}</span>` : `<span class="tag" style="background:rgba(255,255,255,.1);color:var(--muted)" title="${l.client ? esc(clientName(l.client)) + ' (all projects)' : 'All clients'}">Global</span>${l.client ? ` <small class="muted">${esc(clientName(l.client))}</small>` : ''}`; };
 const linkProjKey = l => { const p = l.pid ? proj(l.pid) : null; return p ? (p.code || p.title) : ''; };
-const linkRows = list => list.map(l => `<tr><td data-l="Key">${l.key ? `<span class="tag">${esc(l.key)}</span>` : ''}</td><td data-l="Project">${linkProj(l)}</td><td data-l="Name"><b>${esc(l.name)}</b></td><td data-l="Description">${esc(l.desc)}</td><td data-l="Link"><a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.url.replace(/^https?:\/\//, '').slice(0, 46))}${l.url.length > 54 ? '…' : ''}</a></td><td data-l=""><button class="ibtn" data-act="linkEdit" data-id="${l.id}" title="Edit">✎</button><button class="ibtn" data-act="linkDel" data-id="${l.id}" title="Delete">🗑</button></td></tr>`).join('');
-const linkHead = '<thead><tr><th style="width:110px">Key</th><th style="width:120px">Project</th><th>Name</th><th>Description</th><th>Link</th><th style="width:80px"></th></tr></thead>';
+const linkRows = list => list.map(l => `<tr><td data-l="Key">${l.key ? `<span class="tag">${esc(l.key)}</span>` : ''}</td><td data-l="Project">${linkProj(l)}</td><td data-l="Name"><b>${esc(l.name)}</b></td><td data-l="Description">${esc(l.desc)}</td><td data-l="Link"><a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.url.replace(/^https?:\/\//, '').slice(0, 46))}${l.url.length > 54 ? '…' : ''}</a></td><td data-l="" style="white-space:nowrap"><button class="ibtn" data-act="linkCopy" data-id="${l.id}" title="Copy key, project, name, description and link">📋</button><button class="ibtn" data-act="linkEdit" data-id="${l.id}" title="Edit">✎</button><button class="ibtn" data-act="linkDel" data-id="${l.id}" title="Delete">🗑</button></td></tr>`).join('');
+const linkHead = '<thead><tr><th style="width:110px">Key</th><th style="width:120px">Project</th><th>Name</th><th>Description</th><th>Link</th><th style="width:112px"></th></tr></thead>';
 function tabLinks(b, p) {
   const list = ui.incGlobal ? projLinks(p) : S.links.filter(l => l.pid === p.id);
   b.innerHTML = `<div class="bar2"><button class="btn-main" data-act="linkNew" data-pid="${p.id}">＋ Add link</button><button class="btn-ghost" data-act="linksCopy"${list.length ? '' : ' disabled'}>📋 Copy links</button><label style="display:inline-flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);cursor:pointer"><input type="checkbox" data-ctl="incGlobal"${ui.incGlobal ? ' checked' : ''} style="accent-color:var(--accent)"> Also show ${esc(clientName(p.client) || 'brand')}-wide &amp; global links</label></div>
@@ -844,16 +873,16 @@ async function managePeople() {
 }
 async function openSettings() {
   const s = S.set; dlgWide();
-  const r = await modal({title: 'Settings', fields: [{id: 'me', label: 'My name (used as PM, requester and editor)', value: s.me, max: 60}, {id: 'accent', label: 'Accent colour', type: 'select', options: Object.entries(ACCENTS).map(([k, v]) => [k, v[0]]), value: s.accent}, {id: 'depts', label: 'Team departments (one per line)', type: 'textarea', rows: 5, max: 600, value: s.depts.join('\n'), full: true}, {id: 'first', label: 'Names on the dashboard and copied status table', type: 'select', options: [['0', 'Full names'], ['1', 'First names only']], value: s.first ? '1' : '0'}, {id: 'stages', label: 'Project stages (one per line)', type: 'textarea', rows: 6, max: 1500, value: s.stages.join('\n'), full: true}, {id: 'edits', label: 'Edit types for route briefs (one per line: Label = instruction line)', type: 'textarea', rows: 8, max: 3000, value: s.edits.map(e => e[0] + ' = ' + e[1]).join('\n'), full: true}, {id: 'slots', label: 'Links every project should have (one per line)', type: 'textarea', rows: 3, max: 500, value: s.slots.join('\n'), full: true}, {id: 'note', label: 'Default “Important Note” on route briefs', type: 'textarea', rows: 2, max: 400, value: s.note, full: true}], buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Save', value: 'ok', primary: true}]});
+  const r = await modal({title: 'Settings', fields: [{id: 'me', label: 'My name (used as PM, requester and editor)', value: s.me, max: 60}, {id: 'accent', label: 'Accent colour', type: 'select', options: Object.entries(ACCENTS).map(([k, v]) => [k, v[0]]), value: s.accent}, {id: 'depts', label: 'Team departments (one per line)', type: 'textarea', rows: 5, max: 600, value: s.depts.join('\n'), full: true}, {id: 'first', label: 'Names on the dashboard and copied status table', type: 'select', options: [['0', 'Full names'], ['1', 'First names only']], value: s.first ? '1' : '0'}, {id: 'stages', label: 'Project stages (one per line)', type: 'textarea', rows: 6, max: 1500, value: s.stages.join('\n'), full: true}, {id: 'edits', label: 'Editorial edit types for route briefs (one per line)', type: 'textarea', rows: 8, max: 1500, value: s.edits.map(e => e[0]).join('\n'), full: true}, {id: 'recips', label: 'Route-to teams (one per line; each adds “Name: Update accordingly”)', type: 'textarea', rows: 4, max: 400, value: s.recips.join('\n'), full: true}, {id: 'vendors', label: 'Vendors (one per line)', type: 'textarea', rows: 2, max: 400, value: s.vendors.join('\n'), full: true}, {id: 'slots', label: 'Links every project should have (one per line)', type: 'textarea', rows: 3, max: 500, value: s.slots.join('\n'), full: true}, {id: 'note', label: 'Default “Important Note” on route briefs', type: 'textarea', rows: 2, max: 400, value: s.note, full: true}], buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Save', value: 'ok', primary: true}]});
   if (r.value !== 'ok') return; const v = r.vals;
   s.me = str(v.me, 60); s.slots = lns(v.slots).map(x => x.slice(0, 40)).slice(0, 12); if (ACCENTS[v.accent]) s.accent = v.accent; const st = lns(v.stages).map(x => x.slice(0, 60)); if (st.length) s.stages = st; const dp = [...new Set(lns(v.depts).map(x => x.slice(0, 40)))].slice(0, 20); if (dp.length) s.depts = dp; s.first = v.first === '1';
-  const ed = lns(v.edits).map(x => { const i = x.indexOf('='); return i > 0 ? [x.slice(0, i).trim().slice(0, 60), x.slice(i + 1).trim().slice(0, 200)] : [x.slice(0, 60), x.slice(0, 200)]; }); if (ed.length) s.edits = ed; s.note = str(v.note, 400); touch(); render(); toast('Settings saved');
+  const ed = [...new Set(lns(v.edits).map(x => x.slice(0, 60)))].map(x => [x, '']); if (ed.length) s.edits = ed; s.recips = [...new Set(lns(v.recips).map(x => x.slice(0, 40)))].slice(0, 20); s.vendors = [...new Set(lns(v.vendors).map(x => x.slice(0, 60)))].slice(0, 40); s.note = str(v.note, 400); touch(); render(); toast('Settings saved');
 }
 /* ---------- timeline (Gantt) ---------- */
 const STS = {ns: 'Not started', ip: 'In progress', done: 'Complete', hold: 'On hold'};
 function ganttCols(full) {
-  const c = [{k: 'rn', l: '#', w: 26}, {k: 'name', l: 'Task', w: 200}, {k: 'dur', l: 'Days', w: 44}, {k: 'start', l: 'Start', w: 118}];
-  c.push({k: 'pred', l: 'Pred.', w: 66}); if (full) c.push({k: 'end', l: 'End', w: 118}, {k: 'owner', l: 'Owner', w: 70});
+  const c = [{k: 'rn', l: '#', w: 26}, {k: 'name', l: 'Task', w: 200}, {k: 'dur', l: 'Days', w: 44}, {k: 'start', l: 'Start', w: 118}, {k: 'end', l: 'End', w: 118}];
+  c.push({k: 'pred', l: 'Pred.', w: 66}); if (full) c.push({k: 'owner', l: 'Owner', w: 70});
   c.push({k: 'st', l: 'Status', w: 112}); if (full) c.push({k: 'cmt', l: 'Comment', w: 150}); c.push({k: 'mn', l: '', w: 24});
   return c;
 }
@@ -887,7 +916,7 @@ function tabTimeline(b, p) {
         switch (c.k) {
           case 'rn': return `<span class="rn">${i + 1}</span>`;
           case 'name': return `<input class="nm" ${fk} value="${esc(t.name)}" maxlength="200" aria-label="Task name">`;
-          case 'dur': return `<input type="number" min="0" max="999" ${fk} ${w} value="${t.dur}" title="Business days (0 = milestone)" aria-label="Duration">`;
+          case 'dur': return `<input type="number" min="0" max="999" step="0.5" ${fk} ${w} value="${t.dur}" title="Business days (0 = milestone)" aria-label="Duration">`;
           case 'start': return `<input type="date" ${fk} ${w} value="${t.start}" aria-label="Start">`;
           case 'end': return `<input type="date" ${fk} ${w} value="${t.end}" aria-label="End">`;
           case 'pred': return `<input ${fk} ${w} value="${esc(predText(p, t))}" placeholder="–" title="Predecessor row numbers; “+2” adds 2 business days" aria-label="Predecessors">`;
@@ -896,7 +925,7 @@ function tabTimeline(b, p) {
           case 'cmt': return `<input ${fk} ${w} value="${esc(t.cmt)}" maxlength="300" aria-label="Comment">`;
           case 'mn': return `<button class="ibtn" data-act="rowMenu" data-t="${t.id}" aria-label="Task menu">⋯</button>`;
         } };
-      const left = diffD(r0, t.start) * z, w = (diffD(t.start, t.end) + 1) * z - 2, tip = esc(`${t.name} — ${fmtMD(t.start)}${t.dur ? ' to ' + fmtMD(t.end) : ''} · ${STS[t.st]}${t.owner ? ' · ' + t.owner : ''}`);
+      const left = diffD(r0, t.start) * z + (t.sf || 0) * z, w = Math.max(5, diffD(r0, t.end) * z + (eTime(t) - bizIdx(t.end)) * z - left - 2), tip = esc(`${t.name} — ${fmtMD(t.start)}${t.dur ? ' to ' + fmtMD(t.end) : ''} · ${STS[t.st]}${t.owner ? ' · ' + t.owner : ''}`);
       const bar = t.dur === 0 ? `<div class="bar ms ${t.st}${late ? ' late' : ''}" data-tid="${t.id}" style="left:${left + Math.round(z / 2) - 7}px" title="${tip}"></div>` : `<div class="bar ${t.st}${late ? ' late' : ''}" data-tid="${t.id}" style="left:${left + 1}px;width:${w}px" title="${tip}"><span>${z >= 14 ? esc(t.name) : ''}</span><i class="rz"></i></div>`;
       pos[t.id] = {y: 44 + ri * 34 + 17, x1: t.dur === 0 ? left + Math.round(z / 2) : left + 1, x2: t.dur === 0 ? left + Math.round(z / 2) + 7 : left + w + 1}; ri++;
       rows += `<div class="gr" data-row="${t.id}"><div class="gl" style="width:${lw}px">${cols.map(cell).join('')}</div><div class="gc" style="width:${W}px">${bar}</div></div>`; });
@@ -913,22 +942,22 @@ function tabTimeline(b, p) {
 
 function setTaskStart(p, t, v) {
   const s = nextBiz(v);
-  if (p.auto && t.pred.length) { const by = new Map(p.tasks.map(x => [x.id, x])), base = t.pred.map(id => by.get(id)).filter(Boolean).reduce((m, x) => x.end > m ? x.end : m, '0000-00-00'), s0 = nextBiz(addD(base, 1)); t.lag = s > s0 ? clamp(bizBetween(s0, s) - 1, 0, 60) : 0; }
-  t.start = s; t.end = t.dur === 0 ? s : endFrom(s, t.dur);
+  if (p.auto && t.pred.length) { const by = new Map(p.tasks.map(x => [x.id, x])), s0 = t.pred.map(id => by.get(id)).filter(Boolean).reduce((m, x) => Math.max(m, eTime(x)), -1), want = bizIdx(s); t.lag = want > s0 ? clamp(halfR(want - s0), 0, 60) : 0; }
+  t.start = s; t.sf = 0; t.end = endFrom(s, t.dur, 0);
 }
 function taskEdit(el) {
   const p = proj(ui.pid); if (!p) return; const t = p.tasks.find(x => x.id === el.dataset.t); if (!t) return; const f = el.dataset.f, v = el.value;
   if (f === 'name') t.name = str(v, 200) || t.name; else if (f === 'owner') t.owner = str(v, 30); else if (f === 'cmt') t.cmt = str(v, 300); else if (f === 'st' && ST[v]) t.st = v;
-  else if (f === 'dur') { t.dur = clamp(int(v, 1), 0, 999); t.end = t.dur === 0 ? t.start : endFrom(t.start, t.dur); }
+  else if (f === 'dur') { const n = parseFloat(String(v).replace(',', '.')); t.dur = Number.isFinite(n) ? clamp(halfR(n), 0, 999) : t.dur; if (t.dur === 0) t.sf = 0; t.end = endFrom(t.start, t.dur, t.sf || 0); }
   else if (f === 'start' && DATE_RE.test(v)) setTaskStart(p, t, v);
-  else if (f === 'end' && DATE_RE.test(v) && v >= t.start) { t.dur = Math.min(999, bizBetween(t.start, v)); t.end = endFrom(t.start, t.dur); }
+  else if (f === 'end' && DATE_RE.test(v) && v >= t.start) { t.dur = clamp(halfR(bizBetween(t.start, v) - (t.sf || 0)), 0.5, 999); t.end = endFrom(t.start, t.dur, t.sf || 0); }
   else if (f === 'pred') { parsePred(p, t, v); }
-  reschedule(p); touch(); deferRender();
+  const pushed = reschedule(p); touch(); deferRender(); if (pushed && f !== 'name') toast('Pushed ' + pushed + ' linked task' + (pushed === 1 ? '' : 's') + ' later');
 }
 function addTask(p, afterId, phase) {
   const i = afterId ? p.tasks.findIndex(t => t.id === afterId) : p.tasks.length - 1, prev = p.tasks[i];
-  const start = prev ? nextBiz(addD(prev.end, 1)) : nextBiz(todayS());
-  const t = {id: uid(), phase: phase != null ? phase : prev ? prev.phase : '', name: 'New task', start, dur: 1, end: start, pred: prev && p.auto ? [prev.id] : [], lag: 0, st: 'ns', owner: '', cmt: ''};
+  const T0 = prev ? halfR(eTime(prev)) : bizIdx(nextBiz(todayS())), start = bizDate(Math.floor(T0)), sf = T0 - Math.floor(T0);
+  const t = {id: uid(), phase: phase != null ? phase : prev ? prev.phase : '', name: 'New task', start, sf, dur: 1, end: endFrom(start, 1, sf), pred: prev && p.auto ? [prev.id] : [], lag: 0, st: 'ns', owner: '', cmt: ''};
   p.tasks.splice(i + 1, 0, t); reschedule(p); touch(); ui.focusKey = t.id + ':name'; render(); return t;
 }
 async function addPhase(p) { const r = await modal({title: 'New phase', fields: [{id: 'n', label: 'Phase name', max: 80}], buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Add phase', value: 'ok', primary: true}], validate: v => str(v.n, 80) ? '' : 'Name the phase.'}); if (r.value === 'ok') addTask(p, null, str(r.vals.n, 80)); }
@@ -966,45 +995,95 @@ document.addEventListener('pointermove', e => {
 });
 function endDrag(e) {
   if (!drag || e.pointerId !== drag.id) return; const {t, p, rz, days, bar} = drag; drag = null; bar.classList.remove('dragging'); if (!days) return;
-  if (rz) { const e2 = addD(t.end, days); if (e2 > t.start) { t.dur = Math.min(999, bizBetween(t.start, e2)); t.end = endFrom(t.start, t.dur); } }
+  if (rz) { const e2 = addD(t.end, days); if (e2 > t.start) { t.dur = clamp(halfR(bizBetween(t.start, e2) - (t.sf || 0)), 0.5, 999); t.end = endFrom(t.start, t.dur, t.sf || 0); } }
   else { const before = t.start; setTaskStart(p, t, addD(t.start, days)); if (p.auto && t.pred.length && days < 0) { reschedule(p); if (t.start >= before) toast('That task is linked to a predecessor, so it can’t start earlier.'); } }
-  reschedule(p); touch(); render();
+  const pushed = reschedule(p); touch(); render(); if (pushed) toast('Pushed ' + pushed + ' linked task' + (pushed === 1 ? '' : 's') + ' later');
 }
 document.addEventListener('pointerup', endDrag); document.addEventListener('pointercancel', endDrag);
-/* ---------- routes (Ziflow briefs) ---------- */
-const editLine = lab => (S.set.edits.find(e => e[0] === lab) || [lab, lab])[1];
-function routeDefaults(p) { return {pid: p.id, kind: 'Manuscript', file: '', ver: 'v1', proof: '', edits: [], req: S.set.me, dueD: '', dueT: '', readyD: todayS(), readyT: nowT(), instr: '', note: S.set.note, steps: '', refs: ''}; }
-const routeInstr = f => f.edits.map(editLine).concat(lns(f.instr));
+/* ---------- routes (Ziflow briefs + Medical Editorial Queue) ---------- */
+const TEAM_LINE = 'Review comments', RECIP_LINE = 'Update accordingly';
+const edAll = p => { const mine = edNames(p); return mine.concat(S.people.filter(x => x.dept.toLowerCase() === 'editorial' && !mine.includes(x.name)).map(x => x.name)); };
+const edNames = p => ((p.crew || {}).Editorial || []).map(pById).filter(Boolean).map(x => x.name);
+function routeDefaults(p, blank) { const d = {pid: p.id, kind: 'Manuscript', file: '', ver: 'v1', edits: [], team: true, recips: [], vendorOn: false, vendor: '', instr: '', note: S.set.note, steps: suggestNext(p), refs: '', email: S.set.me || '', qStatus: 'Ready', dueD: '', dueT: '', editor: edNames(p)[0] || '', client: null, pname: null, wcode: null, task: null, done: '', actual: '', proof: '', qNote: ''}; return !blank && p.rdraft ? {...d, ...p.rdraft, edits: p.rdraft.edits.slice(), recips: p.rdraft.recips.slice()} : d; }
+const DRAFT_SKIP = ['proof', 'done', 'actual', 'pid'];
+function saveDraft(p, f) { const d = {}; Object.keys(f).forEach(k => { if (!DRAFT_SKIP.includes(k)) d[k] = Array.isArray(f[k]) ? f[k].slice() : f[k]; }); p.rdraft = cleanDraft(d); touch(); }
+function routeChanged() { routePrev(); const p = cur(); if (p && ui.route) saveDraft(p, ui.route); }
+const rcpNames = f => f.recips.concat(f.vendorOn && f.vendor.trim() ? [f.vendor.trim()] : []);
+function routeInstr(f) {
+  const L = []; if (f.edits.length) L.push('Edit: ' + f.edits.join(' / '));
+  if (f.team) L.push('Team: ' + TEAM_LINE);
+  rcpNames(f).forEach(n => L.push(n + ': ' + RECIP_LINE));
+  return L.concat(lns(f.instr));
+}
 function buildBrief(p, f) {
   const note = lns(f.note).join('\n'), steps = lns(f.steps).map(x => '- ' + x.replace(/^[-•*]\s*/, '')).join('\n'), ins = routeInstr(f).join('\n');
   return [(p.code ? p.code + ' ' : '') + p.title + (f.kind ? ' (' + f.kind + ')' : ''), '', 'Brand: ' + (clientName(p.client) || 'TBD'), 'Jobcode: ' + (p.code || 'TBD'), 'Veeva Code: ' + (p.veeva || 'TBD'), 'File: ' + (f.file.trim() || 'TBD'), '', 'Instructions:', ins || 'TBD', '', 'Important Note:', note || 'N/A', '', 'Next Steps:', steps || 'TBD', '', 'References:', f.refs.trim() || 'TBD'].join('\n');
 }
-function sheetLine(p, f) { return tsvRow([clientName(p.client), p.title, p.code, S.set.me, f.edits.join(', '), 'Ready', f.dueD ? fmtMDY(f.dueD) : '', fmtT12(f.dueT), '', f.req, f.proof, routeInstr(f).join('\n')]); }
+/* Medical Editorial Queue row — same column order as the Smartsheet */
+const QCOLS = ['Client', 'Project Name', 'Workday Code', 'Requestor Email', 'Type of Task', 'Status', 'Due Date', 'Time Due (ET)', 'Date Completed', 'Actual Time', 'Assigned Editor', 'Ziflow Link', 'Notes'];
+const qOv = (f, k, d) => (f[k] !== null && f[k] !== undefined ? f[k] : d);
+function queueVals(p, f) { return [qOv(f, 'client', clientName(p.client)), qOv(f, 'pname', ((p.code ? p.code + ' ' : '') + p.title).trim()), qOv(f, 'wcode', p.code || p.prj), f.email, f.edits.join(', '), f.qStatus, f.dueD ? fmtMDY(f.dueD) : '', /^\d{2}:\d{2}$/.test(f.dueT) ? fmtT12(f.dueT) : f.dueT.trim(), f.done ? fmtMDY(f.done) : '', f.actual || '', f.editor, f.proof.trim(), f.qNote]; }
+const sheetLine = (p, f) => tsvRow(queueVals(p, f));
+const EDIT_NEXT = {'Check changes': 'Route Clean per IR', 'Cold read': 'Initial Edit', 'Initial edit (includes FC)': 'Route Clean per IR', 'Initial edit (no FC)': 'Route Clean per IR', 'SFC': 'Route Clean per IR', 'Proofread (W4W)': 'Slug Check', 'Slug check': 'Route Clean per IR', 'Route clean': 'Handoff to Art', 'Editorial review': 'Submit for approval'};
+function routeSug(p, f) {
+  const open = p.tasks.filter(t => t.st !== 'done'), cur = open.filter(t => t.st === 'ip'), last = cur.length ? open.indexOf(cur[cur.length - 1]) : -1;
+  const tl = open.slice(last + 1).filter(t => t.st !== 'ip').slice(0, 4).map(taskLine), ed = f.edits.map(e => EDIT_NEXT[e]).filter(Boolean);
+  const have = lns(f.steps).map(x => x.replace(/^[-•*]\s*/, '').toLowerCase()), all = [...new Set(tl.concat(ed))].filter(s => !have.includes(s.toLowerCase()));
+  return all;
+}
+function routePrev() {
+  const p = cur(), f = ui.route; if (!p || !f) return;
+  if ($('#rtPrev')) $('#rtPrev').textContent = buildBrief(p, f);
+  if ($('#rtSug')) { const s = routeSug(p, f); $('#rtSug').innerHTML = s.length ? '<span class="muted">Suggested:</span>' + s.map(x => `<button type="button" class="chip" data-act="rtStep" data-s="${esc(x)}">＋ ${esc(x)}</button>`).join('') : ''; }
+  { const v = queueVals(p, f); [['client', 0], ['pname', 1], ['wcode', 2], ['task', 4]].forEach(([k, i]) => { const el = $('#rtF_' + k); if (el && (k === 'task' || f[k] === null) && document.activeElement !== el) el.value = v[i]; }); }
+  if ($('#rtQ')) $('#rtQ').innerHTML = queueVals(p, f).map((v, i) => `<span>${esc(QCOLS[i])}</span><b>${esc(v) || '<i class="muted">—</i>'}</b>`).join('');
+}
 function tabRoutes(b, p) {
   if (!ui.route || ui.route.pid !== p.id) ui.route = routeDefaults(p);
-  const f = ui.route, log = p.routes.slice().sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
-  b.innerHTML = `<div class="g2"><div class="card"><h3>Route brief generator</h3><div class="formg">
-    <label>Type of file<input class="fld" data-ctl="rt" data-k="kind" list="kinds" value="${esc(f.kind)}" maxlength="60"><datalist id="kinds"><option>Manuscript</option><option>Annotated PDF</option><option>Layout</option><option>Mockups</option><option>Final PDF</option></datalist></label>
+  if (!ui.route.editor && edNames(p)[0]) ui.route.editor = edNames(p)[0];
+  const f = ui.route, qv = queueVals(p, f), log = p.routes.slice().sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
+  const chk = (attr, label, on) => `<label><input type="checkbox" ${attr}${on ? ' checked' : ''}>${esc(label)}</label>`;
+  b.innerHTML = `<div class="g2"><div>
+  <div class="card"><h3>Route brief generator</h3><div class="formg">
+    <label>Type of file<input class="fld" data-ctl="rt" data-k="kind" list="kinds" value="${esc(f.kind)}" maxlength="60"><datalist id="kinds"><option>Manuscript</option><option>Annotated PDF</option><option>Layout</option><option>Mockups</option><option>Storyboard</option><option>Final PDF</option></datalist></label>
     <label>Version<input class="fld" data-ctl="rt" data-k="ver" value="${esc(f.ver)}" maxlength="20"></label>
     <label class="full">File name<input class="fld" data-ctl="rt" data-k="file" value="${esc(f.file)}" maxlength="240" placeholder="${esc((p.code || 'CODE') + ' Title_v1.docx')}"></label>
-    <label class="full">Proof link (Ziflow)<input class="fld" data-ctl="rt" data-k="proof" value="${esc(f.proof)}" maxlength="1500" placeholder="https://…"></label>
-    <div class="full"><label style="margin-bottom:6px">Edit type (pick one or more)</label><div class="chk">${S.set.edits.map(([l]) => `<label><input type="checkbox" data-ctl="rtEdit" data-l="${esc(l)}"${f.edits.includes(l) ? ' checked' : ''}>${esc(l)}</label>`).join('')}</div></div>
-    <label class="full">Other instructions <span style="font-weight:400">(one per line, e.g. “Team: Internal Review”, “Copy: Update accordingly”)</span><textarea class="fld" data-ctl="rt" data-k="instr" rows="3">${esc(f.instr)}</textarea></label>
+    <div class="full"><label style="margin-bottom:6px">Editorial — type of edit <span style="font-weight:400" class="muted">(pick one or more → “Edit: …”)</span></label><div class="chk">${S.set.edits.map(([l]) => chk(`data-ctl="rtEdit" data-l="${esc(l)}"`, l, f.edits.includes(l))).join('')}</div></div>
+    <div class="full"><label style="margin-bottom:6px">Also route to <span style="font-weight:400" class="muted">(adds “Team: ${TEAM_LINE}” and “Name: ${RECIP_LINE}” lines)</span></label><div class="chk">${chk('data-ctl="rtRcp" data-n="@team"', 'Team', f.team)}${S.set.recips.map(n => chk(`data-ctl="rtRcp" data-n="${esc(n)}"`, n, f.recips.includes(n))).join('')}${chk('data-ctl="rtRcp" data-n="@vendor"', 'Vendor', f.vendorOn)}</div>
+      <input class="fld" id="rtVend" data-ctl="rt" data-k="vendor" list="vendors" value="${esc(f.vendor)}" maxlength="60" placeholder="Vendor name, e.g. TriStar" style="margin-top:8px;max-width:280px"${f.vendorOn ? '' : ' hidden'}><datalist id="vendors">${S.set.vendors.map(v => `<option value="${esc(v)}"></option>`).join('')}</datalist></div>
+    <label class="full">Other instructions <span style="font-weight:400">(one per line, added after the lines above)</span><textarea class="fld" data-ctl="rt" data-k="instr" rows="2">${esc(f.instr)}</textarea></label>
     <label class="full">Important note<textarea class="fld" data-ctl="rt" data-k="note" rows="2">${esc(f.note)}</textarea></label>
-    <label class="full">Next steps (one per line)<textarea class="fld" data-ctl="rt" data-k="steps" rows="2" placeholder="Route Clean per IR&#10;Handoff to Art">${esc(f.steps)}</textarea></label>
-    <label class="full">References<textarea class="fld" data-ctl="rt" data-k="refs" rows="2" placeholder="TBD">${esc(f.refs)}</textarea></label>
-    <label>Requester<input class="fld" data-ctl="rt" data-k="req" value="${esc(f.req)}" maxlength="80"></label><div></div>
-    <label>Ready date<input type="date" class="fld" data-ctl="rt" data-k="readyD" value="${f.readyD}"></label><label>Ready time<input type="time" class="fld" data-ctl="rt" data-k="readyT" value="${f.readyT}"></label>
-    <label>Due date<input type="date" class="fld" data-ctl="rt" data-k="dueD" value="${f.dueD}"></label><label>Due time<input type="time" class="fld" data-ctl="rt" data-k="dueT" value="${f.dueT}"></label></div></div>
+    <div class="full"><label>Next steps <span style="font-weight:400" class="muted">(one per line — prefilled from the timeline)</span><textarea class="fld" id="rtSteps" data-ctl="rt" data-k="steps" rows="3" placeholder="Route Clean per IR&#10;Handoff to Art">${esc(f.steps)}</textarea></label><div class="sug" id="rtSug"></div><button type="button" class="btn-ghost" data-act="rtStepsReset" style="margin-top:6px;font-size:12px">↻ Re-suggest from timeline</button></div>
+    <label class="full">References<textarea class="fld" data-ctl="rt" data-k="refs" rows="2" placeholder="TBD">${esc(f.refs)}</textarea></label></div></div></div>
   <div><div class="card"><h3>Brief preview</h3><div class="brief" id="rtPrev">${esc(buildBrief(p, f))}</div>
-    <div class="row2"><button class="btn-main" data-act="rtCopy">📋 Copy brief</button><button class="btn-ghost" data-act="rtSheet" title="Tab-separated: Brand, Project, Jobcode, Editor, Edit type, Ready, Due date, Due time, (blank), Requester, Proof link, Instructions">📋 Copy Smartsheet line</button><button class="btn-ghost" data-act="rtLog">＋ Log this route</button></div>
-    <p class="muted" style="font-size:12.5px;margin:10px 0 0">Paste the brief into the Ziflow comment, then log the route so it’s on record with its proof link.</p></div></div></div>
+    <div class="row2"><button class="btn-main" data-act="rtCopy">📋 Copy brief</button><button class="btn-ghost" data-act="rtClear" title="Empty the brief and queue form">↺ Start blank</button></div>
+    <p class="muted" style="font-size:12.5px;margin:10px 0 0">Paste the brief into the Ziflow comment, then copy the Ziflow link into the queue row.</p></div></div></div>
+  <div class="g2" style="margin-top:0"><div><div class="card"><h3>Medical Editorial Queue</h3><p class="muted" style="margin:-4px 0 12px;font-size:12.5px">Fills one row of the Smartsheet queue. Add the Ziflow link once the route is created.</p><div class="formg">
+    <label>Client<input class="fld" data-ctl="rt" data-k="client" id="rtF_client" value="${esc(qv[0])}" maxlength="120"></label>
+    <label>Project Name<input class="fld" data-ctl="rt" data-k="pname" id="rtF_pname" value="${esc(qv[1])}" maxlength="240"></label>
+    <label>Workday Code<input class="fld" data-ctl="rt" data-k="wcode" id="rtF_wcode" value="${esc(qv[2])}" maxlength="40"></label>
+    <label>Requestor Email<input class="fld" data-ctl="rt" data-k="email" value="${esc(f.email)}" maxlength="120" placeholder="Your name or email"></label>
+    <label class="full">Type of Task <span style="font-weight:400" class="muted">(always filled from the Editorial edit types ticked above)</span><input class="fld" id="rtF_task" readonly tabindex="-1" style="opacity:.85" value="${esc(qv[4])}" maxlength="240"></label>
+    <label>Status<select class="fld" data-ctl="rt" data-k="qStatus">${QSTAT.map(s => `<option${f.qStatus === s ? ' selected' : ''}>${s}</option>`).join('')}</select></label>
+    <label>Due Date<input type="date" class="fld" data-ctl="rt" data-k="dueD" value="${f.dueD}"></label>
+    <label>Time Due (ET)<input class="fld" data-ctl="rt" data-k="dueT" list="times" value="${esc(f.dueT)}" maxlength="20" placeholder="2:30 PM or EOD"><datalist id="times"><option>EOD</option><option>12:00 PM</option><option>2:30 PM</option><option>4:00 PM</option></datalist></label>
+    <label>Date Completed<input type="date" class="fld" data-ctl="rt" data-k="done" value="${f.done}"></label>
+    <label>Actual Time<input class="fld" data-ctl="rt" data-k="actual" value="${esc(f.actual)}" maxlength="20" placeholder="e.g. 1.5 hrs"></label>
+    <label class="full">Assigned Editor<input class="fld" data-ctl="rt" data-k="editor" list="eds" value="${esc(f.editor)}" maxlength="80" placeholder="Anyone"><datalist id="eds">${edAll(p).map(n => `<option value="${esc(n)}"></option>`).join('')}</datalist>${edAll(p).length ? `<span class="sug" style="margin-top:6px">${edAll(p).map(n => `<button type="button" class="chip" data-act="rtEditor" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</span>` : ''}</label>
+    <label class="full">Ziflow Link <span style="font-weight:400" class="muted">(add once the route is in place)</span><input class="fld" data-ctl="rt" data-k="proof" value="${esc(f.proof)}" maxlength="1500" placeholder="https://…"></label>
+    <label class="full">Notes <span style="font-weight:400" class="muted">(one per line)</span><textarea class="fld" data-ctl="rt" data-k="qNote" rows="2" maxlength="600">${esc(f.qNote)}</textarea></label></div></div></div>
+  <div><div class="card"><h3>Queue row</h3><div class="qrow" id="rtQ"></div>
+    <div class="row2"><button class="btn-main" data-act="rtSheet" title="Tab-separated, in the Smartsheet column order — paste into the first cell (Client)">📋 Copy queue line</button><button class="btn-ghost" data-act="rtLog">＋ Log this route</button></div></div></div></div>
   <h3 style="font-size:15px;margin:6px 0 10px">Routes for this project</h3>${log.length ? routesTable(log, false) : '<div class="card"><p class="muted" style="margin:0">No routes logged yet.</p></div>'}`;
+  routePrev();
 }
+const recQ = r => ({client: r.o ? r.o.client : null, pname: r.o ? r.o.pname : null, wcode: r.o ? r.o.wcode : null, email: r.req, edits: r.edits, qStatus: r.status === 'Completed' ? 'Completed' : r.qs, dueD: r.due, dueT: r.dueT, editor: r.editor, proof: r.proof, qNote: r.qnote, done: r.done, actual: r.actual});
 function routesTable(list, showProj) {
-  return `<div class="tw"><table class="tbl" style="min-width:0"><thead><tr><th style="width:84px">Date</th>${showProj ? '<th>Project</th>' : ''}<th>File</th><th style="width:60px">Ver.</th><th>Proof</th><th>Edit type</th><th style="width:110px">Status</th><th style="width:150px"></th></tr></thead><tbody>${list.map(r => { const p = S.projects.find(x => x.routes.includes(r)); return `<tr><td data-l="Date">${fmtMDY(r.date)}${r.time ? '<br><small class="muted">' + fmtT12(r.time) + '</small>' : ''}</td>${showProj ? `<td data-l="Project"><a href="#" class="lk" data-act="open" data-pid="${p ? p.id : ''}" data-tab="routes">${esc(p ? label(p) : '')}</a></td>` : ''}<td data-l="File">${esc(r.file || '—')}<br><small class="muted">${esc(r.kind)}</small></td><td data-l="Ver.">${esc(r.ver)}</td><td data-l="Proof" style="overflow-wrap:anywhere">${/^https?:\/\//i.test(r.proof) ? `<a href="${esc(r.proof)}" target="_blank" rel="noopener noreferrer">Open proof</a>` : esc(r.proof || '—')}</td><td data-l="Edit type">${esc(r.edits.join(', ') || '—')}</td>
-    <td data-l="Status"><button class="stt2 ${r.status}" style="border:0;cursor:pointer" data-act="rtStatus" data-id="${r.id}" title="Click to switch Pending / Completed">${r.status}</button></td>
-    <td data-l="" style="white-space:nowrap"><button class="ibtn" data-act="rtCopyLog" data-id="${r.id}" title="Copy brief">📋</button><button class="ibtn" data-act="rtRow" data-id="${r.id}" title="Copy as a row for your tracking sheet">▤</button><button class="ibtn" data-act="rtReuse" data-id="${r.id}" title="Reuse in the generator">↻</button><button class="ibtn" data-act="rtDel" data-id="${r.id}" title="Delete">🗑</button></td></tr>`; }).join('')}</tbody></table></div>`;
+  return `<div class="tw"><table class="tbl rtl" style="min-width:1250px"><thead><tr><th>Client</th><th>Project Name</th><th>Workday Code</th><th>Requestor Email</th><th>Type of Task</th><th>Status</th><th>Due Date</th><th>Time Due (ET)</th><th>Date Completed</th><th>Actual Time</th><th>Assigned Editor</th><th>Ziflow Link</th><th>Notes</th><th style="width:150px"></th></tr></thead><tbody>${list.map(r => { const p = S.projects.find(x => x.routes.includes(r)); if (!p) return ''; const v = queueVals(p, recQ(r)), st = r.status === 'Completed' ? 'Completed' : r.qs, dash = x => esc(x) || '<span class="muted">—</span>';
+    return `<tr><td data-l="Client">${dash(v[0])}</td><td data-l="Project Name">${showProj ? `<a href="#" class="lk" data-act="open" data-pid="${p.id}" data-tab="routes">${esc(v[1])}</a>` : esc(v[1])}<br><small class="muted" title="Route logged">${fmtMDY(r.date)}${r.time ? ' ' + fmtT12(r.time) : ''}</small></td><td data-l="Workday Code">${dash(v[2])}</td><td data-l="Requestor Email">${dash(v[3])}</td><td data-l="Type of Task">${dash(v[4])}</td>
+    <td data-l="Status"><span class="stt2 q${st.replace(/\s/g, '')}">${esc(st)}</span></td><td data-l="Due Date">${dash(v[6])}</td><td data-l="Time Due (ET)">${dash(v[7])}</td><td data-l="Date Completed">${dash(v[8])}</td><td data-l="Actual Time">${dash(v[9])}</td><td data-l="Assigned Editor">${dash(v[10])}</td>
+    <td data-l="Ziflow Link" style="overflow-wrap:anywhere">${/^https?:\/\//i.test(r.proof) ? `<a href="${esc(r.proof)}" target="_blank" rel="noopener noreferrer">Open Ziflow</a>` : dash(r.proof)}</td><td data-l="Notes" style="white-space:pre-wrap">${dash(r.qnote)}</td>
+    <td data-l="" style="white-space:nowrap"><button class="ibtn" data-act="rtUpdate" data-id="${r.id}" title="Update status, completion, actual time, editor">✎</button><button class="ibtn" data-act="rtProof" data-id="${r.id}" title="Add / edit Ziflow link">🔗</button><button class="ibtn" data-act="rtRow" data-id="${r.id}" title="Copy the queue line for Smartsheet">▤</button><button class="ibtn" data-act="rtReuse" data-id="${r.id}" title="Reuse in the generator">↻</button><button class="ibtn" data-act="rtDel" data-id="${r.id}" title="Delete">🗑</button></td></tr>`; }).join('')}</tbody></table></div>`;
 }
 function viewRoutes(m) {
   let list = []; S.projects.filter(inScope).forEach(p => p.routes.forEach(r => list.push(r))); const q = ui.rq.toLowerCase();
@@ -1015,8 +1094,9 @@ function viewRoutes(m) {
   ${list.length ? routesTable(list, true) : '<div class="card"><p class="muted" style="margin:0">No routes yet. Open a project → Routes to generate a Ziflow brief and log it here.</p></div>'}`;
 }
 function logRoute(p) {
-  const f = ui.route, r = cleanRoute({id: uid(), date: f.readyD, time: f.readyT, kind: f.kind, file: f.file, ver: f.ver, proof: f.proof, status: 'Pending', brief: buildBrief(p, f), edits: f.edits, req: f.req, due: f.dueD, dueT: f.dueT});
-  p.routes.push(r); touch(); ui.route = null; render(); toast('Route logged');
+  const f = ui.route, r = cleanRoute({id: uid(), date: todayS(), time: nowT(), kind: f.kind, file: f.file, ver: f.ver, proof: f.proof, status: f.done ? 'Completed' : 'Pending', done: f.done, actual: f.actual, o: ['client', 'pname', 'wcode'].some(k => f[k] !== null) ? {client: f.client, pname: f.pname, wcode: f.wcode} : null, qs: f.qStatus, editor: f.editor, qnote: f.qNote, brief: buildBrief(p, f), edits: f.edits, req: f.email, due: f.dueD, dueT: f.dueT, rcp: rcpNames(f)});
+  if (f.vendorOn && f.vendor.trim() && !S.set.vendors.some(v => v.toLowerCase() === f.vendor.trim().toLowerCase())) S.set.vendors.push(f.vendor.trim().slice(0, 60));
+  p.routes.push(r); f.proof = ''; f.done = ''; f.actual = ''; f.qStatus = 'Ready'; saveDraft(p, f); render(); toast('Route logged — the form stays filled for your next route');
 }
 /* ---------- timeline import (xlsx / csv) ---------- */
 async function unzip(buf) {
@@ -1056,7 +1136,7 @@ function toISO(x) {
   const s = String(x == null ? '' : x).trim(); if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
   const m = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/.exec(s); if (m) { const y = m[3].length === 2 ? 2000 + +m[3] : +m[3]; return y + '-' + p2(m[1]) + '-' + p2(m[2]); } return '';
 }
-function parseDur(s) { const m = /^([\d.]+)\s*([a-z]*)/i.exec(String(s == null ? '' : s).trim()); if (!m) return 1; let n = parseFloat(m[1]); const u = m[2].toLowerCase(); if (u.startsWith('w')) n *= 5; else if (u.startsWith('h')) n /= 8; return n <= 0 ? 0 : Math.max(1, Math.min(999, Math.ceil(n - 1e-9))); }
+function parseDur(s) { const m = /^([\d.]+)\s*([a-z]*)/i.exec(String(s == null ? '' : s).trim()); if (!m) return 1; let n = parseFloat(m[1]); const u = m[2].toLowerCase(); if (u.startsWith('w')) n *= 5; else if (u.startsWith('h')) n /= 8; return n <= 0 ? 0 : Math.max(0.5, Math.min(999, Math.round(n * 2) / 2)); }
 function parsePredStr(s) {
   return String(s == null ? '' : s).split(/[,;]/).map(x => x.trim()).filter(Boolean).map(x => { const m = /^(\d+)\s*(FS|SS|FF|SF)?\s*(?:([+-])\s*(\d+(?:\.\d+)?)\s*[a-z]*)?$/i.exec(x); return m ? {n: +m[1], type: (m[2] || 'FS').toUpperCase(), lag: m[4] ? (m[3] === '-' ? -1 : 1) * parseFloat(m[4]) : 0} : null; }).filter(Boolean);
 }
@@ -1089,8 +1169,8 @@ function buildTasks(block) {
 }
 async function readTimelineFile(file) { const buf = await file.arrayBuffer(); const rows = /\.csv$/i.test(file.name) ? readCsv(new TextDecoder().decode(buf)) : await readXlsx(buf); return parseTimeline(rows); }
 function applyBlock(p, b) {
-  const {tasks, mm} = buildTasks(b); p.tasks = tasks; p.collapsed = {}; p.auto = mm === 0; touch(); ui.needScroll = true; ui.tab = 'timeline'; render();
-  const ph = new Set(tasks.map(t => t.phase)).size; toast(`Imported ${tasks.length} tasks in ${ph} phase${ph === 1 ? '' : 's'}.` + (mm ? ` Auto-schedule is off because ${mm} task${mm === 1 ? '' : 's'} follow Smartsheet rules (half days / start-to-start); dates are exactly as in your file.` : ''));
+  const {tasks, mm} = buildTasks(b); p.tasks = tasks; p.collapsed = {}; p.auto = true; p.autoSet = false; touch(); ui.needScroll = true; ui.tab = 'timeline'; render();
+  const ph = new Set(tasks.map(t => t.phase)).size; toast(`Imported ${tasks.length} tasks in ${ph} phase${ph === 1 ? '' : 's'}.` + (mm ? ` Some dates in your file don’t follow simple finish-to-start rules, so they’ll adjust the first time you edit a linked task.` : ''));
 }
 function pickFile(accept, cb) { const i = document.createElement('input'); i.type = 'file'; i.accept = accept; i.hidden = true; document.body.appendChild(i); i.onchange = () => { const f = i.files[0]; i.remove(); if (f) cb(f); }; i.click(); }
 async function importIntoProject(p, file) {
@@ -1109,8 +1189,8 @@ async function importNewProjects(file) {
   const r = await modal({title: 'Create ' + blocks.length + ' project' + (blocks.length > 1 ? 's' : '') + ' from this file', text: blocks.map(b => (b.title || 'Untitled') + ' (' + b.tasks.length + ' tasks)').join(' · '), fields, buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Create', value: 'ok', primary: true}], validate: v => !S.clients.length && !str(v.newc, 60) ? 'Add the client or brand name.' : ''}); if (r.value !== 'ok') return;
   let cid = S.clients.length ? r.vals.cl : ''; if (str(r.vals.newc, 60)) { const nm = str(r.vals.newc, 60), ex = S.clients.find(c => c.name.toLowerCase() === nm.toLowerCase()); if (ex) cid = ex.id; else { const c = {id: uid(), name: nm, color: CLIENT_COLORS[S.clients.length % CLIENT_COLORS.length]}; S.clients.push(c); cid = c.id; } }
   let first = null, mm = 0;
-  blocks.forEach(b => { const t = cleanTxt(b.title), m = /^([A-Za-z]{2,6}\d{2,5})\s+(.*)$/.exec(t), p = newProject(cid, {code: m ? m[1].toUpperCase() : '', title: (m ? m[2] : t) || 'Imported project'}); const res = buildTasks(b); p.tasks = res.tasks; p.auto = res.mm === 0; mm += res.mm ? 1 : 0; S.projects.push(p); first = first || p; });
-  touch(); if (blocks.length === 1) { openProject(first.id, 'timeline'); } else go('home'); toast(`Created ${blocks.length} project${blocks.length > 1 ? 's' : ''} with their timelines.` + (mm ? ' Auto-schedule is off where the file uses half days or start-to-start links.' : ''));
+  blocks.forEach(b => { const t = cleanTxt(b.title), m = /^([A-Za-z]{2,6}\d{2,5})\s+(.*)$/.exec(t), p = newProject(cid, {code: m ? m[1].toUpperCase() : '', title: (m ? m[2] : t) || 'Imported project'}); const res = buildTasks(b); p.tasks = res.tasks; p.auto = true; mm += res.mm ? 1 : 0; S.projects.push(p); first = first || p; });
+  touch(); if (blocks.length === 1) { openProject(first.id, 'timeline'); } else go('home'); toast(`Created ${blocks.length} project${blocks.length > 1 ? 's' : ''} with their timelines.` + (mm ? ' Some dates in your file don’t follow simple finish-to-start rules, so they’ll adjust the first time you edit a linked task.' : ''));
 }
 /* ---------- actions ---------- */
 const cur = () => proj(ui.pid);
@@ -1142,16 +1222,27 @@ const ACT = {
   linkNew: b => { const p = b.dataset.pid ? proj(b.dataset.pid) : null; editLink(null, p ? {pid: p.id, client: p.client} : {client: ui.client !== 'all' ? ui.client : ''}); },
   linksCopy: () => { const p = cur(), list = (ui.tab === 'links' && ui.incGlobal) ? projLinks(p) : S.links.filter(l => l.pid === p.id); copyText(label(p) + ' — links\n\n' + list.map(l => (l.name || l.url) + (l.key ? ' (' + l.key + ')' : '') + '\n' + l.url).join('\n\n'), 'Links copied — ready to share'); },
   slotAdd: b => { const p = proj(b.dataset.pid); if (p) editLink(null, {pid: p.id, client: p.client, key: b.dataset.key, name: (p.code ? p.code + ' ' : '') + b.dataset.key}); },
+  linkCopy: b => { const l = S.links.find(x => x.id === b.dataset.id); if (l) copyText([['Key', l.key], ['Project', linkProjKey(l) || 'Global'], ['Name', l.name], ['Description', l.desc], ['Link', l.url]].filter(x => x[1]).map(x => x[0] + ': ' + x[1]).join('\n'), 'Link details copied — ready to share'); },
   linkEdit: b => { const l = S.links.find(x => x.id === b.dataset.id); if (l) editLink(l); },
   linkDel: async b => { if (await askConfirm('Delete this link?', '')) { S.links = S.links.filter(x => x.id !== b.dataset.id); touch(); render(); } },
   /* routes */
   rtCopy: () => copyText(buildBrief(cur(), ui.route), 'Brief copied — paste it into Ziflow'),
-  rtSheet: () => copyText(sheetLine(cur(), ui.route), 'Smartsheet line copied — paste it into the first cell of the row'),
+  rtSheet: () => copyText(sheetLine(cur(), ui.route), 'Queue line copied — paste it into the first cell (Client) of the Smartsheet row'),
   rtLog: () => logRoute(cur()),
   rtStatus: b => { const x = findRoute(b.dataset.id); if (x) { x.r.status = x.r.status === 'Completed' ? 'Pending' : 'Completed'; touch(); render(); } },
   rtCopyLog: b => { const x = findRoute(b.dataset.id); if (x) copyText(x.r.brief || '(no brief saved)', 'Brief copied'); },
-  rtRow: b => { const x = findRoute(b.dataset.id); if (x) copyText(tsvRow([fmtMDY(x.r.date), x.p.code, x.r.brief, x.r.ver, x.r.proof, x.r.status]), 'Row copied — paste it into your tracking sheet'); },
-  rtReuse: b => { const x = findRoute(b.dataset.id); if (!x) return; ui.route = {...routeDefaults(x.p), kind: x.r.kind, file: x.r.file, ver: x.r.ver, proof: x.r.proof, edits: x.r.edits.slice(), req: x.r.req || S.set.me, dueD: x.r.due, dueT: x.r.dueT}; openProject(x.p.id, 'routes'); toast('Loaded into the generator'); },
+  rtRow: b => { const x = findRoute(b.dataset.id); if (x) copyText(tsvRow(queueVals(x.p, recQ(x.r))), 'Queue line copied — paste it into the first cell (Client) of the Smartsheet row'); },
+  rtReuse: b => { const x = findRoute(b.dataset.id); if (!x) return; const rc = x.r.rcp || []; ui.route = {...routeDefaults(x.p, true), kind: x.r.kind, file: x.r.file, ver: x.r.ver, proof: x.r.proof, edits: x.r.edits.slice(), email: x.r.req || S.set.me || '', dueD: x.r.due, dueT: x.r.dueT, recips: rc.filter(n => S.set.recips.includes(n)), vendor: rc.find(n => !S.set.recips.includes(n)) || '', vendorOn: rc.some(n => !S.set.recips.includes(n)), done: x.r.done, actual: x.r.actual, editor: x.r.editor, qNote: x.r.qnote, qStatus: x.r.qs, ...(x.r.o || {})}; openProject(x.p.id, 'routes'); toast('Loaded into the generator'); },
+  rtStep: b => { const f = ui.route; if (!f) return; f.steps = (f.steps.trim() ? f.steps.replace(/\s+$/, '') + '\n' : '') + b.dataset.s; $('#rtSteps').value = f.steps; routeChanged(); },
+  rtStepsReset: () => { const f = ui.route; if (!f) return; f.steps = suggestNext(cur()); $('#rtSteps').value = f.steps; routeChanged(); },
+  rtClear: async () => { const p = cur(); if (p && await askConfirm('Start a blank route?', 'This empties the saved brief and queue form for this project.')) { p.rdraft = null; ui.route = null; touch(); render(); } },
+  rtEditor: b => { const f = ui.route; if (!f) return; f.editor = b.dataset.n; const i = b.closest('label').querySelector('input'); if (i) i.value = f.editor; routeChanged(); },
+  rtUpdate: async b => { const x = findRoute(b.dataset.id); if (!x) return; const r0 = x.r, cur0 = r0.status === 'Completed' ? 'Completed' : r0.qs;
+    const m = await modal({title: 'Update route', fields: [{id: 'st', label: 'Status', type: 'select', options: QSTAT.concat(['Completed']).map(s => [s, s]), value: cur0}, {id: 'done', label: 'Date completed', type: 'date', value: r0.done}, {id: 'actual', label: 'Actual time', value: r0.actual, max: 20}, {id: 'editor', label: 'Assigned editor', value: r0.editor, max: 80}], buttons: [{label: 'Cancel', value: 'cancel'}, {label: 'Save', value: 'ok', primary: true}]});
+    if (m.value !== 'ok') return; const v = m.vals; r0.actual = str(v.actual, 20); r0.editor = str(v.editor, 80); r0.done = DATE_RE.test(v.done) ? v.done : '';
+    if (v.st === 'Completed') { r0.status = 'Completed'; if (!r0.done) r0.done = todayS(); } else { r0.status = 'Pending'; r0.qs = v.st; }
+    touch(); render(); toast('Route updated'); },
+  rtProof: b => { const x = findRoute(b.dataset.id); if (!x) return; pop(b, 'Ziflow link', api => { api.body.innerHTML = `<input class="fld" id="pfIn" value="${esc(x.r.proof)}" placeholder="https://…" maxlength="1500"><div class="row2"><button class="btn-main" data-id="ok">Save</button></div>`; api.body.querySelector('[data-id=ok]').onclick = () => { x.r.proof = str($('#pfIn').value, 1500); touch(); api.close(); render(); toast('Ziflow link saved'); }; setTimeout(() => $('#pfIn') && $('#pfIn').focus(), 30); }); },
   rtDel: async b => { const x = findRoute(b.dataset.id); if (x && await askConfirm('Delete this route?', 'It will be removed from the log.')) { x.p.routes = x.p.routes.filter(r => r !== x.r); touch(); render(); } },
   rtNew: b => pop(b, 'Route for which project?', api => { const l = activeP().filter(inScope); api.body.innerHTML = l.length ? l.map(p => `<button class="mi" data-id="${p.id}">${esc(label(p))}</button>`).join('') : '<p class="muted">No active projects.</p>'; api.body.onclick = e => { const x = e.target.closest('[data-id]'); if (x) { api.close(); openProject(x.dataset.id, 'routes'); } }; }),
   /* timeline */
@@ -1179,7 +1270,7 @@ document.addEventListener('click', e => {
 document.addEventListener('input', e => {
   const t = e.target, c = t.dataset && t.dataset.ctl; if (!c) return;
   if (c === 'flt' && t.tagName !== 'SELECT') { ui[t.dataset.k] = t.value; render(); }
-  else if (c === 'rt' && ui.route) { ui.route[t.dataset.k] = t.value; const p = cur(); if (p && $('#rtPrev')) $('#rtPrev').textContent = buildBrief(p, ui.route); }
+  else if (c === 'rt' && ui.route) { ui.route[t.dataset.k] = t.value; routeChanged(); }
   else if (c === 'logIn') ui.logDraft = {date: ui.logDate || todayS(), s: $('#logS').value, n: $('#logN').value};
   else if (c === 'uIn' && ui.upd) ui.upd.d[t.dataset.k] = t.value;
 });
@@ -1193,13 +1284,15 @@ document.addEventListener('change', e => {
   if (!c) return;
   if (c === 'flt' && t.tagName === 'SELECT') { ui[t.dataset.k] = t.value; render(); }
   else if (c === 'fneed') { ui.fNeed = t.checked; render(); }
-  else if (c === 'auto') { const p = cur(); p.auto = t.checked; if (p.auto) reschedule(p); touch(); render(); }
+  else if (c === 'auto') { const p = cur(); p.auto = t.checked; p.autoSet = true; if (p.auto) reschedule(p); touch(); render(); }
   else if (c === 'links') { ui.links = t.checked; render(); }
   else if (c === 'incGlobal') { ui.incGlobal = t.checked; render(); }
   else if (c === 'full') { ui.full = t.checked; render(); }
   else if (c === 'zoom') { ui.zoom = +t.value; render(); }
   else if (c === 'logDate') { ui.logDate = DATE_RE.test(t.value) ? t.value : ''; ui.logDraft = null; render(); }
-  else if (c === 'rtEdit' && ui.route) { const l = t.dataset.l, i = ui.route.edits.indexOf(l); if (t.checked && i < 0) ui.route.edits.push(l); if (!t.checked && i >= 0) ui.route.edits.splice(i, 1); const p = cur(); if (p && $('#rtPrev')) $('#rtPrev').textContent = buildBrief(p, ui.route); }
+  else if (c === 'rtF') { const x = findRoute(t.dataset.id); if (x) { const k = t.dataset.k, v = t.value; if (k === 'status') { if (v === 'Completed') { x.r.status = 'Completed'; if (!x.r.done) x.r.done = todayS(); } else { x.r.status = 'Pending'; x.r.qs = v; } touch(); render(); } else { x.r[k] = k === 'done' ? (DATE_RE.test(v) ? v : '') : str(v, 80); if (k === 'done') x.r.status = x.r.done ? 'Completed' : 'Pending'; touch(); if (k === 'done') render(); } } }
+  else if (c === 'rtEdit' && ui.route) { const l = t.dataset.l, i = ui.route.edits.indexOf(l); if (t.checked && i < 0) ui.route.edits.push(l); if (!t.checked && i >= 0) ui.route.edits.splice(i, 1); routeChanged(); }
+  else if (c === 'rtRcp' && ui.route) { const n = t.dataset.n, f = ui.route; if (n === '@team') f.team = t.checked; else if (n === '@vendor') { f.vendorOn = t.checked; $('#rtVend').hidden = !t.checked; if (t.checked) $('#rtVend').focus(); } else { const i = f.recips.indexOf(n); if (t.checked && i < 0) f.recips.push(n); if (!t.checked && i >= 0) f.recips.splice(i, 1); } routeChanged(); }
   else if (c === 'uTask' && ui.upd) ui.upd.d.tasks[t.dataset.id] = t.checked;
 });
 
