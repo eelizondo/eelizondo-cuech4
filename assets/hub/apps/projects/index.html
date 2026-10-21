@@ -32,6 +32,7 @@
   textarea.fld { height: auto; padding: 8px 10px; resize: vertical; line-height: 1.4; width: 100%; }
   .fld:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(var(--ar),.2); }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin-bottom: 16px; }
+  .timeline-embed { display: block; width: 100%; height: min(84vh, 980px); min-height: 680px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
   .card h3 { margin: 0 0 12px; font-size: 15px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
   .card h3 small { color: var(--muted); font-weight: 400; font-size: 13px; }
   .empty { background: linear-gradient(180deg, var(--t3), var(--t4)); border: 1px solid var(--t5); border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
@@ -153,7 +154,7 @@
     .tbl td[data-l=""]::before { display: none; } .formg { grid-template-columns: 1fr; } .grid2 { grid-template-columns: 1fr; }
     .lkt, .lkt tbody, .lkt tr, .lkt td { display: block; } .lkt thead { display: none; } .lkt tr { border-bottom: 1px solid var(--line); padding: 6px 0; }
   }
-  @media (max-width: 560px) { .wrap { padding: 0 14px 40px; } header.app { padding: 10px 14px; } #hname { flex: 1 1 100%; min-width: 0; } }
+  @media (max-width: 560px) { .wrap { padding: 0 14px 40px; } header.app { padding: 10px 14px; } #hname { flex: 1 1 100%; min-width: 0; } .timeline-embed { min-height: 620px; height: 78vh; } }
 
 
   .gl input[type=number]{padding:0 3px} .gr.ph .gl input.nm{font-weight:700} .gh .gl span{font-size:11.5px;text-align:center;flex:none}
@@ -257,12 +258,27 @@ function cleanRoute(r) {
   if (!r || typeof r !== 'object') return null;
   return {id: str(r.id, 40) || uid(), date: DATE_RE.test(r.date) ? r.date : todayS(), time: /^\d{2}:\d{2}$/.test(r.time) ? r.time : '', kind: str(r.kind, 60), file: str(r.file, 240), ver: str(r.ver, 20), proof: str(r.proof, 1500), status: r.status === 'Completed' ? 'Completed' : 'Pending', brief: str(r.brief, 6000), edits: arr(r.edits, 20).map(x => str(x, 60)), req: str(r.req, 80), due: DATE_RE.test(r.due) ? r.due : '', dueT: str(r.dueT, 20), o: r.o && typeof r.o === 'object' ? ['client', 'pname', 'wcode', 'task'].reduce((a, k) => (a[k] = r.o[k] == null ? null : str(r.o[k], 240), a), {}) : null, internal: !!r.internal, qs: QSTAT.includes(r.qs) ? r.qs : 'Ready', editor: str(r.editor, 80), qnote: str(r.qnote, 600), done: DATE_RE.test(r.done) ? r.done : '', actual: str(r.actual, 20), rcp: arr(r.rcp, 12).map(x => str(x, 60)).filter(Boolean)};
 }
+function cleanTimeline(timeline) {
+  if (!timeline || typeof timeline !== 'object' || !Array.isArray(timeline.tasks)) return null;
+  const seen = new Set(), tasks = timeline.tasks.slice(0, 5000).filter(t => t && typeof t === 'object').map(t => {
+    let id = str(t.id, 40); if (!id || seen.has(id)) id = uid(); seen.add(id);
+    const level = Math.max(0, Math.min(4, int(t.level, 0)));
+    return {id, level, name: str(t.name, 500), notes: str(t.notes, 2000), owner: str(t.owner, 30), dur: Number.isFinite(+t.dur) && t.dur !== null ? clamp(+t.dur, 0, 3650) : null,
+      start: Number.isSafeInteger(t.start) && Number.isFinite(new Date(t.start * 864e5).getTime()) ? t.start : null, status: ['Not Started', 'In Progress', 'On Hold', 'Blocked', 'Completed'].includes(t.status) ? t.status : 'Not Started',
+      collapsed: !!t.collapsed, preds: arr(t.preds, 20).filter(p => p && typeof p.id === 'string').map(p => ({id: str(p.id, 40), t: ['FS', 'SS', 'FF', 'SF'].includes(p.t) ? p.t : 'FS', lag: clamp(int(p.lag, 0), -999, 999)}))};
+  });
+  tasks.forEach((t, i) => { t.level = i ? Math.min(t.level, tasks[i - 1].level + 1) : 0; t.preds = t.preds.filter(p => seen.has(p.id) && p.id !== t.id); });
+  const holidays = [...new Set(arr(timeline.holidays, 5000).map(Number).filter(day => Number.isSafeInteger(day) && Number.isFinite(new Date(day * 864e5).getTime())))].sort((a, b) => a - b);
+  return {cal: timeline.cal === 'all' ? 'all' : 'work', holidays, tasks};
+}
 function cleanProject(p, cids) {
   if (!p || typeof p !== 'object') return null; const seen = new Set();
   const tasks = arr(p.tasks, 600).map(cleanTask).filter(Boolean).filter(t => !seen.has(t.id) && seen.add(t.id));
   tasks.forEach(t => { t.pred = t.pred.filter(x => seen.has(x) && x !== t.id); });
+  const timeline = cleanTimeline(p.timeline);
   const col = {}; if (p.collapsed && typeof p.collapsed === 'object') Object.keys(p.collapsed).slice(0, 100).forEach(k => { col[str(k, 80)] = !!p.collapsed[k]; });
   return {rdraft: cleanDraft(p.rdraft), id: str(p.id, 40) || uid(), client: cids.has(p.client) ? p.client : '', code: str(p.code, 40), prj: str(p.prj, 40), title: str(p.title, 200) || 'Untitled project', prio: PRIO.includes(p.prio) ? p.prio : 'Medium', pm: str(p.pm, 60), ce: str(p.ce, 60), team: str(p.team, 600), crew: p.crew && typeof p.crew === 'object' && !Array.isArray(p.crew) ? p.crew : null, stage: str(p.stage, 60), veeva: str(p.veeva, 60), pnote: str(p.pnote, 600),
+    timeline,
     closed: DATE_RE.test(p.closed) ? p.closed : '', tasks, collapsed: col, autoSet: !!p.autoSet, auto: p.autoSet ? p.auto !== false : true,
     log: arr(p.log, 800).filter(l => l && (str(l.s, 4000) || str(l.n, 4000))).map(l => ({id: str(l.id, 40) || uid(), date: DATE_RE.test(l.date) ? l.date : todayS(), s: str(l.s, 4000), n: str(l.n, 4000)})),
     notes: arr(p.notes, 800).filter(n => n && (str(n.text, 20000) || str(n.title, 200))).map(n => ({id: str(n.id, 40) || uid(), ts: int(n.ts, Date.now()), title: str(n.title, 200), text: str(n.text, 20000), pin: !!n.pin})),
@@ -353,9 +369,10 @@ function upcoming(p, max = 8) {
 }
 const msLine = t => fmtMD(t.start) + ' – ' + fmtMD(t.end) + ': ' + (t.owner ? t.owner + ' | ' : '') + t.name;
 const msText = p => upcoming(p).map(g => g.ph.toUpperCase() + '\n' + g.items.map(i => (i.hot ? '> ' : '') + msLine(i.t)).join('\n')).join('\n\n');
+const HEAD_RE = /^\d{2}\/\d{2}( - \d{2}\/\d{2})?:\s*$/;
 function statusText(l) {
-  if (!l) return ''; const s = lns(l.s).map(x => (/^[>-]\s?/.test(x) ? x : '> ' + x)).join('\n'), n = lns(l.n).map(x => '- ' + x.replace(/^[-•*]\s*/, '')).join('\n');
-  return fmtMD(l.date) + ':' + (s ? '\n' + s : '') + (n ? '\n\nNext Steps:\n' + n : '');
+  if (!l) return ''; const ls = lns(l.s), hd = ls.length && HEAD_RE.test(ls[0]); const s = ls.map(x => ((/^[>-]\s?/.test(x) || HEAD_RE.test(x)) ? x : '> ' + x)).join('\n'), n = lns(l.n).map(x => '- ' + x.replace(/^[-•*]\s*/, '')).join('\n');
+  return (hd ? '' : fmtMD(l.date) + ':') + (s ? (hd ? '' : '\n') + s : '') + (n ? '\n\nNext Steps:\n' + n : '');
 }
 
 /* ---------- templates ---------- */
@@ -369,7 +386,7 @@ const BUILTIN_TPL = [
     {ph: 'Kickoff', n: 'Kickoff meeting', d: 1, o: '', pr: []}, {ph: 'Build', n: 'First draft', d: 5, o: '', pr: [0]}, {ph: 'Build', n: 'Internal review', d: 2, o: '', pr: [1]}, {ph: 'Review', n: 'Client review', d: 3, o: '', pr: [2]}, {ph: 'Review', n: 'Revisions', d: 2, o: '', pr: [3]}, {ph: 'Launch', n: 'Final approval', d: 1, o: '', pr: [4]}, {ph: 'Launch', n: 'Launch', d: 0, o: '', pr: [5]}]}];
 const allTemplates = () => BUILTIN_TPL.concat(S.templates);
 function applyTemplate(p, tpl, startDate) {
-  const ids = []; p.tasks = [];
+  const ids = []; p.timeline = null; p.tasks = [];
   tpl.rows.forEach((r, i) => { const t = {id: uid() + i, phase: r.ph, name: r.n, start: nextBiz(startDate), sf: 0, dur: r.d, end: endFrom(nextBiz(startDate), r.d), pred: [], lag: r.lag || 0, st: 'ns', owner: r.o, cmt: ''}; ids.push(t.id); p.tasks.push(t); });
   tpl.rows.forEach((r, i) => { p.tasks[i].pred = (r.pr || []).map(x => ids[x]).filter(Boolean); }); reschedule(p);
 }
@@ -534,6 +551,7 @@ function applyTheme() {
   const k = ACCENTS[S.set.accent] ? S.set.accent : 'indigo'; if (k === themeKey) return; themeKey = k;
   const hex = ACCENTS[k][1], [h, s, l] = hex2hsl(hex), st = document.documentElement.style, rgb = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)).join(','), a2 = hsl2hex(h, s, Math.min(l + 10, 82));
   Object.entries({'--accent': hex, '--accent-2': a2, '--accent-text': hsl2hex(h, Math.min(s, 70), 86), '--dim': `rgba(${rgb},.14)`, '--ar': rgb, '--g1': a2, '--g2': hsl2hex(h, s, Math.max(l - 12, 25)), '--on': hsl2hex(h, 60, 10), '--t1': hsl2hex(h, 28, 12), '--t2': hsl2hex(h, 26, 8), '--t3': hsl2hex(h, 28, 12), '--t4': hsl2hex(h, 26, 8), '--t5': hsl2hex(h, 26, 28)}).forEach(([n, v]) => st.setProperty(n, v));
+  sendThemeToFrame();
 }
 
 /* ---------- navigation ---------- */
@@ -710,13 +728,15 @@ function upsertLog(p, date, s, n) {
   if (!s && !n) { if (i >= 0) p.log.splice(i, 1); } else if (i >= 0) { p.log[i].s = s; p.log[i].n = n; } else p.log.push({id: uid(), date, s, n});
 }
 const taskLine = t => (t.owner ? t.owner + ' | ' : '') + t.name;
-function timelineDraft(p) {
+function timelineDraft(p, date) {
   const open = p.tasks.filter(t => t.st !== 'done');
   let cur = open.filter(t => t.st === 'ip');
   if (!cur.length && open.length) cur = [open[0]];
   const last = cur.length ? open.indexOf(cur[cur.length - 1]) : -1;
   const next = open.slice(last + 1).filter(t => t.st !== 'ip').slice(0, 2);
-  return {s: cur.map(taskLine).join('\n'), n: next.map(taskLine).join('\n')};
+  const ends = cur.map(t => t.end || t.start).filter(Boolean).sort(), e = ends[ends.length - 1], d0 = date || todayS();
+  const head = e && e > d0 ? fmtMD(d0) + ' - ' + fmtMD(e) + ':' : fmtMD(d0) + ':';
+  return {s: cur.length ? head + '\n' + cur.map(t => '> ' + taskLine(t)).join('\n') : '', n: next.map(taskLine).join('\n')};
 }
 const pById = id => S.people.find(x => x.id === id);
 const dispName = n => S.set.first ? n.split(/\s+/)[0] : n;
@@ -741,7 +761,7 @@ function crewSheet(p) {
 }
 function suggestNext(p) { return timelineDraft(p).n; }
 function tabStatus(b, p) {
-  const date = ui.logDate || todayS(), cur = p.log.find(l => l.date === date), d = ui.logDraft && ui.logDraft.date === date ? ui.logDraft : {date, s: cur ? cur.s : timelineDraft(p).s, n: cur ? cur.n : timelineDraft(p).n};
+  const date = ui.logDate || todayS(), cur = p.log.find(l => l.date === date), d = ui.logDraft && ui.logDraft.date === date ? ui.logDraft : {date, s: cur ? cur.s : timelineDraft(p, date).s, n: cur ? cur.n : timelineDraft(p, date).n};
   const logs = p.log.slice().sort((a, b) => b.date.localeCompare(a.date));
   b.innerHTML = `<div class="g2"><div class="card"><h3>${cur ? 'Edit status' : 'Add status'} — ${fmtNice(date)}</h3>
     <div class="formg"><label>Date<input type="date" class="fld" data-ctl="logDate" value="${date}"></label><div></div>
@@ -863,57 +883,56 @@ function ganttCols(full) {
 }
 const colsW = cols => cols.reduce((n, c) => n + c.w, 0) + (cols.length - 1) * 4 + 13;
 function phaseRuns(p) { const runs = []; p.tasks.forEach((t, i) => { const ph = taskPh(t), r = runs[runs.length - 1]; if (r && r.ph === ph) { r.to = i; r.items.push(t); } else runs.push({ph, from: i, to: i, items: [t]}); }); return runs; }
-function tabTimeline(b, p) {
-  const z = ui.zoom, full = ui.full, cols = ganttCols(full), lw = colsW(cols), td = todayS();
-  const tool = `<div class="gtool"><button class="btn-main" data-act="addTask">＋ Task</button><button class="btn-ghost" data-act="addPhase">＋ Phase</button><button class="btn-ghost" data-act="tplPop">📋 Templates</button><button class="btn-ghost" data-act="tlImport" title="Import tasks from a Smartsheet export (.xlsx or .csv)">⬆ Import xlsx</button><button class="btn-ghost" data-act="tplSave"${p.tasks.length ? '' : ' disabled'}>💾 Save as template</button>
-    <label title="Tasks with a predecessor start the next business day after it ends"><input type="checkbox" data-ctl="auto"${p.auto ? ' checked' : ''}> Auto-schedule</label><label><input type="checkbox" data-ctl="full"${full ? ' checked' : ''}> All columns</label><label title="Draw arrows from each task to the tasks that depend on it"><input type="checkbox" data-ctl="links"${ui.links !== false ? ' checked' : ''}> Link arrows</label>
-    <select class="fld" data-ctl="zoom" aria-label="Zoom" style="height:32px">${[[8, 'Zoom: out'], [14, 'Zoom: normal'], [22, 'Zoom: in'], [34, 'Zoom: wide']].map(([v, l]) => `<option value="${v}"${z === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
-    <button class="btn-ghost" data-act="gToday">Today</button><button class="btn-ghost" data-act="gCollapse">⇕ Phases</button><button class="btn-ghost" data-act="msCopy"${p.tasks.length ? '' : ' disabled'}>Copy milestones</button></div>`;
-  if (!p.tasks.length) { b.innerHTML = tool + `<div class="card empty" style="text-align:center"><h3 style="margin-top:0">No timeline yet</h3><p class="muted">Start from a template, or add tasks one by one. Tasks linked by “Pred.” (e.g. 3, 5 +1) shift automatically when something upstream moves.</p><div class="row2" style="justify-content:center"><button class="btn-ghost" data-act="tplPop">📋 Choose a template</button><button class="btn-main" data-act="tlImport">⬆ Import from xlsx</button><button class="btn-ghost" data-act="addTask">＋ Add first task</button></div></div>`; return; }
-  let min = td, max = td; p.tasks.forEach(t => { if (t.start < min) min = t.start; if (t.end > max) max = t.end; });
-  let r0 = addD(min, -3); r0 = addD(r0, -((pd(r0).getDay() + 6) % 7)); const r1 = addD(max, 14), N = Math.min(2500, diffD(r0, r1) + 1), W = N * z;
-  const wd0 = pd(r0).getDay(), we = []; for (let i = 0; i < 7; i++) { const wd = (wd0 + i) % 7; we.push(wd === 0 || wd === 6 ? 'rgba(255,255,255,.04)' : 'transparent'); }
-  const grad = `linear-gradient(90deg,${we.map((c, i) => `${c} ${i * z}px ${(i + 1) * z}px`).join(',')})`;
-  let head = '', mon = '';
-  for (let i = 0; i < N; i++) { const d = addD(r0, i), dd = +d.slice(8, 10), wd = pd(d).getDay();
-    if (dd === 1 || (i === 0 && (new Date(+d.slice(0, 4), +d.slice(5, 7), 0).getDate() - dd) * z >= 70)) mon += `<span class="gm" style="left:${i * z + 3}px">${MON[+d.slice(5, 7) - 1]} ${d.slice(0, 4)}</span>`;
-    if (wd === 1) head += `<i class="gdw" style="left:${i * z}px"></i>`;
-    if (z >= 22 || (z >= 14 && wd === 1) || (z < 14 && wd === 1 && (i / 7) % 2 === 0)) head += `<span class="gd" style="left:${i * z}px;width:${Math.max(z, 22)}px">${dd}</span>`; }
-  const hdr = `<div class="gr gh"><div class="gl" style="width:${lw}px">${cols.map(c => `<span style="width:${c.w}px;flex:none;${c.k === 'name' ? 'text-align:left' : ''}">${esc(c.l)}</span>`).join('')}</div><div class="gc" style="width:${W}px">${mon}${head}</div></div>`;
-  let rows = '', ri = 0; const pos = {};
+const dayFromDate = date => DATE_RE.test(date) ? Date.UTC(+date.slice(0, 4), +date.slice(5, 7) - 1, +date.slice(8, 10)) / 864e5 : null;
+const dateFromDay = day => Number.isSafeInteger(day) && Number.isFinite(new Date(day * 864e5).getTime()) ? new Date(day * 864e5).toISOString().slice(0, 10) : '';
+function timelineForProject(p) {
+  if (p.timeline) return {...p.timeline, tasks: p.timeline.tasks.map(t => ({...t, preds: t.preds.map(pred => ({...pred}))})), name: label(p)};
+  const tasks = [];
   phaseRuns(p).forEach(run => {
-    ri++; const coll = !!p.collapsed[run.ph], done = run.items.filter(t => t.st === 'done').length, s0 = run.items.reduce((m, t) => t.start < m ? t.start : m, '9999'), e0 = run.items.reduce((m, t) => t.end > m ? t.end : m, '0000');
-    rows += `<div class="gr ph"><div class="gl" style="width:${lw}px"><button class="ibtn" data-act="phToggle" data-ph="${esc(run.ph)}" aria-label="Collapse">${coll ? '▸' : '▾'}</button><input class="nm" data-ph="${run.from}" data-fk="ph${run.from}" value="${esc(run.ph)}" maxlength="80" aria-label="Phase name"><small class="muted" style="flex:none">${done}/${run.items.length}</small><button class="ibtn" data-act="addTask" data-after="${run.items[run.items.length - 1].id}" title="Add a task to this phase">＋</button></div>
-      <div class="gc" style="width:${W}px"><div class="psum" style="left:${diffD(r0, s0) * z}px;width:${(diffD(s0, e0) + 1) * z - 2}px"></div></div></div>`;
-    if (coll) return;
-    run.items.forEach((t, k) => { const i = run.from + k, late = t.st !== 'done' && t.end < td;
-      const cell = c => { const fk = `data-t="${t.id}" data-f="${c.k}" data-fk="${t.id}:${c.k}"`, w = `style="width:${c.w}px"`;
-        switch (c.k) {
-          case 'rn': return `<span class="rn">${i + 1}</span>`;
-          case 'name': return `<input class="nm" ${fk} value="${esc(t.name)}" maxlength="200" aria-label="Task name">`;
-          case 'dur': return `<input type="number" min="0" max="999" step="0.5" ${fk} ${w} value="${t.dur}" title="Business days (0 = milestone)" aria-label="Duration">`;
-          case 'start': return `<input type="date" ${fk} ${w} value="${t.start}" aria-label="Start">`;
-          case 'end': return `<input type="date" ${fk} ${w} value="${t.end}" aria-label="End">`;
-          case 'pred': return `<input ${fk} ${w} value="${esc(predText(p, t))}" placeholder="–" title="Predecessor row numbers; “+2” adds 2 business days" aria-label="Predecessors">`;
-          case 'owner': return `<input ${fk} ${w} value="${esc(t.owner)}" maxlength="30" aria-label="Owner">`;
-          case 'st': return `<select ${fk} ${w} aria-label="Status">${Object.keys(ST).map(k2 => `<option value="${k2}"${t.st === k2 ? ' selected' : ''}>${STS[k2]}</option>`).join('')}</select>`;
-          case 'cmt': return `<input ${fk} ${w} value="${esc(t.cmt)}" maxlength="300" aria-label="Comment">`;
-          case 'mn': return `<button class="ibtn" data-act="rowMenu" data-t="${t.id}" aria-label="Task menu">⋯</button>`;
-        } };
-      const left = diffD(r0, t.start) * z + (t.sf || 0) * z, w = Math.max(5, diffD(r0, t.end) * z + (eTime(t) - bizIdx(t.end)) * z - left - 2), tip = esc(`${t.name} — ${fmtMD(t.start)}${t.dur ? ' to ' + fmtMD(t.end) : ''} · ${STS[t.st]}${t.owner ? ' · ' + t.owner : ''}`);
-      const bar = t.dur === 0 ? `<div class="bar ms ${t.st}${late ? ' late' : ''}" data-tid="${t.id}" style="left:${left + Math.round(z / 2) - 7}px" title="${tip}"></div>` : `<div class="bar ${t.st}${late ? ' late' : ''}" data-tid="${t.id}" style="left:${left + 1}px;width:${w}px" title="${tip}"><span>${z >= 14 ? esc(t.name) : ''}</span><i class="rz"></i></div>`;
-      pos[t.id] = {y: 44 + ri * 34 + 17, x1: t.dur === 0 ? left + Math.round(z / 2) : left + 1, x2: t.dur === 0 ? left + Math.round(z / 2) + 7 : left + w + 1}; ri++;
-      rows += `<div class="gr" data-row="${t.id}"><div class="gl" style="width:${lw}px">${cols.map(cell).join('')}</div><div class="gc" style="width:${W}px">${bar}</div></div>`; });
+    tasks.push({id: uid(), level: 0, name: run.ph || 'Tasks', notes: '', owner: '', dur: null, start: null, status: 'Not Started', collapsed: !!p.collapsed[run.ph], preds: []});
+    run.items.forEach(t => tasks.push({id: t.id, level: 1, name: t.name, notes: t.cmt || '', owner: t.owner || '', dur: t.dur, start: dayFromDate(t.start), status: ({ns: 'Not Started', ip: 'In Progress', hold: 'On Hold', done: 'Completed'})[t.st] || 'Not Started', collapsed: false,
+      preds: t.pred.map(id => ({id, t: 'FS', lag: t.lag || 0}))}));
   });
-  let svg = ''; if (ui.links !== false) { let d = '';
-    p.tasks.forEach(t => { const b = pos[t.id]; if (!b) return; t.pred.forEach(pid => { const a = pos[pid]; if (!a) return; const x1 = a.x2, y1 = a.y, x2 = b.x1, y2 = b.y, dir = y2 > y1 ? 1 : -1;
-      d += x2 >= x1 + 12 ? `M${x1} ${y1}H${x1 + 6}V${y2}H${x2 - 1}` : `M${x1} ${y1}H${x1 + 6}V${y1 + dir * 17}H${x2 - 7}V${y2}H${x2 - 1}`; d += `M${x2 - 5} ${y2 - 3}L${x2} ${y2}L${x2 - 5} ${y2 + 3}`; }); });
-    svg = `<svg style="position:absolute;left:${lw}px;top:0;width:${W}px;height:${44 + ri * 34}px;pointer-events:none;z-index:2" aria-hidden="true"><path d="${d}" fill="none" stroke="#9aa0b4" stroke-opacity=".75" stroke-width="1.2" stroke-linejoin="round"/></svg>`; }
-  const tx = lw + diffD(r0, td) * z + Math.floor(z / 2);
-  b.innerHTML = tool + `<div class="gx" data-r0="${r0}"><div class="gb"><div style="position:absolute;left:${lw}px;top:44px;bottom:0;width:${W}px;background-image:${grad};background-size:${7 * z}px 100%;pointer-events:none;z-index:0"></div>${hdr}${rows}${svg}<div class="today" style="left:${tx}px" title="Today"></div></div></div>
-  <p class="gnote">Drag a bar to move it, drag its right edge to change the length. Tasks linked to a predecessor can’t start earlier than it allows — dragging them later adds a delay. Durations are business days; 0 days is a milestone ◆.</p>`;
-  const gb = $('.gb'); gb.dataset.r0 = r0; gb.dataset.lw = lw;
+  return {name: label(p), cal: 'work', holidays: [], tasks};
 }
+function saveEmbeddedTimeline(p, data) {
+  if (!p || !data || !Array.isArray(data.tasks)) return;
+  p.timeline = cleanTimeline(data);
+  const tasks = p.timeline.tasks, computed = data.computed && typeof data.computed === 'object' ? data.computed : {}, leaves = [], ancestors = [];
+  tasks.forEach((t, i) => {
+    while (ancestors.length && ancestors[ancestors.length - 1].level >= t.level) ancestors.pop();
+    if (i + 1 < tasks.length && tasks[i + 1].level > t.level) { ancestors.push(t); return; }
+    if (!t.name.trim()) return;
+    const parent = ancestors.find(a => a.level === 0) || ancestors[ancestors.length - 1];
+    const calc = computed[t.id] || {}, startDay = Number.isSafeInteger(calc.start) ? calc.start : t.start, endDay = Number.isSafeInteger(calc.end) ? calc.end : startDay;
+    leaves.push({sf: Number.isFinite(calc.sf) ? calc.sf : 0, id: t.id, phase: parent ? parent.name : 'Tasks', name: t.name, start: dateFromDay(startDay) || todayS(), end: dateFromDay(endDay) || dateFromDay(startDay) || todayS(),
+      dur: Number.isFinite(calc.dur) ? calc.dur : (Number.isFinite(t.dur) ? t.dur : 1), predIds: t.preds.map(pred => pred.id), lag: t.preds[0] && t.preds[0].lag > 0 ? t.preds[0].lag : 0,
+      st: ({'Not Started': 'ns', 'In Progress': 'ip', 'On Hold': 'hold', 'Blocked': 'hold', 'Completed': 'done'})[t.status] || 'ns', owner: t.owner, cmt: t.notes});
+  });
+  const leafIds = new Set(leaves.map(t => t.id));
+  p.tasks = leaves.map(t => cleanTask({...t, pred: t.predIds.filter(id => leafIds.has(id))})).filter(Boolean);
+  p.tasks.forEach(t => {
+    const original = leaves.find(x => x.id === t.id);
+    if (original && DATE_RE.test(original.end)) t.end = original.end;
+  });
+}
+function tabTimeline(b, p) {
+  const actions = `<div class="row2" style="margin-bottom:10px"><button class="btn-ghost" data-act="tplPop">📋 Templates</button><button class="btn-ghost" data-act="tlImport" title="Import tasks from a Smartsheet export (.xlsx or .csv)">⬆ Import Smartsheet</button><button class="btn-ghost" data-act="tplSave"${p.tasks.length ? '' : ' disabled'}>💾 Save as template</button><button class="btn-ghost" data-act="timelinePrint">🖨 Print / PDF</button></div>`;
+  b.innerHTML = actions + `<iframe class="timeline-embed" id="timelineFrame" title="Project timeline editor" src="project-timeline.html?embedded=1"></iframe>`;
+}
+function sendThemeToFrame() {
+  const fr = $('#timelineFrame'); if (!fr || !fr.contentWindow) return;
+  const cs = getComputedStyle(document.documentElement), vars = {};
+  ['--bg', '--panel', '--panel-2', '--line', '--line-2', '--text', '--muted', '--accent', '--accent-2', '--accent-text', '--ar', '--g1', '--g2', '--on'].forEach(n => { const v = cs.getPropertyValue(n).trim(); if (v) vars[n] = v; });
+  try { fr.contentWindow.postMessage({type: 'cuech4-project-timeline-theme', vars}, location.protocol === 'file:' ? '*' : location.origin); } catch (e) {}
+}
+function sendTimelineToFrame(frame, p) { sendThemeToFrame(); frame.contentWindow.postMessage({type: 'cuech4-project-timeline-state', state: timelineForProject(p)}, location.protocol === 'file:' ? '*' : location.origin); }
+window.addEventListener('message', event => {
+  const frame = $('#timelineFrame'), p = proj(ui.pid);
+  if (!frame || event.source !== frame.contentWindow || !p || (location.protocol !== 'file:' && event.origin !== location.origin)) return;
+  if (event.data && event.data.type === 'cuech4-project-timeline-ready') sendTimelineToFrame(frame, p);
+  else if (event.data && event.data.type === 'cuech4-project-timeline-change') { saveEmbeddedTimeline(p, event.data.state); touch(); }
+});
 
 function setTaskStart(p, t, v) {
   const s = nextBiz(v);
@@ -1146,7 +1165,7 @@ function buildTasks(block) {
 }
 async function readTimelineFile(file) { const buf = await file.arrayBuffer(); const rows = /\.csv$/i.test(file.name) ? readCsv(new TextDecoder().decode(buf)) : await readXlsx(buf); return parseTimeline(rows); }
 function applyBlock(p, b) {
-  const {tasks, mm} = buildTasks(b); p.tasks = tasks; p.collapsed = {}; p.auto = true; p.autoSet = false; touch(); ui.needScroll = true; ui.tab = 'timeline'; render();
+  const {tasks, mm} = buildTasks(b); p.tasks = tasks; p.timeline = null; p.collapsed = {}; p.auto = true; p.autoSet = false; touch(); ui.needScroll = true; ui.tab = 'timeline'; render();
   const ph = new Set(tasks.map(t => t.phase)).size; toast(`Imported ${tasks.length} tasks in ${ph} phase${ph === 1 ? '' : 's'}.` + (mm ? ` Some dates in your file don’t follow simple finish-to-start rules, so they’ll adjust the first time you edit a linked task.` : ''));
 }
 function pickFile(accept, cb) { const i = document.createElement('input'); i.type = 'file'; i.accept = accept; i.hidden = true; document.body.appendChild(i); i.onchange = () => { const f = i.files[0]; i.remove(); if (f) cb(f); }; i.click(); }
@@ -1184,7 +1203,7 @@ const ACT = {
   reopen: b => { const p = proj(b.dataset.pid); if (p) { p.closed = ''; touch(); render(); toast('Reopened ' + label(p)); } }, delProj: () => deleteProject(cur()),
   /* status */
   logSave: () => { const p = cur(), date = ui.logDate || todayS(); upsertLog(p, date, $('#logS').value, $('#logN').value); ui.logDraft = null; ui.logDate = ''; touch(); render(); toast('Status saved'); },
-  logSuggest: () => { const p = cur(); const d = timelineDraft(p); ui.logDraft = {date: ui.logDate || todayS(), s: d.s, n: d.n}; render(); toast('Status and next steps updated from the timeline'); },
+  logSuggest: () => { const p = cur(); const d = timelineDraft(p, ui.logDate || todayS()); ui.logDraft = {date: ui.logDate || todayS(), s: d.s, n: d.n}; render(); toast('Status and next steps updated from the timeline'); },
   logPrev: () => { const p = cur(), d = ui.logDate || todayS(), l = p.log.filter(x => x.date !== d).sort((a, b) => b.date.localeCompare(a.date))[0]; if (!l) return toast('No earlier status to copy.', null, null, true); ui.logDraft = {date: d, s: l.s, n: l.n}; render(); },
   logEdit: b => { const l = cur().log.find(x => x.id === b.dataset.id); if (l) { ui.logDate = l.date; ui.logDraft = null; render(); window.scrollTo(0, 0); } },
   logDel: async b => { const p = cur(); if (await askConfirm('Delete this status entry?', 'This removes it from the log.')) { p.log = p.log.filter(x => x.id !== b.dataset.id); touch(); render(); } },
@@ -1223,6 +1242,8 @@ const ACT = {
   rtDel: async b => { const x = findRoute(b.dataset.id); if (x && await askConfirm('Delete this route?', 'It will be removed from the log.')) { x.p.routes = x.p.routes.filter(r => r !== x.r); touch(); render(); } },
   rtNew: b => pop(b, 'Route for which project?', api => { const l = activeP().filter(inScope); api.body.innerHTML = l.length ? l.map(p => `<button class="mi" data-id="${p.id}">${esc(label(p))}</button>`).join('') : '<p class="muted">No active projects.</p>'; api.body.onclick = e => { const x = e.target.closest('[data-id]'); if (x) { api.close(); openProject(x.dataset.id, 'routes'); } }; }),
   /* timeline */
+  timelinePrint: () => { const fr = $('#timelineFrame'); if (!fr) return; let print = null; try { print = fr.contentWindow.__tl && fr.contentWindow.__tl.print; } catch (e) { /* cross-origin (e.g. opened from file://) */ }
+    if (print) print(); else { fr.contentWindow.postMessage({type: 'cuech4-project-timeline-print'}, location.protocol === 'file:' ? '*' : location.origin); toast('Print requested — if nothing opens, use the print button inside the timeline.', null, null); } },
   tlImport: () => { const p = cur(); pickFile('.xlsx,.xlsm,.csv', f => importIntoProject(p, f)); }, impNew: () => pickFile('.xlsx,.xlsm,.csv', importNewProjects),
   addTask: b => addTask(cur(), b.dataset.after), addPhase: () => addPhase(cur()), tplPop: b => tplPop(b, cur()), tplSave: () => saveTpl(cur()),
   gToday: () => { const gx = $('.gx'); if (gx) gx.scrollLeft = Math.max(0, diffD(gx.dataset.r0, todayS()) * ui.zoom - 150); },
